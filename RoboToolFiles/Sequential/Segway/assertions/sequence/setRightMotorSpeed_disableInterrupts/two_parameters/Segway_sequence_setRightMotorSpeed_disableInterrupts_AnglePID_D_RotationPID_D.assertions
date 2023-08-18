@@ -1,0 +1,47 @@
+timed csp SegwayRPEvents
+csp-begin
+	SegwayRPEvents = {| 
+		Segway::angle.in,
+		Segway::gyroX.in,
+		Segway::gyroY.in,
+		Segway::gyroZ.in,
+		Segway::leftMotorVelocity.in,
+		Segway::rightMotorVelocity.in,
+		Segway::setLeftMotorSpeedCall,
+		Segway::setRightMotorSpeedCall,
+		Segway::disableInterruptsCall,
+		Segway::enableInterruptsCall
+	|}
+csp-end
+
+// After a call of setRightMotorSpeed(), a call of disableInterrupts() occurs after no more than loopTime time units,
+// with no other observations inbetween.
+timed csp SequenceSetRightMotorSpeedDisableInterrupts
+csp-begin
+	Timed(OneStep) {
+		-- there are no restrictions until the first setRightMotorSpeed() call
+		SequenceSetRightMotorSpeedDisableInterrupts =
+		-- allow any events except setting right motor speed
+		([] e : diff(SegwayRPEvents, {| Segway::setRightMotorSpeedCall |}) @ e -> SequenceSetRightMotorSpeedDisableInterrupts)
+		 []
+		-- when setRightMotorSpeed() occurs, begin counting tock events
+		Segway::setRightMotorSpeedCall?x -> SequenceSetRightMotorSpeedDisableInterruptsCount(0)
+	}
+	
+	-- outside timed section, so we can count the tock events
+	-- no events other than tock and disableInterruptsCall are allowed here, since there must be no other observations inbetween
+	SequenceSetRightMotorSpeedDisableInterruptsCount(count) =
+		-- allow tocks if fewer than loopTime have happened and count them
+		(count < const_BalanceSTM_loopTime) & tock -> SequenceSetRightMotorSpeedDisableInterruptsCount(count+1)
+		 []
+		-- go back to waiting for setRightMotorSpeed() when disableInterrupts() is called
+		Segway::disableInterruptsCall -> SequenceSetRightMotorSpeedDisableInterrupts
+csp-end
+	
+timed assertion SequenceSetRightMotorSpeedDisableInterrupts_refines: Segway refines SequenceSetRightMotorSpeedDisableInterrupts
+	in the traces model
+	with constant ^P of AnglePID    set to 0,
+	     constant D  of AnglePID    set to 1,
+	     constant ^P of SpeedPID    set to 0,
+	     constant I  of SpeedPID    set to 0 and
+	     constant D  of RotationPID set to 1

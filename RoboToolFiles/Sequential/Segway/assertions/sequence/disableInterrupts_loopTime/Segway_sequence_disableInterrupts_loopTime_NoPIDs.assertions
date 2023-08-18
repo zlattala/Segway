@@ -1,0 +1,48 @@
+timed csp SegwayRPEvents
+csp-begin
+	SegwayRPEvents = {| 
+		Segway::angle.in,
+		Segway::gyroX.in,
+		Segway::gyroY.in,
+		Segway::gyroZ.in,
+		Segway::leftMotorVelocity.in,
+		Segway::rightMotorVelocity.in,
+		Segway::setLeftMotorSpeedCall,
+		Segway::setRightMotorSpeedCall,
+		Segway::disableInterruptsCall,
+		Segway::enableInterruptsCall
+	|}
+csp-end
+
+// After a call of disableInterrupts(), no more than loopTime time units pass before the next call of disableInterrupts().
+timed csp SequenceDisableInterruptsLoopTime
+csp-begin
+	Timed(OneStep) {
+		-- there are no restrictions until the first disableInterrupts() call
+		SequenceDisableInterruptsLoopTime =
+		-- allow any events except disabling interrupts 
+		([] e : diff(SegwayRPEvents, {| Segway::disableInterruptsCall |}) @ e -> SequenceDisableInterruptsLoopTime)
+		 []
+		-- when interrupts are disabled, begin counting tock events
+		Segway::disableInterruptsCall -> SequenceDisableInterruptsLoopTimeCount(0)
+	}
+	
+	-- outside timed section, so we can count the tock events
+	SequenceDisableInterruptsLoopTimeCount(count) =
+		-- allow any events except disabling interrupts 
+		([] e : diff(SegwayRPEvents, {| Segway::disableInterruptsCall |}) @ e -> SequenceDisableInterruptsLoopTimeCount(count))
+		 []
+		-- allow tocks if fewer than loopTime have happened and count them
+		(count < const_BalanceSTM_loopTime) & tock -> SequenceDisableInterruptsLoopTimeCount(count+1)
+		 []
+		-- reset the count when disableInterrupts() is called
+		Segway::disableInterruptsCall -> SequenceDisableInterruptsLoopTimeCount(0)
+csp-end
+	
+timed assertion SequenceDisableInterruptsLoopTime_refines: Segway refines SequenceDisableInterruptsLoopTime
+	in the traces model
+	with constant ^P of AnglePID    set to 0,
+	     constant D  of AnglePID    set to 0,
+	     constant ^P of SpeedPID    set to 0,
+	     constant I  of SpeedPID    set to 0 and
+	     constant D  of RotationPID set to 0

@@ -1,0 +1,80 @@
+timed csp constrain
+csp-begin
+	constrain(x, min, max) = if x < min then min else if x > max then max else x
+csp-end
+
+timed csp SegwayRPEvents
+csp-begin
+	SegwayRPEvents = {| 
+		Segway::angle.in,
+		Segway::gyroX.in,
+		Segway::gyroY.in,
+		Segway::gyroZ.in,
+		Segway::leftMotorVelocity.in,
+		Segway::rightMotorVelocity.in,
+		Segway::setLeftMotorSpeedCall,
+		Segway::setRightMotorSpeedCall,
+		Segway::disableInterruptsCall,
+		Segway::enableInterruptsCall
+	|}
+csp-end
+
+// define range from -maxAngle to maxAngle and its complement
+timed csp AngleRange
+csp-begin
+	AngleRange = { -2..2 } 
+csp-end
+timed csp OutsideAngleRange
+csp-begin
+	OutsideAngleRange = diff(core_real, AngleRange)
+csp-end
+
+timed csp AngleInRange
+csp-begin
+	AngleInRange = { Segway::angle.in.x | x <- AngleRange}
+csp-end
+
+timed csp AngleOutsideRange
+csp-begin
+	AngleOutsideRange = { Segway::angle.in.x | x <- OutsideAngleRange}
+csp-end
+
+// When RotationPID::D is set to two (and all other PID constants are zero), 
+// and the value communicated by angle is less than -maxAngle or greater than maxAngle
+// the values passed to setLeftMotorSpeed() and setRightMotorSpeed()
+//		whenever the value communicated by angle is greater than or equal to -maxAngle and less than or equal to maxAngle
+//		until speedUpdate further occurrences of setLeftMotorSpeed() (after the initial three) have happened, after which it repeats (from "the next value passed...")
+timed csp RotationPIDProp4
+csp-begin
+	Timed(OneStep) {
+		-- state when an angle value outside range has not yet been read
+		RotationPIDProp4 = 
+			-- allow any events other than reading angles out of range
+			([] e : diff(SegwayRPEvents, AngleOutsideRange) @ e -> RotationPIDProp4)
+			 []
+			Segway::angle.in?x : OutsideAngleRange -> RestrictRotationPIDProp4
+		
+		-- state when and angle value outside range has been read
+		RestrictRotationPIDProp4 =
+			-- allow any events other than reading angles and setting speeds
+			([] e : diff(SegwayRPEvents, {|Segway::angle, Segway::setLeftMotorSpeedCall, Segway::setRightMotorSpeedCall|}) @ e -> RestrictRotationPIDProp4)
+			 []
+			-- if angle is in range, return to initial state
+			Segway::angle.in?x : AngleRange -> RotationPIDProp4
+			 []
+			-- if the angle is outside range, continue
+			Segway::angle.in?x : OutsideAngleRange -> RestrictRotationPIDProp4
+			 []
+			-- output zero values for the motor speeds
+			Segway::setLeftMotorSpeedCall!0 -> RestrictRotationPIDProp4
+			 []
+			Segway::setRightMotorSpeedCall!0 -> RestrictRotationPIDProp4
+	}
+csp-end
+timed assertion RotationPIDProp4_refines: Segway refines RotationPIDProp4
+	in the traces model
+	with constant ^P of AnglePID    set to 0,
+	     constant D  of AnglePID    set to 0,
+	     constant ^P of SpeedPID    set to 0,
+	     constant I  of SpeedPID    set to 0 and
+	     constant D  of RotationPID set to 2

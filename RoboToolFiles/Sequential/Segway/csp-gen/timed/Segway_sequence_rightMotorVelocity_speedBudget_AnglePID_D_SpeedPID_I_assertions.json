@@ -1,0 +1,6 @@
+[
+{ "name": "timed Segway refines SequenceRightMotorVelocitySpeedBudget (SequenceRightMotorVelocitySpeedBudget_refines) [traces model]",
+  "type": "refines",
+  "negated": false 
+}
+			]

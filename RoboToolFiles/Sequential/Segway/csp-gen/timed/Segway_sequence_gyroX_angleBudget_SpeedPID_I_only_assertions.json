@@ -1,0 +1,6 @@
+[
+{ "name": "timed Segway refines SequenceGyroXAngleBudget (SequenceGyroXAngleBudget_refines) [traces model]",
+  "type": "refines",
+  "negated": false 
+}
+			]

@@ -1,0 +1,105 @@
+
+--
+-- RoboChart generator version 3.0.0.202306261132
+-- Automatically generated on 18-08-2023 16:03:27
+--
+-- Iterated compression status: true
+-- Assertions compression status: false
+--
+
+include "defs/file_AnglePID_defs.csp"
+include "defs/state_timed_defs.csp"
+include "defs/Segway.csp"
+include "defs/core_defs.csp"
+include "defs/file_AngleCalculation_defs.csp"
+include "defs/sequence_toolkit_defs.csp"
+include "defs/file_SpeedPID_defs.csp"
+include "defs/file_BalanceSTM_defs.csp"
+include "defs/file_RotationPID_defs.csp"
+include "defs/function_toolkit_defs.csp"
+include "defs/robochart_defs.csp"
+include "defs/core_timed_defs.csp"
+include "defs/file_PID_defs.csp"
+include "defs/set_toolkit_defs.csp"
+include "defs/file_Segway_defs.csp"
+include "instantiations.csp"
+include "defs/relation_toolkit_defs.csp"
+include "defs/file_SegwayRP_defs.csp"
+
+channel r__
+
+SegwayRPEvents = {| 
+		Segway::angle.in,
+		Segway::gyroX.in,
+		Segway::gyroY.in,
+		Segway::gyroZ.in,
+		Segway::leftMotorVelocity.in,
+		Segway::rightMotorVelocity.in,
+		Segway::setLeftMotorSpeedCall,
+		Segway::setRightMotorSpeedCall,
+		Segway::disableInterruptsCall,
+		Segway::enableInterruptsCall
+	|}
+
+Timed(OneStep) {
+		SequenceGyroXAngleBudget = 
+			-- allow any events other than gyroX
+			([] e : diff(SegwayRPEvents, {| Segway::gyroX |}) @ e -> SequenceGyroXAngleBudget)
+			 []
+			-- when gyroX occurs, enter the restricted state
+			Segway::gyroX.in?x -> SequenceGyroXAngleBudgetRestrict(0)
+	}
+	
+	-- outside a timed section so tock events can be counted
+	-- in the restricted state, only gyroZ, leftMotorVelocity, setLeftMotorSpeed() and tock events are allowed
+	SequenceGyroXAngleBudgetRestrict(tockCount) =
+		-- allow tock events if fewer than angleBudget have happened
+		(tockCount < const_BalanceSTM_angleBudget) & tock -> SequenceGyroXAngleBudgetRestrict(tockCount+1)
+		 []
+		-- go back to allowing other events when a gyroZ, leftMotorVelocity or setLeftMotorSpeedCall event occurs
+		Segway::gyroZ.in?x -> SequenceGyroXAngleBudget
+		 []
+		Segway::leftMotorVelocity.in?x -> SequenceGyroXAngleBudget
+		 []
+		Segway::setLeftMotorSpeedCall?x -> SequenceGyroXAngleBudget
+
+-- SequenceGyroXAngleBudget_refines - refinement
+assert SequenceGyroXAngleBudget [T= let 
+	id__ = 0
+	
+	
+	
+	const_Segway_SegwayController_stm_ref0_maxAngle = const_BalanceSTM_maxAngle
+	const_Segway_SegwayController_stm_ref0_loopTime = const_BalanceSTM_loopTime
+	const_Segway_SegwayController_stm_ref0_startupDelay = const_BalanceSTM_startupDelay
+	const_Segway_SegwayController_stm_ref0_speedUpdate = const_BalanceSTM_speedUpdate
+	const_Segway_SegwayController_stm_ref0_rotationUpdate = const_BalanceSTM_rotationUpdate
+	const_Segway_SegwayController_stm_ref0_angleBudget = const_BalanceSTM_angleBudget
+	const_Segway_SegwayController_stm_ref0_speedBudget = const_BalanceSTM_speedBudget
+	const_Segway_SegwayController_stm_ref0_rotationBudget = const_BalanceSTM_rotationBudget
+	const_Segway_SegwayController_stm_ref0_motorBudget = const_BalanceSTM_motorBudget
+		
+	const_Segway_SegwayController_op_ref1_P = 1 
+	const_Segway_SegwayController_op_ref1_I = 0 
+	const_Segway_SegwayController_op_ref1_maxIntegral = const_SpeedPID_maxIntegral
+	const_Segway_SegwayController_op_ref0_P = 0 
+	const_Segway_SegwayController_op_ref0_D = 0 
+	const_Segway_SegwayController_op_ref2_D = 0 
+within
+	Segway::D__(id__,
+			    const_Segway_SegwayController_stm_ref0_maxAngle,
+			    const_Segway_SegwayController_stm_ref0_loopTime,
+			    const_Segway_SegwayController_stm_ref0_startupDelay,
+			    const_Segway_SegwayController_stm_ref0_speedUpdate,
+			    const_Segway_SegwayController_stm_ref0_rotationUpdate,
+			    const_Segway_SegwayController_stm_ref0_angleBudget,
+			    const_Segway_SegwayController_stm_ref0_speedBudget,
+			    const_Segway_SegwayController_stm_ref0_rotationBudget,
+			    const_Segway_SegwayController_stm_ref0_motorBudget,
+			   	const_Segway_SegwayController_op_ref0_P,
+			   	const_Segway_SegwayController_op_ref0_D,
+			   	const_Segway_SegwayController_op_ref1_P,
+			   	const_Segway_SegwayController_op_ref1_I,
+			   	const_Segway_SegwayController_op_ref1_maxIntegral,
+			   	const_Segway_SegwayController_op_ref2_D)
+

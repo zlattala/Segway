@@ -1,0 +1,70 @@
+timed csp SegwayRPEvents
+csp-begin
+	SegwayRPEvents = {| 
+		Segway::angle.in,
+		Segway::gyroX.in,
+		Segway::gyroY.in,
+		Segway::gyroZ.in,
+		Segway::leftMotorVelocity.in,
+		Segway::rightMotorVelocity.in,
+		Segway::setLeftMotorSpeedCall,
+		Segway::setRightMotorSpeedCall,
+		Segway::disableInterruptsCall,
+		Segway::enableInterruptsCall
+	|}
+csp-end
+	     
+// define range from -maxAngle to maxAngle and its complement
+timed csp AngleRange
+csp-begin
+	AngleRange = { -2..2 } 
+csp-end
+timed csp OutsideAngleRange
+csp-begin
+	OutsideAngleRange = diff(core_real, AngleRange)
+csp-end
+
+timed csp AngleInRange
+csp-begin
+	AngleInRange = { Segway::angle.in.x | x <- AngleRange}
+csp-end
+
+timed csp AngleOutsideRange
+csp-begin
+	AngleOutsideRange = { Segway::angle.in.x | x <- OutsideAngleRange}
+csp-end
+
+// when fewer than speedUpdate and rotationUpdate calls of setLeftMotorSpeed() and setRightMotorSpeed() have occurred
+// the values set by calls to these operations are zero
+timed csp SpeedPIDRotationPIDBeforeSpeedUpdateRotationUpdate
+csp-begin
+	Timed(OneStep) {
+		SpeedPIDRotationPIDBeforeSpeedUpdateRotationUpdate = SpeedPIDRotationPIDBeforeSpeedUpdateRotationUpdateCount(0, 0)
+	
+		SpeedPIDRotationPIDBeforeSpeedUpdateRotationUpdateCount(lcount, rcount) =
+			-- allow events other than setting motor speeds
+			([] e : diff(SegwayRPEvents, {| Segway::setLeftMotorSpeedCall, Segway::setRightMotorSpeedCall |})
+				@  e -> SpeedPIDRotationPIDBeforeSpeedUpdateRotationUpdateCount(lcount, rcount))
+			 []
+			-- only allow speeds of zero when fewer than speedUpdate and rotationUpdate motor settings have happened on each side
+			(lcount < const_BalanceSTM_speedUpdate-1 and lcount < const_BalanceSTM_rotationUpdate-1) &
+				Segway::setLeftMotorSpeedCall!0 -> SpeedPIDRotationPIDBeforeSpeedUpdateRotationUpdateCount(lcount+1, rcount)
+			 []
+			(rcount < const_BalanceSTM_speedUpdate-1 and rcount < const_BalanceSTM_rotationUpdate-1) &
+				Segway::setRightMotorSpeedCall!0 -> SpeedPIDRotationPIDBeforeSpeedUpdateRotationUpdateCount(lcount, rcount+1)
+			 []
+			-- after speedUpdate or rotationUpdate motor settings have happened on each side, allow any values and stop counting
+			(lcount >= const_BalanceSTM_speedUpdate-1 or lcount >= const_BalanceSTM_rotationUpdate-1) &
+				Segway::setLeftMotorSpeedCall?x -> SpeedPIDRotationPIDBeforeSpeedUpdateRotationUpdateCount(lcount, rcount)
+			 []
+			(rcount >= const_BalanceSTM_speedUpdate-1 or rcount >= const_BalanceSTM_rotationUpdate-1) &
+				Segway::setRightMotorSpeedCall?x -> SpeedPIDRotationPIDBeforeSpeedUpdateRotationUpdateCount(lcount, rcount)
+	}
+csp-end
+timed assertion SpeedPIDRotationPIDBeforeSpeedUpdateRotationUpdate_refines: Segway refines SpeedPIDRotationPIDBeforeSpeedUpdateRotationUpdate
+	in the traces model
+	with constant ^P of AnglePID    set to 0,
+	     constant D  of AnglePID    set to 0,
+	     constant ^P of SpeedPID    set to 0,
+	     constant I  of SpeedPID    set to 2 and
+	     constant D  of RotationPID set to 2

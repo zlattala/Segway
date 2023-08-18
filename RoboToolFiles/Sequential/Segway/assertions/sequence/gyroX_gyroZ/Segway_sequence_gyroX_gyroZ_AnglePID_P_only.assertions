@@ -1,0 +1,63 @@
+timed csp SegwayRPEvents
+csp-begin
+	SegwayRPEvents = {| 
+		Segway::angle.in,
+		Segway::gyroX.in,
+		Segway::gyroY.in,
+		Segway::gyroZ.in,
+		Segway::leftMotorVelocity.in,
+		Segway::rightMotorVelocity.in,
+		Segway::setLeftMotorSpeedCall,
+		Segway::setRightMotorSpeedCall,
+		Segway::disableInterruptsCall,
+		Segway::enableInterruptsCall
+	|}
+csp-end
+
+// After an occurrence of gyroX,
+// if a number of occurrences of gyroX have happened that is not a multiple of speedUpdate but is a multiple of rotationUpdate,
+// a gyroZ event must occur after no more that angleBudget time units, with no other events inbetween.
+timed csp SequenceGyroXGyroZ
+csp-begin
+	Timed(OneStep) {
+		SequenceGyroXGyroZ = SequenceGyroXGyroZCount(0,0)
+	
+		-- count occurrences of gyroX, maintain two counts to determine multiples of speedUpdate and rotationUpdate separately
+		SequenceGyroXGyroZCount(speedCount, rotationCount) =
+			-- allow any events other than gyroX
+			([] e : diff(SegwayRPEvents, {| Segway::gyroX |}) @ e -> SequenceGyroXGyroZCount(speedCount, rotationCount))
+			 []
+			-- count the first speedUpdate-1 occurrences of gyroX if we haven't reached a multiple of speedUpdate or rotationUpdate
+			(speedCount < const_BalanceSTM_speedUpdate-1 and rotationCount < const_BalanceSTM_rotationUpdate-1) &
+				Segway::gyroX.in?x -> SequenceGyroXGyroZCount(speedCount+1, rotationCount+1)
+			 []
+			-- after a multiple of speedUpdate, but not rotationUpdate, reset the speedCount
+			(speedCount == const_BalanceSTM_speedUpdate-1 and rotationCount < const_BalanceSTM_rotationUpdate-1) &
+				Segway::gyroX.in?x -> SequenceGyroXGyroZCount(0, rotationCount+1)
+			 []
+			-- after a multiple of rotationUpdate, but not speedUpdate, enter the restricted state, passing the updated speedCount
+			(speedCount < const_BalanceSTM_speedUpdate-1 and rotationCount == const_BalanceSTM_rotationUpdate-1) &
+				Segway::gyroX.in?x -> SequenceGyroXGyroZRestrict(0, speedCount+1)
+			 []
+			-- after a multiple of rotationUpdate and speedUpdate, reset both counts
+			(speedCount == const_BalanceSTM_speedUpdate-1 and rotationCount == const_BalanceSTM_rotationUpdate-1) &
+				Segway::gyroX.in?x -> SequenceGyroXGyroZCount(0, 0)
+	}
+	
+	-- outside a timed section so tock events can be counted
+	-- in the restricted state, only gyroZ and tock events are allowed
+	SequenceGyroXGyroZRestrict(tockCount, speedCount) =
+		-- allow tock events if fewer than angleBudget have happened
+		(tockCount < const_BalanceSTM_angleBudget) & tock -> SequenceGyroXGyroZRestrict(tockCount+1, speedCount)
+		 []
+		-- go back to allowing other events when a gyroZ event occurs, preserve the speedCount but reset rotationCount
+		Segway::gyroZ.in?x -> SequenceGyroXGyroZCount(speedCount, 0)
+csp-end
+	
+timed assertion SequenceGyroXGyroZ_refines: Segway refines SequenceGyroXGyroZ
+	in the traces model
+	with constant ^P of AnglePID    set to 1,
+	     constant D  of AnglePID    set to 0,
+	     constant ^P of SpeedPID    set to 0,
+	     constant I  of SpeedPID    set to 0 and
+	     constant D  of RotationPID set to 0

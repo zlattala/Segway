@@ -1,0 +1,6 @@
+[
+{ "name": "timed Segway refines AnglePIDProp3 (AnglePIDProp3_refines) [traces model]",
+  "type": "refines",
+  "negated": false 
+}
+			]

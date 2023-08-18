@@ -1,0 +1,6 @@
+[
+{ "name": "timed Segway refines SpeedPIDRotationPIDRightSpeedUpdateRotationUpdate (SpeedPIDRotationPIDRightSpeedUpdateRotationUpdate_refines) [traces model]",
+  "type": "refines",
+  "negated": false 
+}
+			]

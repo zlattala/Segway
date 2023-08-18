@@ -1,0 +1,106 @@
+timed csp minimum
+csp-begin
+	minimum(a,b) = if a < b then a else b
+csp-end
+
+timed csp SegwayRPEvents
+csp-begin
+	SegwayRPEvents = {| 
+		Segway::angle.in,
+		Segway::gyroX.in,
+		Segway::gyroY.in,
+		Segway::gyroZ.in,
+		Segway::leftMotorVelocity.in,
+		Segway::rightMotorVelocity.in,
+		Segway::setLeftMotorSpeedCall,
+		Segway::setRightMotorSpeedCall,
+		Segway::disableInterruptsCall,
+		Segway::enableInterruptsCall
+	|}
+csp-end
+
+// define range from -maxAngle to maxAngle and its complement
+timed csp AngleRange
+csp-begin
+	AngleRange = { -2..2 } 
+csp-end
+timed csp OutsideAngleRange
+csp-begin
+	OutsideAngleRange = diff(core_real, AngleRange)
+csp-end
+
+timed csp AngleInRange
+csp-begin
+	AngleInRange = { Segway::angle.in.x | x <- AngleRange}
+csp-end
+
+timed csp AngleOutsideRange
+csp-begin
+	AngleOutsideRange = { Segway::angle.in.x | x <- OutsideAngleRange}
+csp-end
+
+// When SpeedPID::P is set to one (and all other PID constants are zero), 
+// after setLeftMotorSpeed() has occurred (speedUpdate-1) times,
+// if values greater than or equal to -maxAngle and less than or equal to maxAngle are communicated by the event angle,
+// the next value passed to setLeftMotorSpeed() is the sum of the values communicated by leftMotorVelocity and rightMotorVelocity.
+// This repeats every speedUpdate calls to setLeftMotorSpeed().
+timed csp SpeedPIDProp2
+csp-begin
+	Timed(OneStep) {
+		SpeedPIDProp2 = SpeedPIDProp2Count(0)
+		
+		-- SpeedPIDProp2Count represents the state when fewer than four motor settings have occurred and we count the left motor settings
+		SpeedPIDProp2Count(count) =
+			-- allow any events other than setting left speed
+			([] e : diff(SegwayRPEvents, {|Segway::setLeftMotorSpeedCall|}) @
+					e -> SpeedPIDProp2Count(count))
+			 []
+			-- allow setLeftMotorSpeedCall to occur with any values and update the count for the first speedUpdate-2 times
+			(count < const_BalanceSTM_speedUpdate-2) & Segway::setLeftMotorSpeedCall?x -> SpeedPIDProp2Count(count+1)
+			 []
+			-- allow setLeftMotorSpeedCall to occur with any values for the (const_BalanceSTM_speedUpdate-1)th time,
+			-- then go to check angle since we are into the first part of the precondition
+			(count == const_BalanceSTM_speedUpdate-2) & Segway::setLeftMotorSpeedCall?x -> SpeedPIDProp2AngleCheck(0, 0)
+			
+		-- SpeedPIDProp2Angle checks whether angle is correct to determine whether to constrain setLeftMotorSpeedCall
+		-- records the values from leftMotorVelocity and rightMotorVelocity while this is occurring - stored in lspeed and rspeed
+		SpeedPIDProp2AngleCheck(lspeed, rspeed) = 
+			-- allow any events other than getting speed, setting left speed and checking the angle
+			([] e : diff(SegwayRPEvents, {|Segway::angle, Segway::leftMotorVelocity, Segway::rightMotorVelocity, Segway::setLeftMotorSpeedCall|})
+					@ e -> SpeedPIDProp2AngleCheck(lspeed, rspeed))
+			 []
+			-- record values from leftMotorVelocity and rightMotorVelocity
+			Segway::leftMotorVelocity.in?x -> SpeedPIDProp2AngleCheck(x, rspeed)
+			 []
+			Segway::rightMotorVelocity.in?x -> SpeedPIDProp2AngleCheck(lspeed, x)
+			 []
+			-- if setLeftMotorSpeedCall occurs without an angle being set, the precondition is broken so the values are not constrained, then we return to the beginning
+			Segway::setLeftMotorSpeedCall?x -> SpeedPIDProp2
+			 []
+			-- if angle is in AngleRange, go to the restricted state, passing the current recorded values of lspeed and rspeed
+			Segway::angle.in?x : AngleRange -> SpeedPIDProp2Restrict(lspeed, rspeed)
+			 []
+			-- if angle is outside AngleRange, the precondition does not hold, so continue
+			Segway::angle.in?x : OutsideAngleRange -> SpeedPIDProp2AngleCheck(lspeed, rspeed)
+
+		SpeedPIDProp2Restrict(lspeed, rspeed) =
+			-- allow any events other than getting speed and setting left speed (ignore further occurrences of angle)
+			([] e : diff(SegwayRPEvents, {|Segway::leftMotorVelocity, Segway::rightMotorVelocity, Segway::setLeftMotorSpeedCall|})
+					@ e -> SpeedPIDProp2Restrict(lspeed, rspeed))
+			 []
+			-- record values from leftMotorVelocity and rightMotorVelocity
+			Segway::leftMotorVelocity.in?x -> SpeedPIDProp2Restrict(x, rspeed)
+			 []
+			Segway::rightMotorVelocity.in?x -> SpeedPIDProp2Restrict(lspeed, x)
+			 []
+			-- setLeftMotorSpeedCall must occur with a value equal to the sum of the recorded speeds, then we return to the beginning
+			Segway::setLeftMotorSpeedCall!Plus(lspeed, rspeed, core_real) -> SpeedPIDProp2
+	}
+csp-end
+timed assertion SpeedPIDProp2_refines: Segway refines SpeedPIDProp2
+	in the traces model
+	with constant ^P of AnglePID    set to 0,
+	     constant D  of AnglePID    set to 0,
+	     constant ^P of SpeedPID    set to 1,
+	     constant I  of SpeedPID    set to 0 and
+	     constant D  of RotationPID set to 0

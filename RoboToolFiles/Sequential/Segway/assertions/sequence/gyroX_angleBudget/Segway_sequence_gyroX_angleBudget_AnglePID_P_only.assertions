@@ -1,0 +1,51 @@
+timed csp SegwayRPEvents
+csp-begin
+	SegwayRPEvents = {| 
+		Segway::angle.in,
+		Segway::gyroX.in,
+		Segway::gyroY.in,
+		Segway::gyroZ.in,
+		Segway::leftMotorVelocity.in,
+		Segway::rightMotorVelocity.in,
+		Segway::setLeftMotorSpeedCall,
+		Segway::setRightMotorSpeedCall,
+		Segway::disableInterruptsCall,
+		Segway::enableInterruptsCall
+	|}
+csp-end
+
+// After an occurrence of gyroX,
+// a leftMotorVelocity event, gyroZ event or a call of setLeftMotorSpeed() must occur
+// after no more that angleBudget time units, with no other events inbetween.
+timed csp SequenceGyroXAngleBudget
+csp-begin
+	Timed(OneStep) {
+		SequenceGyroXAngleBudget = 
+			-- allow any events other than gyroX
+			([] e : diff(SegwayRPEvents, {| Segway::gyroX |}) @ e -> SequenceGyroXAngleBudget)
+			 []
+			-- when gyroX occurs, enter the restricted state
+			Segway::gyroX.in?x -> SequenceGyroXAngleBudgetRestrict(0)
+	}
+	
+	-- outside a timed section so tock events can be counted
+	-- in the restricted state, only gyroZ, leftMotorVelocity, setLeftMotorSpeed() and tock events are allowed
+	SequenceGyroXAngleBudgetRestrict(tockCount) =
+		-- allow tock events if fewer than angleBudget have happened
+		(tockCount < const_BalanceSTM_angleBudget) & tock -> SequenceGyroXAngleBudgetRestrict(tockCount+1)
+		 []
+		-- go back to allowing other events when a gyroZ, leftMotorVelocity or setLeftMotorSpeedCall event occurs
+		Segway::gyroZ.in?x -> SequenceGyroXAngleBudget
+		 []
+		Segway::leftMotorVelocity.in?x -> SequenceGyroXAngleBudget
+		 []
+		Segway::setLeftMotorSpeedCall?x -> SequenceGyroXAngleBudget
+csp-end
+	
+timed assertion SequenceGyroXAngleBudget_refines: Segway refines SequenceGyroXAngleBudget
+	in the traces model
+	with constant ^P of AnglePID    set to 1,
+	     constant D  of AnglePID    set to 0,
+	     constant ^P of SpeedPID    set to 0,
+	     constant I  of SpeedPID    set to 0 and
+	     constant D  of RotationPID set to 0

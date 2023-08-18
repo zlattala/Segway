@@ -1,0 +1,39 @@
+timed csp SegwayRPEvents
+csp-begin
+	SegwayRPEvents = {| 
+		Segway::angle.in,
+		Segway::gyroX.in,
+		Segway::gyroY.in,
+		Segway::gyroZ.in,
+		Segway::leftMotorVelocity.in,
+		Segway::rightMotorVelocity.in,
+		Segway::setLeftMotorSpeedCall,
+		Segway::setRightMotorSpeedCall,
+		Segway::disableInterruptsCall,
+		Segway::enableInterruptsCall
+	|}
+csp-end
+
+// After an occurrence of leftMotorVelocity, a rightMotorVelocity event immediately follows.
+timed csp SequenceLeftMotorVelocityRightMotorVelocity
+csp-begin
+	-- no timed section to ensure no intervening tock events occur
+	SequenceLeftMotorVelocityRightMotorVelocity =
+		-- allow any events except leftMotorVelocity
+		-- (the assertion doesn't restrict the occurrence of rightMotorVelocity except for when one is required to happen)
+		([] e : diff(SegwayRPEvents, {| Segway::leftMotorVelocity |}) @ e -> SequenceLeftMotorVelocityRightMotorVelocity)
+		 []
+		-- tock events are allowed except after angle
+		tock -> SequenceLeftMotorVelocityRightMotorVelocity
+		 []
+		-- leftMotorVelocity is immediately followed by rightMotorVelocity
+		Segway::leftMotorVelocity.in?x -> Segway::rightMotorVelocity.in?x -> SequenceLeftMotorVelocityRightMotorVelocity
+csp-end
+	
+timed assertion SequenceLeftMotorVelocityRightMotorVelocity_refines: Segway refines SequenceLeftMotorVelocityRightMotorVelocity
+	in the traces model
+	with constant ^P of AnglePID    set to 1,
+	     constant D  of AnglePID    set to 1,
+	     constant ^P of SpeedPID    set to 0,
+	     constant I  of SpeedPID    set to 0 and
+	     constant D  of RotationPID set to 0

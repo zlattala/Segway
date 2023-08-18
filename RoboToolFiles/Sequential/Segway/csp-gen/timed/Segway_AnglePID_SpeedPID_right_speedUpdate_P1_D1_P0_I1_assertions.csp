@@ -1,0 +1,215 @@
+
+--
+-- RoboChart generator version 3.0.0.202306261132
+-- Automatically generated on 18-08-2023 16:03:39
+--
+-- Iterated compression status: true
+-- Assertions compression status: false
+--
+
+include "defs/file_AnglePID_defs.csp"
+include "defs/state_timed_defs.csp"
+include "defs/Segway.csp"
+include "defs/core_defs.csp"
+include "defs/file_AngleCalculation_defs.csp"
+include "defs/sequence_toolkit_defs.csp"
+include "defs/file_SpeedPID_defs.csp"
+include "defs/file_BalanceSTM_defs.csp"
+include "defs/file_RotationPID_defs.csp"
+include "defs/function_toolkit_defs.csp"
+include "defs/robochart_defs.csp"
+include "defs/core_timed_defs.csp"
+include "defs/file_PID_defs.csp"
+include "defs/set_toolkit_defs.csp"
+include "defs/file_Segway_defs.csp"
+include "instantiations.csp"
+include "defs/relation_toolkit_defs.csp"
+include "defs/file_SegwayRP_defs.csp"
+
+channel r__
+
+constrain(x, min, max) = if x < min then min else if x > max then max else x
+
+SegwayRPEvents = {| 
+		Segway::angle.in,
+		Segway::gyroX.in,
+		Segway::gyroY.in,
+		Segway::gyroZ.in,
+		Segway::leftMotorVelocity.in,
+		Segway::rightMotorVelocity.in,
+		Segway::setLeftMotorSpeedCall,
+		Segway::setRightMotorSpeedCall,
+		Segway::disableInterruptsCall,
+		Segway::enableInterruptsCall
+	|}
+
+AngleRange = { -2..2 }
+
+OutsideAngleRange = diff(core_real, AngleRange)
+
+AngleInRange = { Segway::angle.in.x | x <- AngleRange}
+
+AngleOutsideRange = { Segway::angle.in.x | x <- OutsideAngleRange}
+
+Timed(OneStep) {
+		AnglePIDSpeedPIDRightSpeedUpdate = AnglePIDSpeedPIDRightSpeedUpdateCount1(0)
+		
+		-- AnglePIDSpeedPIDRightSpeedUpdateCount1 represents the state when fewer than (speedUpdate-1) motor settings have occurred and we count the left motor settings
+		AnglePIDSpeedPIDRightSpeedUpdateCount1(count) =
+			-- allow any events other than setting left speed
+			([] e : diff(SegwayRPEvents, {|Segway::setRightMotorSpeedCall|}) @
+					e -> AnglePIDSpeedPIDRightSpeedUpdateCount1(count))
+			 []
+			-- allow setRightMotorSpeedCall to occur with any values and update the count for the first speedUpdate-2 times
+			(count < const_BalanceSTM_speedUpdate-2) & Segway::setRightMotorSpeedCall?x -> AnglePIDSpeedPIDRightSpeedUpdateCount1(count+1)
+			 []
+			-- allow setRightMotorSpeedCall to occur with any values for the (const_BalanceSTM_speedUpdate-1)th time,
+			-- then go to check angle before computing the value for the next communication
+			(count == const_BalanceSTM_speedUpdate-2) & Segway::setRightMotorSpeedCall?x -> AnglePIDSpeedPIDRightSpeedUpdateAngleCheck1(0, 0, 0)
+			
+		-- AnglePIDSpeedPIDRightSpeedUpdateAngleCheck1 checks whether angle is correct to determine whether to constrain setRightMotorSpeedCall
+		-- records the values from gyroX, leftMotorVelocity and rightMotorVelocity while this is occurring - stored in gx, lspeed and rspeed
+		AnglePIDSpeedPIDRightSpeedUpdateAngleCheck1(gx, lspeed, rspeed) = 
+			-- compute the output value with the current values from leftMotorVelocity and rightMotorVelocity
+			let value = constrain(Plus(lspeed, rspeed, core_real), -const_SpeedPID_maxIntegral, const_SpeedPID_maxIntegral) within
+			-- allow any events other than getting speed, setting left speed and checking the angle
+			([] e : diff(SegwayRPEvents, {|Segway::angle, Segway::gyroX, Segway::leftMotorVelocity, Segway::rightMotorVelocity, Segway::setRightMotorSpeedCall|})
+					@ e -> AnglePIDSpeedPIDRightSpeedUpdateAngleCheck1(gx, lspeed, rspeed))
+			 []
+			-- record values from gyroX, leftMotorVelocity and rightMotorVelocity
+			Segway::gyroX.in?x -> AnglePIDSpeedPIDRightSpeedUpdateAngleCheck1(x, lspeed, rspeed)
+			 []
+			Segway::leftMotorVelocity.in?x -> AnglePIDSpeedPIDRightSpeedUpdateAngleCheck1(gx, x, rspeed)
+			 []
+			Segway::rightMotorVelocity.in?x -> AnglePIDSpeedPIDRightSpeedUpdateAngleCheck1(gx, lspeed, x)
+			 []
+			-- if setRightMotorSpeedCall occurs without an angle in range being set, the precondition is broken, so we allow any values
+			-- then we go to count the next speedUpdate-1 occurrences of setRightMotorSpeedCall, passing the computed value
+			Segway::setRightMotorSpeedCall?x -> AnglePIDSpeedPIDRightSpeedUpdateCount2(0, value)
+			 []
+			-- if angle is in AngleRange, go to the restricted state, passing the current recorded values of gx, lspeed and rspeed, and the angle value
+			Segway::angle.in?x : AngleRange -> AnglePIDSpeedPIDRightSpeedUpdateRestrict1(gx, lspeed, rspeed, x)
+			 []
+			-- if angle is outside AngleRange, the precondition does not hold, so continue
+			Segway::angle.in?x : OutsideAngleRange -> AnglePIDSpeedPIDRightSpeedUpdateAngleCheck1(gx, lspeed, rspeed)
+
+		-- AnglePIDSpeedPIDRightSpeedUpdateRestrict1 is prepared to output the computed value
+		-- records the values from gyroX, leftMotorVelocity and rightMotorVelocity to compute the value - stored in gx, lspeed and rspeed
+		AnglePIDSpeedPIDRightSpeedUpdateRestrict1(gx, lspeed, rspeed, a) =
+			-- compute the output value with the current values from leftMotorVelocity and rightMotorVelocity
+			let value = constrain(Plus(lspeed, rspeed, core_real), -const_SpeedPID_maxIntegral, const_SpeedPID_maxIntegral) within
+			-- allow any events other than getting speed and setting left speed (ignore further occurrences of angle)
+			([] e : diff(SegwayRPEvents, {|Segway::gyroX, Segway::leftMotorVelocity, Segway::rightMotorVelocity, Segway::setRightMotorSpeedCall|})
+					@ e -> AnglePIDSpeedPIDRightSpeedUpdateRestrict1(gx, lspeed, rspeed, a))
+			 []
+			-- record values from gyroX,  leftMotorVelocity and rightMotorVelocity
+			Segway::gyroX.in?x -> AnglePIDSpeedPIDRightSpeedUpdateRestrict1(x, lspeed, rspeed, a)
+			 []
+			Segway::leftMotorVelocity.in?x -> AnglePIDSpeedPIDRightSpeedUpdateRestrict1(gx, x, rspeed, a)
+			 []
+			Segway::rightMotorVelocity.in?x -> AnglePIDSpeedPIDRightSpeedUpdateRestrict1(gx, lspeed, x, a)
+			 []
+			-- setRightMotorSpeedCall must occur with the sum of gx and the computed value,
+			-- then go to count the next speedUpdate-1 occurrences of setRightMotorSpeedCall, passing the computed value
+			Segway::setRightMotorSpeedCall!Plus(Plus(a, gx, core_real), value, core_real) -> AnglePIDSpeedPIDRightSpeedUpdateCount2(0, value)
+			
+		-- AnglePIDSpeedPIDRightSpeedUpdateCount2 represents the state when we count the next (speedUpdate-1) left motor settings
+		-- the previous computed value is recorded so that it can be reused
+		AnglePIDSpeedPIDRightSpeedUpdateCount2(count, prevValue) =
+			-- allow any events other than setting left speed
+			([] e : diff(SegwayRPEvents, {|Segway::setRightMotorSpeedCall|}) @ e -> AnglePIDSpeedPIDRightSpeedUpdateCount2(count, prevValue))
+			 []
+			-- allow setRightMotorSpeedCall to occur with any values and update the count for the first speedUpdate-2 times
+			(count < const_BalanceSTM_speedUpdate-2) & Segway::setRightMotorSpeedCall?x -> AnglePIDSpeedPIDRightSpeedUpdateCount2(count+1, prevValue)
+			 []
+			-- allow setRightMotorSpeedCall to occur with any values for the (const_BalanceSTM_speedUpdate-1)th time,
+			-- then go to check angle before computing the value for the next communication
+			(count == const_BalanceSTM_speedUpdate-2) & Segway::setRightMotorSpeedCall?x -> AnglePIDSpeedPIDRightSpeedUpdateAngleCheck2(0, 0, 0, prevValue)
+			
+		-- AnglePIDSpeedPIDRightSpeedUpdateAngleCheck2 checks whether angle is correct to determine whether to constrain setRightMotorSpeedCall
+		-- records the values from gyroX, leftMotorVelocity and rightMotorVelocity while this is occurring - stored in gx, lspeed and rspeed
+		AnglePIDSpeedPIDRightSpeedUpdateAngleCheck2(gx, lspeed, rspeed, prevValue) = 
+			-- compute the output value with the current values from leftMotorVelocity and rightMotorVelocity, and the previous computed value
+			let value = constrain(Plus(prevValue, Plus(lspeed, rspeed, core_real), core_real), -const_SpeedPID_maxIntegral, const_SpeedPID_maxIntegral) within
+			-- allow any events other than getting speed, setting left speed and checking the angle
+			([] e : diff(SegwayRPEvents, {|Segway::angle, Segway::gyroX, Segway::leftMotorVelocity, Segway::rightMotorVelocity, Segway::setRightMotorSpeedCall|})
+					@ e -> AnglePIDSpeedPIDRightSpeedUpdateAngleCheck2(gx, lspeed, rspeed, prevValue))
+			 []
+			-- record values from leftMotorVelocity and rightMotorVelocity
+			Segway::gyroX.in?x -> AnglePIDSpeedPIDRightSpeedUpdateAngleCheck2(x, lspeed, rspeed, prevValue)
+			 []
+			Segway::leftMotorVelocity.in?x -> AnglePIDSpeedPIDRightSpeedUpdateAngleCheck2(gx, x, rspeed, prevValue)
+			 []
+			Segway::rightMotorVelocity.in?x -> AnglePIDSpeedPIDRightSpeedUpdateAngleCheck2(gx, lspeed, x, prevValue)
+			 []
+			-- if setRightMotorSpeedCall occurs without an angle in range being set, the precondition is broken, so we allow any values
+			-- then we go to count the next speedUpdate-1 occurrences of setRightMotorSpeedCall, passing the computed value
+			Segway::setRightMotorSpeedCall?x -> AnglePIDSpeedPIDRightSpeedUpdateCount2(0, value)
+			 []
+			-- if angle is in AngleRange, go to the restricted state, passing the current recorded values of gx, lspeed and rspeed, and the angle value
+			Segway::angle.in?x : AngleRange -> AnglePIDSpeedPIDRightSpeedUpdateRestrict2(gx, lspeed, rspeed, x, prevValue)
+			 []
+			-- if angle is outside AngleRange, the precondition does not hold, so continue
+			Segway::angle.in?x : OutsideAngleRange -> AnglePIDSpeedPIDRightSpeedUpdateAngleCheck2(gx, lspeed, rspeed, prevValue)
+			
+		-- AnglePIDSpeedPIDRightSpeedUpdateRestrict2 is prepared to output the computed value
+		-- records the values from gyroX, leftMotorVelocity and rightMotorVelocity to compute the value - stored in gx, lspeed and rspeed
+		AnglePIDSpeedPIDRightSpeedUpdateRestrict2(gx, lspeed, rspeed, a, prevValue) =
+			-- compute the output value with the current values from leftMotorVelocity and rightMotorVelocity
+			let value = constrain(Plus(prevValue, Plus(lspeed, rspeed, core_real), core_real), -const_SpeedPID_maxIntegral, const_SpeedPID_maxIntegral) within
+			-- allow any events other than getting speed and setting left speed (ignore further occurrences of angle)
+			([] e : diff(SegwayRPEvents, {|Segway::gyroX, Segway::leftMotorVelocity, Segway::rightMotorVelocity, Segway::setRightMotorSpeedCall|})
+					@ e -> AnglePIDSpeedPIDRightSpeedUpdateRestrict2(gx, lspeed, rspeed, a, prevValue))
+			 []
+			-- record values from gyroX, leftMotorVelocity and rightMotorVelocity
+			Segway::gyroX.in?x -> AnglePIDSpeedPIDRightSpeedUpdateRestrict2(x, lspeed, rspeed, a, prevValue)
+			 []
+			Segway::leftMotorVelocity.in?x -> AnglePIDSpeedPIDRightSpeedUpdateRestrict2(gx, x, rspeed, a, prevValue)
+			 []
+			Segway::rightMotorVelocity.in?x -> AnglePIDSpeedPIDRightSpeedUpdateRestrict2(gx, lspeed, x, a, prevValue)
+			 []
+			-- setRightMotorSpeedCall must occur with the computed value,
+			-- then go to count the next speedUpdate-1 occurrences of setRightMotorSpeedCall, passing the computed value
+			Segway::setRightMotorSpeedCall!Plus(Plus(a, gx, core_real), value, core_real) -> AnglePIDSpeedPIDRightSpeedUpdateCount2(0, value)
+	}
+
+-- AnglePIDSpeedPIDRightSpeedUpdate_refines - refinement
+assert AnglePIDSpeedPIDRightSpeedUpdate [T= let 
+	id__ = 0
+	
+	
+	
+	const_Segway_SegwayController_stm_ref0_maxAngle = const_BalanceSTM_maxAngle
+	const_Segway_SegwayController_stm_ref0_loopTime = const_BalanceSTM_loopTime
+	const_Segway_SegwayController_stm_ref0_startupDelay = const_BalanceSTM_startupDelay
+	const_Segway_SegwayController_stm_ref0_speedUpdate = const_BalanceSTM_speedUpdate
+	const_Segway_SegwayController_stm_ref0_rotationUpdate = const_BalanceSTM_rotationUpdate
+	const_Segway_SegwayController_stm_ref0_angleBudget = const_BalanceSTM_angleBudget
+	const_Segway_SegwayController_stm_ref0_speedBudget = const_BalanceSTM_speedBudget
+	const_Segway_SegwayController_stm_ref0_rotationBudget = const_BalanceSTM_rotationBudget
+	const_Segway_SegwayController_stm_ref0_motorBudget = const_BalanceSTM_motorBudget
+		
+	const_Segway_SegwayController_op_ref1_P = 0 
+	const_Segway_SegwayController_op_ref1_I = 1 
+	const_Segway_SegwayController_op_ref1_maxIntegral = const_SpeedPID_maxIntegral
+	const_Segway_SegwayController_op_ref0_P = 1 
+	const_Segway_SegwayController_op_ref0_D = 1 
+	const_Segway_SegwayController_op_ref2_D = 0 
+within
+	Segway::D__(id__,
+			    const_Segway_SegwayController_stm_ref0_maxAngle,
+			    const_Segway_SegwayController_stm_ref0_loopTime,
+			    const_Segway_SegwayController_stm_ref0_startupDelay,
+			    const_Segway_SegwayController_stm_ref0_speedUpdate,
+			    const_Segway_SegwayController_stm_ref0_rotationUpdate,
+			    const_Segway_SegwayController_stm_ref0_angleBudget,
+			    const_Segway_SegwayController_stm_ref0_speedBudget,
+			    const_Segway_SegwayController_stm_ref0_rotationBudget,
+			    const_Segway_SegwayController_stm_ref0_motorBudget,
+			   	const_Segway_SegwayController_op_ref0_P,
+			   	const_Segway_SegwayController_op_ref0_D,
+			   	const_Segway_SegwayController_op_ref1_P,
+			   	const_Segway_SegwayController_op_ref1_I,
+			   	const_Segway_SegwayController_op_ref1_maxIntegral,
+			   	const_Segway_SegwayController_op_ref2_D)
+

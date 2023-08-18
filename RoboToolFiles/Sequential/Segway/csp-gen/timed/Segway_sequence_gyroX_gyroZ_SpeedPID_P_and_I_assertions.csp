@@ -1,0 +1,117 @@
+
+--
+-- RoboChart generator version 3.0.0.202306261132
+-- Automatically generated on 18-08-2023 16:03:51
+--
+-- Iterated compression status: true
+-- Assertions compression status: false
+--
+
+include "defs/file_AnglePID_defs.csp"
+include "defs/state_timed_defs.csp"
+include "defs/Segway.csp"
+include "defs/core_defs.csp"
+include "defs/file_AngleCalculation_defs.csp"
+include "defs/sequence_toolkit_defs.csp"
+include "defs/file_SpeedPID_defs.csp"
+include "defs/file_BalanceSTM_defs.csp"
+include "defs/file_RotationPID_defs.csp"
+include "defs/function_toolkit_defs.csp"
+include "defs/robochart_defs.csp"
+include "defs/core_timed_defs.csp"
+include "defs/file_PID_defs.csp"
+include "defs/set_toolkit_defs.csp"
+include "defs/file_Segway_defs.csp"
+include "instantiations.csp"
+include "defs/relation_toolkit_defs.csp"
+include "defs/file_SegwayRP_defs.csp"
+
+channel r__
+
+SegwayRPEvents = {| 
+		Segway::angle.in,
+		Segway::gyroX.in,
+		Segway::gyroY.in,
+		Segway::gyroZ.in,
+		Segway::leftMotorVelocity.in,
+		Segway::rightMotorVelocity.in,
+		Segway::setLeftMotorSpeedCall,
+		Segway::setRightMotorSpeedCall,
+		Segway::disableInterruptsCall,
+		Segway::enableInterruptsCall
+	|}
+
+Timed(OneStep) {
+		SequenceGyroXGyroZ = SequenceGyroXGyroZCount(0,0)
+	
+		-- count occurrences of gyroX, maintain two counts to determine multiples of speedUpdate and rotationUpdate separately
+		SequenceGyroXGyroZCount(speedCount, rotationCount) =
+			-- allow any events other than gyroX
+			([] e : diff(SegwayRPEvents, {| Segway::gyroX |}) @ e -> SequenceGyroXGyroZCount(speedCount, rotationCount))
+			 []
+			-- count the first speedUpdate-1 occurrences of gyroX if we haven't reached a multiple of speedUpdate or rotationUpdate
+			(speedCount < const_BalanceSTM_speedUpdate-1 and rotationCount < const_BalanceSTM_rotationUpdate-1) &
+				Segway::gyroX.in?x -> SequenceGyroXGyroZCount(speedCount+1, rotationCount+1)
+			 []
+			-- after a multiple of speedUpdate, but not rotationUpdate, reset the speedCount
+			(speedCount == const_BalanceSTM_speedUpdate-1 and rotationCount < const_BalanceSTM_rotationUpdate-1) &
+				Segway::gyroX.in?x -> SequenceGyroXGyroZCount(0, rotationCount+1)
+			 []
+			-- after a multiple of rotationUpdate, but not speedUpdate, enter the restricted state, passing the updated speedCount
+			(speedCount < const_BalanceSTM_speedUpdate-1 and rotationCount == const_BalanceSTM_rotationUpdate-1) &
+				Segway::gyroX.in?x -> SequenceGyroXGyroZRestrict(0, speedCount+1)
+			 []
+			-- after a multiple of rotationUpdate and speedUpdate, reset both counts
+			(speedCount == const_BalanceSTM_speedUpdate-1 and rotationCount == const_BalanceSTM_rotationUpdate-1) &
+				Segway::gyroX.in?x -> SequenceGyroXGyroZCount(0, 0)
+	}
+	
+	-- outside a timed section so tock events can be counted
+	-- in the restricted state, only gyroZ and tock events are allowed
+	SequenceGyroXGyroZRestrict(tockCount, speedCount) =
+		-- allow tock events if fewer than angleBudget have happened
+		(tockCount < const_BalanceSTM_angleBudget) & tock -> SequenceGyroXGyroZRestrict(tockCount+1, speedCount)
+		 []
+		-- go back to allowing other events when a gyroZ event occurs, preserve the speedCount but reset rotationCount
+		Segway::gyroZ.in?x -> SequenceGyroXGyroZCount(speedCount, 0)
+
+-- SequenceGyroXGyroZ_refines - refinement
+assert SequenceGyroXGyroZ [T= let 
+	id__ = 0
+	
+	
+	
+	const_Segway_SegwayController_stm_ref0_maxAngle = const_BalanceSTM_maxAngle
+	const_Segway_SegwayController_stm_ref0_loopTime = const_BalanceSTM_loopTime
+	const_Segway_SegwayController_stm_ref0_startupDelay = const_BalanceSTM_startupDelay
+	const_Segway_SegwayController_stm_ref0_speedUpdate = const_BalanceSTM_speedUpdate
+	const_Segway_SegwayController_stm_ref0_rotationUpdate = const_BalanceSTM_rotationUpdate
+	const_Segway_SegwayController_stm_ref0_angleBudget = const_BalanceSTM_angleBudget
+	const_Segway_SegwayController_stm_ref0_speedBudget = const_BalanceSTM_speedBudget
+	const_Segway_SegwayController_stm_ref0_rotationBudget = const_BalanceSTM_rotationBudget
+	const_Segway_SegwayController_stm_ref0_motorBudget = const_BalanceSTM_motorBudget
+		
+	const_Segway_SegwayController_op_ref1_P = 1 
+	const_Segway_SegwayController_op_ref1_I = 1 
+	const_Segway_SegwayController_op_ref1_maxIntegral = const_SpeedPID_maxIntegral
+	const_Segway_SegwayController_op_ref0_P = 0 
+	const_Segway_SegwayController_op_ref0_D = 0 
+	const_Segway_SegwayController_op_ref2_D = 0 
+within
+	Segway::D__(id__,
+			    const_Segway_SegwayController_stm_ref0_maxAngle,
+			    const_Segway_SegwayController_stm_ref0_loopTime,
+			    const_Segway_SegwayController_stm_ref0_startupDelay,
+			    const_Segway_SegwayController_stm_ref0_speedUpdate,
+			    const_Segway_SegwayController_stm_ref0_rotationUpdate,
+			    const_Segway_SegwayController_stm_ref0_angleBudget,
+			    const_Segway_SegwayController_stm_ref0_speedBudget,
+			    const_Segway_SegwayController_stm_ref0_rotationBudget,
+			    const_Segway_SegwayController_stm_ref0_motorBudget,
+			   	const_Segway_SegwayController_op_ref0_P,
+			   	const_Segway_SegwayController_op_ref0_D,
+			   	const_Segway_SegwayController_op_ref1_P,
+			   	const_Segway_SegwayController_op_ref1_I,
+			   	const_Segway_SegwayController_op_ref1_maxIntegral,
+			   	const_Segway_SegwayController_op_ref2_D)
+

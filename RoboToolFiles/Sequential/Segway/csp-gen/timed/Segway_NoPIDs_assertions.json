@@ -1,0 +1,6 @@
+[
+{ "name": "timed Segway refines SegwayNoPIDs (SegwayNoPIDs_refines) [traces model]",
+  "type": "refines",
+  "negated": false 
+}
+			]

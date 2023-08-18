@@ -1,0 +1,138 @@
+timed csp constrain
+csp-begin
+	constrain(x, min, max) = if x < min then min else if x > max then max else x
+csp-end
+
+timed csp SegwayRPEvents
+csp-begin
+	SegwayRPEvents = {| 
+		Segway::angle.in,
+		Segway::gyroX.in,
+		Segway::gyroY.in,
+		Segway::gyroZ.in,
+		Segway::leftMotorVelocity.in,
+		Segway::rightMotorVelocity.in,
+		Segway::setLeftMotorSpeedCall,
+		Segway::setRightMotorSpeedCall,
+		Segway::disableInterruptsCall,
+		Segway::enableInterruptsCall
+	|}
+csp-end
+
+// define range from -maxAngle to maxAngle and its complement
+timed csp AngleRange
+csp-begin
+	AngleRange = { -2..2 } 
+csp-end
+timed csp OutsideAngleRange
+csp-begin
+	OutsideAngleRange = diff(core_real, AngleRange)
+csp-end
+
+timed csp AngleInRange
+csp-begin
+	AngleInRange = { Segway::angle.in.x | x <- AngleRange}
+csp-end
+
+timed csp AngleOutsideRange
+csp-begin
+	AngleOutsideRange = { Segway::angle.in.x | x <- OutsideAngleRange}
+csp-end
+
+// When SpeedPID::P is set to two (and all other PID constants are zero), 
+// after the first (speedUpdate-1) times setLeftMotorSpeed() has occurred,
+// the next value passed to setLeftMotorSpeed()
+//		when the value communicated by angle is greater than or equal to -maxAngle and less than or equal to maxAngle
+// is passed to setLeftMotorSpeed()
+//		whenever the value communicated by angle is greater than or equal to -maxAngle and less than or equal to maxAngle
+//		until speedUpdate further occurrences of setLeftMotorSpeed() (after the initial three) have happened, after which it repeats (from "the next value passed...")
+timed csp SpeedPIDProp6
+csp-begin
+	Timed(OneStep) {
+		SpeedPIDProp6 = SpeedPIDProp6Count(0)
+		
+		-- SpeedPIDProp6Count represents the state when fewer than speedUpdate motor settings have occurred and we count the left motor settings
+		SpeedPIDProp6Count(count) =
+			-- allow any events other than setting left speed
+			([] e : diff(SegwayRPEvents, {|Segway::setLeftMotorSpeedCall|}) @ e -> SpeedPIDProp6Count(count))
+			 []
+			-- allow setLeftMotorSpeedCall to occur with any values and update the count for the first speedUpdate-2 times
+			(count < const_BalanceSTM_speedUpdate-2) & Segway::setLeftMotorSpeedCall?x -> SpeedPIDProp6Count(count+1)
+			 []
+			-- allow setLeftMotorSpeedCall to occur with any values for the (speedUpdate-1)th time,
+			-- then we reset the count and check the angle
+			(count == const_BalanceSTM_speedUpdate-2) & Segway::setLeftMotorSpeedCall?x -> SpeedPIDProp6AngleCheck(0)
+			
+		-- SpeedPIDProp6AngleCheck represents the state in which we are waiting for the angle to be in range before we can record the setLeftMotorSpeed() value
+		SpeedPIDProp6AngleCheck(count) =
+			-- allow any events other than setting left speed and getting angle
+			([] e : diff(SegwayRPEvents, {|Segway::angle, Segway::setLeftMotorSpeedCall|}) @ e -> SpeedPIDProp6AngleCheck(count))
+			 []
+			-- allow setLeftMotorSpeedCall to occur with any values, since we haven't had an angle in range, and update the count mod speedUpdate
+			Segway::setLeftMotorSpeedCall?x -> SpeedPIDProp6AngleCheck(if count < const_BalanceSTM_speedUpdate-1 then count+1 else 0)
+			 []
+			-- if the angle is out of range, continue
+			Segway::angle.in?x : OutsideAngleRange -> SpeedPIDProp6AngleCheck(count)
+			 []
+			-- if the angle is in range, go to a state where we can record the next value of setLeftMotorSpeedCall
+			Segway::angle.in?x : AngleRange -> SpeedPIDProp6RecordValue(count)
+			
+		-- SpeedPIDProp6RecordValue represents the state in which angle is in range and we are waiting to record the setLeftMotorSpeed() value
+		SpeedPIDProp6RecordValue(count) =
+			-- allow any events other than setting left speed and getting angle
+			([] e : diff(SegwayRPEvents, {|Segway::angle, Segway::setLeftMotorSpeedCall|}) @ e -> SpeedPIDProp6RecordValue(count))
+			 []
+			-- if an angle in range occurs, continue
+			Segway::angle.in?x : AngleRange -> SpeedPIDProp6RecordValue(count)
+			 []
+			-- if an angle out of range occurs, return to checking for an angle in range
+			Segway::angle.in?x : OutsideAngleRange -> SpeedPIDProp6AngleCheck(count)
+			 []
+			-- if this isn't the speedUpdate-th occurrence, when setLeftMotorSpeedCall occurs, record the value and increment the count
+			(count < const_BalanceSTM_speedUpdate-1) & Segway::setLeftMotorSpeedCall?x -> SpeedPIDProp6InRange(count+1, x)
+			 []
+			-- if this is the speedUpdate-th occurrence of setLeftMotorSpeedCall, go back to checking the angle to start a new cycle
+			(count == const_BalanceSTM_speedUpdate-1) & Segway::setLeftMotorSpeedCall?x -> SpeedPIDProp6AngleCheck(0)
+			
+		-- SpeedPIDProp6InRange represents the state where the angle is in range and the same value is repeatedly output for setLeftMotorSpeed()
+		SpeedPIDProp6InRange(count, value) =
+			-- allow any events other than setting left speed and getting angle
+			([] e : diff(SegwayRPEvents, {|Segway::angle, Segway::setLeftMotorSpeedCall|}) @ e -> SpeedPIDProp6InRange(count, value))
+			 []
+			-- allow setLeftMotorSpeedCall to occur outputting value and update the count for the first speedUpdate-1 times
+			(count < const_BalanceSTM_speedUpdate-1) & Segway::setLeftMotorSpeedCall!value -> SpeedPIDProp6InRange(count+1, value)
+			 []
+			-- allow setLeftMotorSpeedCall to occur outputting value for the speedUpdate-th time, then discard the value and reset the count
+			(count == const_BalanceSTM_speedUpdate-1) & Segway::setLeftMotorSpeedCall!value -> SpeedPIDProp6AngleCheck(0)
+			 []
+			-- if angle is in range, continue
+			Segway::angle.in?x : AngleRange -> SpeedPIDProp6InRange(count, value)
+			 []
+			-- if angle is out of range, switch to have no bounds on the setLeftMotorSpeed() value, but keep value recorded
+			Segway::angle.in?x : OutsideAngleRange -> SpeedPIDProp6OutOfRange(count, value)
+		
+		-- SpeedPIDProp6InRange represents the state where the angle is out of range and setLeftMotorSpeed() is unrestricted
+		SpeedPIDProp6OutOfRange(count, value) =
+			-- allow any events other than setting left speed and getting angle
+			([] e : diff(SegwayRPEvents, {|Segway::angle, Segway::setLeftMotorSpeedCall|}) @ e -> SpeedPIDProp6OutOfRange(count, value))
+			 []
+			-- allow setLeftMotorSpeedCall to occur with any values, since we haven't had an angle in range, and update the count
+			(count < const_BalanceSTM_speedUpdate-1) & Segway::setLeftMotorSpeedCall?x -> SpeedPIDProp6OutOfRange(count+1, value)
+			 []
+			-- allow setLeftMotorSpeedCall to occur with any values, since we haven't had an angle in range, and reset the count and discard the value
+			(count == const_BalanceSTM_speedUpdate-1) & Segway::setLeftMotorSpeedCall?x -> SpeedPIDProp6AngleCheck(0)
+			 []
+			-- if angle is out of range, continue
+			Segway::angle.in?x : OutsideAngleRange -> SpeedPIDProp6OutOfRange(count, value)
+			 []
+			-- if angle is in range, switch to constrain setLeftMotorSpeed() value
+			Segway::angle.in?x : AngleRange -> SpeedPIDProp6InRange(count, value)
+	}
+csp-end
+timed assertion SpeedPIDProp6_refines: Segway refines SpeedPIDProp6
+	in the traces model
+	with constant ^P of AnglePID    set to 0,
+	     constant D  of AnglePID    set to 0,
+	     constant ^P of SpeedPID    set to 2,
+	     constant I  of SpeedPID    set to 0 and
+	     constant D  of RotationPID set to 0
