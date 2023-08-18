@@ -1,0 +1,118 @@
+timed csp SegwayRPEvents
+csp-begin
+	SegwayRPEvents = {| 
+		Segway::angle.in,
+		Segway::gyroX.in,
+		Segway::gyroY.in,
+		Segway::gyroZ.in,
+		Segway::leftMotorVelocity.in,
+		Segway::rightMotorVelocity.in,
+		Segway::setLeftMotorSpeedCall,
+		Segway::setRightMotorSpeedCall,
+		Segway::disableInterruptsCall,
+		Segway::enableInterruptsCall
+	|}
+csp-end
+	     
+// define range from -maxAngle to maxAngle and its complement
+timed csp AngleRange
+csp-begin
+	AngleRange = { -2..2 } 
+csp-end
+timed csp OutsideAngleRange
+csp-begin
+	OutsideAngleRange = diff(core_real, AngleRange)
+csp-end
+
+timed csp AngleInRange
+csp-begin
+	AngleInRange = { Segway::angle.in.x | x <- AngleRange}
+csp-end
+
+timed csp AngleOutsideRange
+csp-begin
+	AngleOutsideRange = { Segway::angle.in.x | x <- OutsideAngleRange}
+csp-end
+
+// assertions with just angle control
+
+// The first speedUpdate-1 values set by setLeftMotorSpeed() setRightMotorSpeed() are equal to the value communicated by gyroX when angle is in AngleRange
+timed csp AnglePIDSpeedPIDBeforeSpeedUpdate
+csp-begin
+	Timed(OneStep) {
+		AnglePIDSpeedPIDBeforeSpeedUpdate = AnglePIDSpeedPIDBeforeSpeedUpdateCount(0, 0)
+		
+		-- allow any events when angle is outside AngleRange
+		AnglePIDSpeedPIDBeforeSpeedUpdateCount(l, r) =
+			([] e : diff(SegwayRPEvents, {|Segway::angle, Segway::setLeftMotorSpeedCall, Segway::setRightMotorSpeedCall|}) @ e -> AnglePIDSpeedPIDBeforeSpeedUpdateCount(l, r))
+			 []
+			-- allow setting any value, and update the count for the first three
+			(l < const_BalanceSTM_speedUpdate-1) & Segway::setLeftMotorSpeedCall?x -> AnglePIDSpeedPIDBeforeSpeedUpdateCount(l+1, r)
+			 []
+			(r < const_BalanceSTM_speedUpdate-1) & Segway::setRightMotorSpeedCall?x -> AnglePIDSpeedPIDBeforeSpeedUpdateCount(l, r+1) 
+			 []
+			-- after the first three, stop counting to avoid infinite state processes
+			(l >= const_BalanceSTM_speedUpdate-1) & Segway::setLeftMotorSpeedCall?x -> AnglePIDSpeedPIDBeforeSpeedUpdateCount(l, r)
+			 []
+			(r >= const_BalanceSTM_speedUpdate-1) & Segway::setRightMotorSpeedCall?x -> AnglePIDSpeedPIDBeforeSpeedUpdateCount(l, r) 
+			 []
+			-- when angle is inside AngleRange, enter the restricted state, passing the counts and setting the gyroX value to zero
+			Segway::angle.in?x : AngleRange -> RestrictAnglePIDSpeedPIDBeforeSpeedUpdate(l, r, x, 0)
+			 []
+			-- when the angle is outside AngleRange, continue
+			Segway::angle.in?y : OutsideAngleRange -> AnglePIDSpeedPIDBeforeSpeedUpdateCount(l, r)
+			
+		-- allow any events when angle is outside AngleRange, but record gyroX
+		AnglePIDSpeedPIDBeforeSpeedUpdateGyroX(l, r, gx) =
+			([] e : diff(SegwayRPEvents, {|Segway::angle, Segway::gyroX, Segway::setLeftMotorSpeedCall, Segway::setRightMotorSpeedCall|}) @ e -> AnglePIDSpeedPIDBeforeSpeedUpdateGyroX(l, r, gx))
+			 []
+			-- allow setting any value, and update the count for the first three
+			(l < const_BalanceSTM_speedUpdate-1) & Segway::setLeftMotorSpeedCall?x -> AnglePIDSpeedPIDBeforeSpeedUpdateGyroX(l+1, r, gx)
+			 []
+			(r < const_BalanceSTM_speedUpdate-1) & Segway::setRightMotorSpeedCall?x -> AnglePIDSpeedPIDBeforeSpeedUpdateGyroX(l, r+1, gx) 
+			 []
+			-- after the first three, stop counting to avoid infinite state processes
+			(l >= const_BalanceSTM_speedUpdate-1) & Segway::setLeftMotorSpeedCall?x -> AnglePIDSpeedPIDBeforeSpeedUpdateGyroX(l, r, gx)
+			 []
+			(r >= const_BalanceSTM_speedUpdate-1) & Segway::setRightMotorSpeedCall?x -> AnglePIDSpeedPIDBeforeSpeedUpdateGyroX(l, r, gx) 
+			 []
+			-- update gyroX value when gyroX happens
+			Segway::gyroX.in?y -> AnglePIDSpeedPIDBeforeSpeedUpdateGyroX(l, r, y)
+			 []
+			-- when angle is inside AngleRange, enter the restricted state, passing the counts and gyroX value
+			Segway::angle.in?x : AngleRange -> RestrictAnglePIDSpeedPIDBeforeSpeedUpdate(l, r, x, gx)
+			 []
+			-- when the angle is outside AngleRange, continue
+			Segway::angle.in?y : OutsideAngleRange -> AnglePIDSpeedPIDBeforeSpeedUpdateGyroX(l, r, gx)
+			
+		-- restrict motor speed setting to the value of the angle
+		RestrictAnglePIDSpeedPIDBeforeSpeedUpdate(l, r, a, gx) =
+			([] e : diff(SegwayRPEvents, {|Segway::angle, Segway::gyroX, Segway::setLeftMotorSpeedCall, Segway::setRightMotorSpeedCall|}) @ e -> RestrictAnglePIDSpeedPIDBeforeSpeedUpdate(l, r, a, gx))
+			 []
+			-- only allow setting equal to the gyroX value for the first three, and update the count
+			(l < const_BalanceSTM_speedUpdate-1) & Segway::setLeftMotorSpeedCall!Plus(a, Mult(2, gx, core_real), core_real) -> RestrictAnglePIDSpeedPIDBeforeSpeedUpdate(l+1, r, a, gx)
+			 []
+			(r < const_BalanceSTM_speedUpdate-1) & Segway::setRightMotorSpeedCall!Plus(a, Mult(2, gx, core_real), core_real) -> RestrictAnglePIDSpeedPIDBeforeSpeedUpdate(l, r+1, a, gx)
+			 []
+			-- after the first three, allow any values and stop counting
+			(l >= const_BalanceSTM_speedUpdate-1) & Segway::setLeftMotorSpeedCall?x -> RestrictAnglePIDSpeedPIDBeforeSpeedUpdate(l, r, a, gx)
+			 []
+			(r >= const_BalanceSTM_speedUpdate-1) & Segway::setRightMotorSpeedCall?x -> RestrictAnglePIDSpeedPIDBeforeSpeedUpdate(l, r, a, gx)
+			 []
+			-- update gyroX value when gyroX happens
+			Segway::gyroX.in?y -> RestrictAnglePIDSpeedPIDBeforeSpeedUpdate(l, r, a, y)
+			 []
+			-- continue in the restricted state when angle remains within AngleRange
+			Segway::angle.in?y : AngleRange -> RestrictAnglePIDSpeedPIDBeforeSpeedUpdate(l, r, y, gx)
+			 []
+			-- leave restricted state when angle is outside AngleRange
+			Segway::angle.in?y : OutsideAngleRange -> AnglePIDSpeedPIDBeforeSpeedUpdateGyroX(l, r, gx)
+	}
+csp-end
+timed assertion AnglePIDSpeedPIDBeforeSpeedUpdate_refines: Segway refines AnglePIDSpeedPIDBeforeSpeedUpdate
+	in the traces model
+	with constant ^P of AnglePID    set to 1,
+	     constant D  of AnglePID    set to 2,
+	     constant ^P of SpeedPID    set to 2,
+	     constant I  of SpeedPID    set to 2 and
+	     constant D  of RotationPID set to 0     

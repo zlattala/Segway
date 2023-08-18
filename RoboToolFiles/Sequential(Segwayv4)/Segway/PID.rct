@@ -1,0 +1,24 @@
+record PID {
+	error : real
+	integral : real
+	output : real
+	P : real
+	I : real
+	D : real
+}
+
+function computePID ( pid : PID , newError : real , dtime : real ) : PID {
+	precondition dtime > 0
+	postcondition
+		let derror == newError-pid.error @
+		let integral == pid.integral + dtime*pid.error + (dtime*derror)/2 @
+			(result.error == newError /\
+			result.integral == integral /\
+			result.output == pid.P*newError + pid.I*integral + pid.D*derror/dtime /\
+			result.P == pid.P /\ result.I == pid.I /\ result.D == pid.D)
+}
+
+function initialisePID ( P : real , I : real , D : real ) : PID {
+	postcondition result.P == P /\ result.I == I /\ result.D == D /\
+		result.error == 0 /\ result.integral == 0 /\ result.output == 0
+}

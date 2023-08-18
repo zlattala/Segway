@@ -1,0 +1,95 @@
+timed csp SegwayRPEvents
+csp-begin
+	SegwayRPEvents = {| 
+		Segway::angle.in,
+		Segway::gyroX.in,
+		Segway::gyroY.in,
+		Segway::gyroZ.in,
+		Segway::leftMotorVelocity.in,
+		Segway::rightMotorVelocity.in,
+		Segway::setLeftMotorSpeedCall,
+		Segway::setRightMotorSpeedCall,
+		Segway::disableInterruptsCall,
+		Segway::enableInterruptsCall
+	|}
+csp-end
+	     
+// define range from -maxAngle to maxAngle and its complement
+timed csp AngleRange
+csp-begin
+	AngleRange = { -2..2 } 
+csp-end
+timed csp OutsideAngleRange
+csp-begin
+	OutsideAngleRange = diff(core_real, AngleRange)
+csp-end
+
+timed csp AngleInRange
+csp-begin
+	AngleInRange = { Segway::angle.in.x | x <- AngleRange}
+csp-end
+
+timed csp AngleOutsideRange
+csp-begin
+	AngleOutsideRange = { Segway::angle.in.x | x <- OutsideAngleRange}
+csp-end
+
+// assertions with just angle control
+
+// The first rotationUpdate-1 values set by setLeftMotorSpeed() setRightMotorSpeed() are equal to the value communicated by gyroX when angle is in AngleRange
+timed csp AnglePIDRotationPIDBeforeRotationUpdate
+csp-begin
+	Timed(OneStep) {
+		AnglePIDRotationPIDBeforeRotationUpdate = AnglePIDRotationPIDBeforeRotationUpdateCount(0, 0)
+		
+		-- allow any events when angle is outside AngleRange
+		AnglePIDRotationPIDBeforeRotationUpdateCount(l, r) =
+			([] e : diff(SegwayRPEvents, {|Segway::angle, Segway::setLeftMotorSpeedCall, Segway::setRightMotorSpeedCall|}) @ e -> AnglePIDRotationPIDBeforeRotationUpdateCount(l, r))
+			 []
+			-- allow setting any value, and update the count for the first three
+			(l < const_BalanceSTM_rotationUpdate-1) & Segway::setLeftMotorSpeedCall?x -> AnglePIDRotationPIDBeforeRotationUpdateCount(l+1, r)
+			 []
+			(r < const_BalanceSTM_rotationUpdate-1) & Segway::setRightMotorSpeedCall?x -> AnglePIDRotationPIDBeforeRotationUpdateCount(l, r+1) 
+			 []
+			-- after the first three, stop counting to avoid infinite state processes
+			(l >= const_BalanceSTM_rotationUpdate-1) & Segway::setLeftMotorSpeedCall?x -> AnglePIDRotationPIDBeforeRotationUpdateCount(l, r)
+			 []
+			(r >= const_BalanceSTM_rotationUpdate-1) & Segway::setRightMotorSpeedCall?x -> AnglePIDRotationPIDBeforeRotationUpdateCount(l, r) 
+			 []
+			-- when angle is inside AngleRange, enter the restricted state, passing the counts and setting the gyroX value to zero
+			Segway::angle.in?x : AngleRange -> RestrictAnglePIDRotationPIDBeforeRotationUpdate(l, r, 0)
+			 []
+			-- when the angle is outside AngleRange, continue
+			Segway::angle.in?y : OutsideAngleRange -> AnglePIDRotationPIDBeforeRotationUpdateCount(l, r)
+			
+		-- restrict motor speed setting to the value of the angle
+		RestrictAnglePIDRotationPIDBeforeRotationUpdate(l, r, x) =
+			([] e : diff(SegwayRPEvents, {|Segway::angle, Segway::gyroX, Segway::setLeftMotorSpeedCall, Segway::setRightMotorSpeedCall|}) @ e -> RestrictAnglePIDRotationPIDBeforeRotationUpdate(l, r, x))
+			 []
+			-- only allow setting equal to the gyroX value for the first three, and update the count
+			(l < const_BalanceSTM_rotationUpdate-1) & Segway::setLeftMotorSpeedCall!Mult(2, x, core_real) -> RestrictAnglePIDRotationPIDBeforeRotationUpdate(l+1, r, x)
+			 []
+			(r < const_BalanceSTM_rotationUpdate-1) & Segway::setRightMotorSpeedCall!Mult(2, x, core_real) -> RestrictAnglePIDRotationPIDBeforeRotationUpdate(l, r+1, x)
+			 []
+			-- after the first three, allow any values and stop counting
+			(l >= const_BalanceSTM_rotationUpdate-1) & Segway::setLeftMotorSpeedCall?x -> RestrictAnglePIDRotationPIDBeforeRotationUpdate(l, r, x)
+			 []
+			(r >= const_BalanceSTM_rotationUpdate-1) & Segway::setRightMotorSpeedCall?x -> RestrictAnglePIDRotationPIDBeforeRotationUpdate(l, r, x)
+			 []
+			-- update gyroX value when gyroX happens
+			Segway::gyroX.in?y -> RestrictAnglePIDRotationPIDBeforeRotationUpdate(l, r, y)
+			 []
+			-- continue in the restricted state when angle remains within AngleRange
+			Segway::angle.in?y : AngleRange -> RestrictAnglePIDRotationPIDBeforeRotationUpdate(l, r, x)
+			 []
+			-- leave restricted state when angle is outside AngleRange
+			Segway::angle.in?y : OutsideAngleRange -> AnglePIDRotationPIDBeforeRotationUpdateCount(l, r)
+	}
+csp-end
+timed assertion AnglePIDRotationPIDBeforeRotationUpdate_refines: Segway refines AnglePIDRotationPIDBeforeRotationUpdate
+	in the traces model
+	with constant ^P of AnglePID    set to 0,
+	     constant D  of AnglePID    set to 2, // this assertion applies when only the D AnglePID component is active
+	     constant ^P of SpeedPID    set to 0,
+	     constant I  of SpeedPID    set to 0 and
+	     constant D  of RotationPID set to 1     

@@ -1,0 +1,69 @@
+timed csp SegwayRPEvents
+csp-begin
+	SegwayRPEvents = {| 
+		Segway::angle.in,
+		Segway::gyroX.in,
+		Segway::gyroY.in,
+		Segway::gyroZ.in,
+		Segway::leftMotorVelocity.in,
+		Segway::rightMotorVelocity.in,
+		Segway::setLeftMotorSpeedCall,
+		Segway::setRightMotorSpeedCall,
+		Segway::disableInterruptsCall,
+		Segway::enableInterruptsCall
+	|}
+csp-end
+	     
+// define range from -maxAngle to maxAngle and its complement
+timed csp AngleRange
+csp-begin
+	AngleRange = { -2..2 } 
+csp-end
+timed csp OutsideAngleRange
+csp-begin
+	OutsideAngleRange = diff(core_real, AngleRange)
+csp-end
+
+timed csp AngleInRange
+csp-begin
+	AngleInRange = { Segway::angle.in.x | x <- AngleRange}
+csp-end
+
+timed csp AngleOutsideRange
+csp-begin
+	AngleOutsideRange = { Segway::angle.in.x | x <- OutsideAngleRange}
+csp-end
+
+// When AnglePID::D=2 and angle is in AngleRange, speed setting is equal to 2*gyroX
+timed csp AnglePIDProp2
+csp-begin
+	Timed(OneStep) {
+		-- allow any events when angle is outside AngleRange
+		AnglePIDProp2 =
+			([] e : diff(SegwayRPEvents, AngleInRange) @ e -> AnglePIDProp2)
+			 []
+			-- when angle is inside AngleRange, enter the restricted state, with gyroX intially zero
+			Segway::angle.in?x : AngleRange -> RestrictAnglePIDProp2(0)
+		
+		-- restrict motor speed setting to the value of the gyroX	
+		RestrictAnglePIDProp2(x) =
+			([] e : diff(SegwayRPEvents, {|Segway::angle, Segway::gyroX, Segway::setLeftMotorSpeedCall, Segway::setRightMotorSpeedCall|}) @ e -> RestrictAnglePIDProp2(x))
+			 []
+			Segway::gyroX.in?y -> RestrictAnglePIDProp2(y)
+			 []
+			Segway::setLeftMotorSpeedCall!Mult(2, x, core_real) -> RestrictAnglePIDProp2(x)
+			 []
+			Segway::setRightMotorSpeedCall!Mult(2, x, core_real) -> RestrictAnglePIDProp2(x)
+			 []
+			Segway::angle.in?y : AngleRange -> RestrictAnglePIDProp2(x)
+			 []
+			Segway::angle.in?y : OutsideAngleRange -> AnglePIDProp2
+	}
+csp-end
+timed assertion AnglePIDProp2_refines: Segway refines AnglePIDProp2
+	in the traces model
+	with constant ^P of AnglePID    set to 0,
+	     constant D  of AnglePID    set to 2,
+	     constant ^P of SpeedPID    set to 0,
+	     constant I  of SpeedPID    set to 0 and
+	     constant D  of RotationPID set to 0

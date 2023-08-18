@@ -1,0 +1,102 @@
+timed csp SegwayRPEvents
+csp-begin
+	SegwayRPEvents = {| 
+		Segway::angle.in,
+		Segway::gyroX.in,
+		Segway::gyroY.in,
+		Segway::gyroZ.in,
+		Segway::leftMotorVelocity.in,
+		Segway::rightMotorVelocity.in,
+		Segway::setLeftMotorSpeedCall,
+		Segway::setRightMotorSpeedCall,
+		Segway::disableInterruptsCall,
+		Segway::enableInterruptsCall
+	|}
+csp-end
+
+// define range from -maxAngle to maxAngle and its complement
+timed csp AngleRange
+csp-begin
+	AngleRange = { -2..2 } 
+csp-end
+timed csp OutsideAngleRange
+csp-begin
+	OutsideAngleRange = diff(core_real, AngleRange)
+csp-end
+
+timed csp AngleInRange
+csp-begin
+	AngleInRange = { Segway::angle.in.x | x <- AngleRange}
+csp-end
+
+timed csp AngleOutsideRange
+csp-begin
+	AngleOutsideRange = { Segway::angle.in.x | x <- OutsideAngleRange}
+csp-end
+
+// When AnglePID::P=1, AnglePID::D=1 and RotationPID::D=1 (and the other PID constants are set to zero), 
+// after the first (rotationUpdate-1) times setLeftMotorSpeed() has occurred,
+// if values greater than or equal to -maxAngle and less than or equal to maxAngle are communicated by the event angle,
+// the next value passed to setLeftMotorSpeed() is the sum of
+//     the value communicated by angle,
+//     the value communicated by gyroX,
+//     and the negation of the value communicated by gyroZ.
+// This repeats every rotationUpdate calls to setLeftMotorSpeed().
+timed csp AnglePIDRotationPIDLeftRotationUpdate
+csp-begin
+	Timed(OneStep) {
+		AnglePIDRotationPIDLeftRotationUpdate = AnglePIDRotationPIDLeftRotationUpdateCount(0)
+		
+		AnglePIDRotationPIDLeftRotationUpdateCount(lcount) =
+			-- events other than setting motor speeds are unconstrained
+			([] e : diff(SegwayRPEvents, {|Segway::setLeftMotorSpeedCall|}) @ e -> AnglePIDRotationPIDLeftRotationUpdateCount(lcount))
+			 []
+			-- allow setLeftMotorSpeedCall to occur with any values and update the count for the first rotationUpdate-2 times
+			(lcount < const_BalanceSTM_rotationUpdate-2) & Segway::setLeftMotorSpeedCall!0 -> AnglePIDRotationPIDLeftRotationUpdateCount(lcount+1)
+			 []
+			-- allow setLeftMotorSpeedCall to occur with any values for the (rotationUpdate-1)th time,
+			-- then go to check angle since we are into the first part of the precondition
+			(lcount >= const_BalanceSTM_rotationUpdate-2) & Segway::setLeftMotorSpeedCall?x -> AnglePIDRotationPIDLeftRotationUpdateAngleCheck(0, 0)
+			
+		AnglePIDRotationPIDLeftRotationUpdateAngleCheck(gyrox, gyroz) =
+			-- allow any events other than getting gyroZ, setting left speed and checking the angle
+			([] e : diff(SegwayRPEvents, {|Segway::angle, Segway::gyroX, Segway::gyroZ, Segway::setLeftMotorSpeedCall|})
+					@ e -> AnglePIDRotationPIDLeftRotationUpdateAngleCheck(gyrox, gyroz))
+			 []
+			-- record value from gyroX
+			Segway::gyroX.in?gx -> AnglePIDRotationPIDLeftRotationUpdateAngleCheck(gx, gyroz)
+			 []
+			-- record value from gyroZ
+			Segway::gyroZ.in?gz -> AnglePIDRotationPIDLeftRotationUpdateAngleCheck(gyrox, gz)
+			 []
+			-- if setLeftMotorSpeedCall occurs without an angle being set, the precondition is broken so the values are not constrained, then we return to the beginning
+			Segway::setLeftMotorSpeedCall?x -> AnglePIDRotationPIDLeftRotationUpdate
+			 []
+			-- if angle is in AngleRange, go to the restricted state, passing the current recorded values of gyrox and gyroZ and the angle value
+			Segway::angle.in?x : AngleRange -> AnglePIDRotationPIDLeftRotationUpdateRestrict(gyrox, gyroz, x)
+			 []
+			-- if angle is outside AngleRange, the precondition does not hold, so continue
+			Segway::angle.in?x : OutsideAngleRange -> AnglePIDRotationPIDLeftRotationUpdateAngleCheck(gyrox, gyroz)
+			
+		AnglePIDRotationPIDLeftRotationUpdateRestrict(gyrox, gyroz, a) =
+			-- allow any events other than getting gyroZ and setting left speed (ignore further occurrences of angle)
+			([] e : diff(SegwayRPEvents, {|Segway::gyroX, Segway::gyroZ, Segway::setLeftMotorSpeedCall|})
+					@ e -> AnglePIDRotationPIDLeftRotationUpdateRestrict(gyrox, gyroz, a))
+			 []
+			-- record value from gyroX
+			Segway::gyroX.in?gx -> AnglePIDRotationPIDLeftRotationUpdateRestrict(gx, gyroz, a)
+			 []
+			-- record value from gyroZ
+			Segway::gyroZ.in?gz -> AnglePIDRotationPIDLeftRotationUpdateRestrict(gyrox, gz, a)
+			 []
+			-- setLeftMotorSpeedCall must occur with a value equal to the sum of the recorded values, then we return to the beginning
+			Segway::setLeftMotorSpeedCall!Plus(Plus(a, gyrox, core_real), -gyroz, core_real) -> AnglePIDRotationPIDLeftRotationUpdate
+	}
+csp-end
+timed assertion AnglePIDRotationPIDLeftRotationUpdate_refines: Segway refines AnglePIDRotationPIDLeftRotationUpdate
+	in the traces model
+	with constant ^P of AnglePID    set to 1,
+	     constant D  of AnglePID    set to 1,
+	     constant ^P of SpeedPID    set to 0,
+	     constant I  of SpeedPID    set to 0 and
+	     constant D  of RotationPID set to 1

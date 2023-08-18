@@ -1,0 +1,50 @@
+// reachability assertions
+//timed assertion Initialisation_reachable: BalanceSTM::Initialisation is reachable in Segway
+//timed assertion WaitForNextIteration_reachable: BalanceSTM::WaitForNextIteration is reachable in Segway
+//timed assertion CalculateAngle_reachable: BalanceSTM::CalculateAngle is reachable in Segway
+//timed assertion CalculateSpeed_reachable: BalanceSTM::CalculateSpeed is reachable in Segway
+//timed assertion CalculateRotation_reachable: BalanceSTM::CalculateRotation is reachable in Segway
+//timed assertion StopMotors_reachable: BalanceSTM::StopMotors is reachable in Segway
+//timed assertion SetMotors_reachable: BalanceSTM::SetMotors is reachable in Segway
+
+timed csp minimum
+csp-begin
+	minimum(a,b) = if a < b then a else b
+csp-end
+
+timed csp SegwayRPEvents
+csp-begin
+	SegwayRPEvents = {| 
+		Segway::angle.in,
+		Segway::gyroX.in,
+		Segway::gyroY.in,
+		Segway::gyroZ.in,
+		Segway::leftMotorVelocity.in,
+		Segway::rightMotorVelocity.in,
+		Segway::setLeftMotorSpeedCall,
+		Segway::setRightMotorSpeedCall,
+		Segway::disableInterruptsCall,
+		Segway::enableInterruptsCall
+	|}
+csp-end
+
+// assertions with all PIDs deactivated
+timed csp SegwayNoPIDs
+csp-begin
+	Timed(OneStep) {
+		SegwayNoPIDs =
+			RUN(Union({
+				{tock},
+				diff(SegwayRPEvents, {|Segway::setLeftMotorSpeedCall, Segway::setRightMotorSpeedCall|}),
+				{Segway::setLeftMotorSpeedCall.0, Segway::setRightMotorSpeedCall.0}
+			}))
+	}
+csp-end
+timed assertion SegwayNoPIDs_refines: Segway refines SegwayNoPIDs
+	in the traces model
+	with constant ^P of AnglePID    set to 0,
+	     constant D  of AnglePID    set to 0,
+	     constant ^P of SpeedPID    set to 0,
+	     constant I  of SpeedPID    set to 0 and
+	     constant D  of RotationPID set to 0
+	     

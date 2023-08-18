@@ -1,0 +1,92 @@
+timed csp SegwayRPEvents
+csp-begin
+	SegwayRPEvents = {| 
+		Segway::angle.in,
+		Segway::gyroX.in,
+		Segway::gyroY.in,
+		Segway::gyroZ.in,
+		Segway::leftMotorVelocity.in,
+		Segway::rightMotorVelocity.in,
+		Segway::setLeftMotorSpeedCall,
+		Segway::setRightMotorSpeedCall,
+		Segway::disableInterruptsCall,
+		Segway::enableInterruptsCall
+	|}
+csp-end
+	     
+// define range from -maxAngle to maxAngle and its complement
+timed csp AngleRange
+csp-begin
+	AngleRange = { -2..2 } 
+csp-end
+timed csp OutsideAngleRange
+csp-begin
+	OutsideAngleRange = diff(core_real, AngleRange)
+csp-end
+
+timed csp AngleInRange
+csp-begin
+	AngleInRange = { Segway::angle.in.x | x <- AngleRange}
+csp-end
+
+timed csp AngleOutsideRange
+csp-begin
+	AngleOutsideRange = { Segway::angle.in.x | x <- OutsideAngleRange}
+csp-end
+
+// assertions with just angle control
+
+// When AnglePID::P=2 and AnglePID::D=1, speed setting is equal to (2*angle)+gyroX when angle is in AngleRange
+timed csp AnglePIDProp1
+csp-begin
+	Timed(OneStep) {
+		-- allow any events when angle is outside AngleRange
+		AnglePIDProp1 =
+			([] e : diff(SegwayRPEvents, {| Segway::angle, Segway::gyroX |}) @ e -> AnglePIDProp1)
+			 []
+			-- when angle is inside AngleRange, enter the restricted state, passing the angle value
+			Segway::angle.in?x : AngleRange -> RestrictAnglePIDProp1(x, 0)
+			 []
+			-- continue outside the restricted state when angle is outside AngleRange
+			Segway::angle.in?x : OutsideAngleRange -> AnglePIDProp1
+			 []
+			-- record gyroX if it happens
+			Segway::gyroX.in?x -> AnglePIDProp1GyroX(x)
+			
+		AnglePIDProp1GyroX(gx) =
+			([] e : diff(SegwayRPEvents, {| Segway::angle, Segway::gyroX |}) @ e -> AnglePIDProp1GyroX(gx))
+			 []
+			-- when angle is inside AngleRange, enter the restricted state, passing the angle value
+			Segway::angle.in?x : AngleRange -> RestrictAnglePIDProp1(x, gx)
+			 []
+			-- continue outside the restricted state when angle is outside AngleRange
+			Segway::angle.in?x : OutsideAngleRange -> AnglePIDProp1GyroX(gx)
+			 []
+			-- record gyroX if it happens again
+			Segway::gyroX.in?x -> AnglePIDProp1GyroX(x)
+			
+		-- restrict motor speed setting to the value of the angle
+		RestrictAnglePIDProp1(a, gx) =
+			([] e : diff(SegwayRPEvents, {|Segway::angle, Segway::gyroX, Segway::setLeftMotorSpeedCall, Segway::setRightMotorSpeedCall|}) @ e -> RestrictAnglePIDProp1(a, gx))
+			 []
+			Segway::setLeftMotorSpeedCall!Plus(Mult(2, a, core_real), gx, core_real) -> RestrictAnglePIDProp1(a, gx)
+			 []
+			Segway::setRightMotorSpeedCall!Plus(Mult(2, a, core_real), gx, core_real) -> RestrictAnglePIDProp1(a, gx)
+			 []
+			-- continue in the restricted state with new angle value when angle remains within AngleRange
+			Segway::angle.in?x : AngleRange -> RestrictAnglePIDProp1(x, gx)
+			 []
+			-- leave restricted state when angle is outside AngleRange
+			Segway::angle.in?x : OutsideAngleRange -> AnglePIDProp1GyroX(gx)
+			 []
+			-- record gyroX if it happens
+			Segway::gyroX.in?x -> RestrictAnglePIDProp1(a, x)
+	}
+csp-end
+timed assertion AnglePIDProp1_refines: Segway refines AnglePIDProp1
+	in the traces model
+	with constant ^P of AnglePID    set to 2, 
+	     constant D  of AnglePID    set to 1,
+	     constant ^P of SpeedPID    set to 0,
+	     constant I  of SpeedPID    set to 0 and
+	     constant D  of RotationPID set to 0     

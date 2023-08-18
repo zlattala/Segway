@@ -1,0 +1,92 @@
+timed csp SegwayRPEvents
+csp-begin
+	SegwayRPEvents = {| 
+		Segway::angle.in,
+		Segway::gyroX.in,
+		Segway::gyroY.in,
+		Segway::gyroZ.in,
+		Segway::leftMotorVelocity.in,
+		Segway::rightMotorVelocity.in,
+		Segway::setLeftMotorSpeedCall,
+		Segway::setRightMotorSpeedCall,
+		Segway::disableInterruptsCall,
+		Segway::enableInterruptsCall
+	|}
+csp-end
+	     
+// define range from -maxAngle to maxAngle and its complement
+timed csp AngleRange
+csp-begin
+	AngleRange = { -2..2 } 
+csp-end
+timed csp OutsideAngleRange
+csp-begin
+	OutsideAngleRange = diff(core_real, AngleRange)
+csp-end
+
+timed csp AngleInRange
+csp-begin
+	AngleInRange = { Segway::angle.in.x | x <- AngleRange}
+csp-end
+
+timed csp AngleOutsideRange
+csp-begin
+	AngleOutsideRange = { Segway::angle.in.x | x <- OutsideAngleRange}
+csp-end
+
+// assertions with just angle control
+
+// The first speedUpdate-1 values set by setLeftMotorSpeed() setRightMotorSpeed() are equal to angle when angle is in AngleRange
+timed csp AnglePIDSpeedPIDBeforeSpeedUpdate
+csp-begin
+	Timed(OneStep) {
+		AnglePIDSpeedPIDBeforeSpeedUpdate = AnglePIDSpeedPIDBeforeSpeedUpdateCount(0, 0)
+		
+		-- allow any events when angle is outside AngleRange
+		AnglePIDSpeedPIDBeforeSpeedUpdateCount(l, r) =
+			([] e : diff(SegwayRPEvents, {|Segway::angle, Segway::setLeftMotorSpeedCall, Segway::setRightMotorSpeedCall|}) @ e -> AnglePIDSpeedPIDBeforeSpeedUpdateCount(l, r))
+			 []
+			-- allow setting any value, and update the count for the first three
+			(l < const_BalanceSTM_speedUpdate-1) & Segway::setLeftMotorSpeedCall?x -> AnglePIDSpeedPIDBeforeSpeedUpdateCount(l+1, r)
+			 []
+			(r < const_BalanceSTM_speedUpdate-1) & Segway::setRightMotorSpeedCall?x -> AnglePIDSpeedPIDBeforeSpeedUpdateCount(l, r+1) 
+			 []
+			-- after the first three, stop counting to avoid infinite state processes
+			(l >= const_BalanceSTM_speedUpdate-1) & Segway::setLeftMotorSpeedCall?x -> AnglePIDSpeedPIDBeforeSpeedUpdateCount(l, r)
+			 []
+			(r >= const_BalanceSTM_speedUpdate-1) & Segway::setRightMotorSpeedCall?x -> AnglePIDSpeedPIDBeforeSpeedUpdateCount(l, r) 
+			 []
+			-- when angle is inside AngleRange, enter the restricted state, passing the counts and angle value
+			Segway::angle.in?x : AngleRange -> RestrictAnglePIDSpeedPIDBeforeSpeedUpdate(l, r, x)
+			 []
+			-- when the angle is outside AngleRange, continue
+			Segway::angle.in?y : OutsideAngleRange -> AnglePIDSpeedPIDBeforeSpeedUpdateCount(l, r)
+			
+		-- restrict motor speed setting to the value of the angle
+		RestrictAnglePIDSpeedPIDBeforeSpeedUpdate(l, r, x) =
+			([] e : diff(SegwayRPEvents, {|Segway::angle, Segway::setLeftMotorSpeedCall, Segway::setRightMotorSpeedCall|}) @ e -> RestrictAnglePIDSpeedPIDBeforeSpeedUpdate(l, r, x))
+			 []
+			-- only allow setting equal to the angle value for the first three, and update the count
+			(l < const_BalanceSTM_speedUpdate-1) & Segway::setLeftMotorSpeedCall!Mult(2, x, core_real) -> RestrictAnglePIDSpeedPIDBeforeSpeedUpdate(l+1, r, x)
+			 []
+			(r < const_BalanceSTM_speedUpdate-1) & Segway::setRightMotorSpeedCall!Mult(2, x, core_real) -> RestrictAnglePIDSpeedPIDBeforeSpeedUpdate(l, r+1, x)
+			 []
+			-- after the first three, allow any values and stop counting
+			(l >= const_BalanceSTM_speedUpdate-1) & Segway::setLeftMotorSpeedCall?x -> RestrictAnglePIDSpeedPIDBeforeSpeedUpdate(l, r, x)
+			 []
+			(r >= const_BalanceSTM_speedUpdate-1) & Segway::setRightMotorSpeedCall?x -> RestrictAnglePIDSpeedPIDBeforeSpeedUpdate(l, r, x)
+			 []
+			-- continue in the restricted state with new angle value when angle remains within AngleRange
+			Segway::angle.in?y : AngleRange -> RestrictAnglePIDSpeedPIDBeforeSpeedUpdate(l, r, y)
+			 []
+			-- leave restricted state when angle is outside AngleRange
+			Segway::angle.in?y : OutsideAngleRange -> AnglePIDSpeedPIDBeforeSpeedUpdateCount(l, r)
+	}
+csp-end
+timed assertion AnglePIDSpeedPIDBeforeSpeedUpdate_refines: Segway refines AnglePIDSpeedPIDBeforeSpeedUpdate
+	in the traces model
+	with constant ^P of AnglePID    set to 2, // this assertion applies when only the P AnglePID component is active
+	     constant D  of AnglePID    set to 0,
+	     constant ^P of SpeedPID    set to 0,
+	     constant I  of SpeedPID    set to 2 and
+	     constant D  of RotationPID set to 0     

@@ -1,0 +1,69 @@
+timed csp SegwayRPEvents
+csp-begin
+	SegwayRPEvents = {| 
+		Segway::angle.in,
+		Segway::gyroX.in,
+		Segway::gyroY.in,
+		Segway::gyroZ.in,
+		Segway::leftMotorVelocity.in,
+		Segway::rightMotorVelocity.in,
+		Segway::setLeftMotorSpeedCall,
+		Segway::setRightMotorSpeedCall,
+		Segway::disableInterruptsCall,
+		Segway::enableInterruptsCall
+	|}
+csp-end
+	     
+// define range from -maxAngle to maxAngle and its complement
+timed csp AngleRange
+csp-begin
+	AngleRange = { -2..2 } 
+csp-end
+timed csp OutsideAngleRange
+csp-begin
+	OutsideAngleRange = diff(core_real, AngleRange)
+csp-end
+
+timed csp AngleInRange
+csp-begin
+	AngleInRange = { Segway::angle.in.x | x <- AngleRange}
+csp-end
+
+timed csp AngleOutsideRange
+csp-begin
+	AngleOutsideRange = { Segway::angle.in.x | x <- OutsideAngleRange}
+csp-end
+
+// When angle communicates values less than -maxAngle or greater than maxAngle,
+// the values passed to setLeftMotorSpeed() and setRightMotorSpeed() are zero
+timed csp AnglePIDSpeedPIDAngleOutsideRange
+csp-begin
+	Timed(OneStep) {
+		-- initially, we have not observed an angle outside range so we do not restrict the values
+		AnglePIDSpeedPIDAngleOutsideRange =
+			([] e : diff(SegwayRPEvents, AngleOutsideRange) @ e -> AnglePIDSpeedPIDAngleOutsideRange)
+			 []
+			-- enter the restricted state when an angle outside range is observed
+			Segway::angle.in?x : OutsideAngleRange -> RestrictAnglePIDSpeedPIDAngleOutsideRange
+		
+		-- in the restricted state, only zero values are allowed for setLeftMotorSpeed() and setRightMotorSpeed(), and we monitor the angle value
+		RestrictAnglePIDSpeedPIDAngleOutsideRange =
+			([] e : diff(SegwayRPEvents, {|Segway::angle, Segway::setLeftMotorSpeedCall, Segway::setRightMotorSpeedCall|}) @ e -> RestrictAnglePIDSpeedPIDAngleOutsideRange)
+			 []
+			Segway::setLeftMotorSpeedCall!0 -> RestrictAnglePIDSpeedPIDAngleOutsideRange
+			 []
+			Segway::setRightMotorSpeedCall!0 -> RestrictAnglePIDSpeedPIDAngleOutsideRange
+			 []
+			-- only remain in the restricted state when outside the AngleRange
+			Segway::angle.in?y : OutsideAngleRange -> RestrictAnglePIDSpeedPIDAngleOutsideRange
+			 []
+			Segway::angle.in?y : AngleRange -> AnglePIDSpeedPIDAngleOutsideRange
+	}
+csp-end
+timed assertion AnglePIDSpeedPIDAngleOutsideRange_refines: Segway refines AnglePIDSpeedPIDAngleOutsideRange
+	in the traces model
+	with constant ^P of AnglePID    set to 1,
+	     constant D  of AnglePID    set to 2,
+	     constant ^P of SpeedPID    set to 0,
+	     constant I  of SpeedPID    set to 2 and
+	     constant D  of RotationPID set to 0
