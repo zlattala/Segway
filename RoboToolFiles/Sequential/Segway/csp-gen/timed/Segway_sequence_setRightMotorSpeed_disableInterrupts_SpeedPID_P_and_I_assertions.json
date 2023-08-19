@@ -1,6 +1,0 @@
-[
-{ "name": "timed Segway refines SequenceSetRightMotorSpeedDisableInterrupts (SequenceSetRightMotorSpeedDisableInterrupts_refines) [traces model]",
-  "type": "refines",
-  "negated": false 
-}
-			]

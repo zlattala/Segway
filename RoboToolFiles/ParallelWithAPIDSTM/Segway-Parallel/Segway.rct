@@ -1,10 +1,5 @@
 diagram Segway
 
-interface NNI {
-	event adiff:real
-	event anewError:real
-	event angleOutputE:real
-}
 
 module Segway {
 	controller SegwayController {

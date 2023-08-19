@@ -111,11 +111,7 @@ stm BalanceSTM {
 	}
 	
 	state SendSpeed {
-		entry leftMotorVelocity ? currLeftVel <{ 0 } ;
-		rightMotorVelocity ? currRightVel <{ 0 } ; 
-		snewError!(currLeftVel + currRightVel);
-		speedCount = 0;
-		wait([0, rotationBudget])
+		entry leftMotorVelocity ? currLeftVel <{ 0 } ; rightMotorVelocity ? currRightVel <{ 0 } ; snewError ! ( currLeftVel + currRightVel ) ; speedCount = 0 ; wait ( [ 0 , speedBudget ] )
 	
 	}
 
