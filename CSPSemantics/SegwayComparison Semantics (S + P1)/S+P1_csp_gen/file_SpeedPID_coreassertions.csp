@@ -1,0 +1,32 @@
+
+--
+-- RoboChart generator version 3.0.0.202306261132
+-- Automatically generated on 19-08-2023 20:03:23
+--
+-- Iterated compression status: true
+-- Assertions compression status: false
+--
+
+include "file_SpeedPID.csp"
+
+
+-- generate OP_SpeedPID
+P_OP_SpeedPID = let
+	id__ = 0
+	
+	param_newError = 0
+	
+	
+	
+within
+	OP_SpeedPID::O__(id__,
+				param_newError,
+			    const_SpeedPID_P,
+			    const_SpeedPID_I,
+			    const_SpeedPID_maxIntegral)
+assert P_OP_SpeedPID :[deadlock-free]	
+assert P_OP_SpeedPID;RUN({r__}) :[deadlock-free]
+assert P_OP_SpeedPID :[deterministic]
+assert P_OP_SpeedPID :[divergence-free]
+
+

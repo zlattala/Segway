@@ -1,0 +1,136 @@
+--Imports for Parallel version P1. 
+include "S+P1_csp_gen/defs/file_AnglePID_defs.csp"
+include "S+P1_csp_gen/defs/file_BalanceSTM_P1_defs.csp"
+include "S+P1_csp_gen/defs/file_RotationPID_S_defs.csp"
+include "S+P1_csp_gen/defs/file_Segway_P1.csp"
+include "S+P1_csp_gen/defs/file_SpeedPID_defs.csp"
+include "S+P1_csp_gen/defs/file_Segway_P1_defs.csp"
+include "S+P1_csp_gen/defs/file_SpeedPID_S_defs.csp"
+include "S+P1_csp_gen/defs/file_BalanceSTM_defs.csp"
+include "S+P1_csp_gen/defs/file_RotationPID_defs.csp"
+include "S+P1_csp_gen/defs/file_AnglePID_S_defs.csp"
+include "S+P1_csp_gen/defs/file_Segway_defs.csp"
+include "S+P1_csp_gen/defs/file_SegwayRP_defs.csp"
+
+--Imports for Sequential version. 
+include "S+P1_csp_gen/defs/file_AnglePID_defs.csp"
+include "S+P1_csp_gen/defs/file_BalanceSTM_P1_defs.csp"
+include "S+P1_csp_gen/defs/file_RotationPID_S_defs.csp"
+include "S+P1_csp_gen/defs/file_Segway_P1_defs.csp"
+include "S+P1_csp_gen/defs/file_SpeedPID_defs.csp"
+include "S+P1_csp_gen/defs/file_SpeedPID_S_defs.csp"
+include "S+P1_csp_gen/defs/file_BalanceSTM_defs.csp"
+include "S+P1_csp_gen/defs/file_RotationPID_defs.csp"
+include "S+P1_csp_gen/defs/file_AnglePID_S_defs.csp"
+include "S+P1_csp_gen/defs/file_Segway_defs.csp"
+include "S+P1_csp_gen/defs/file_Segway.csp"
+include "S+P1_csp_gen/defs/file_SegwayRP_defs.csp"
+
+--Universal Imports
+include "S+P1_csp_gen/defs/state_defs.csp"
+include "S+P1_csp_gen/defs/core_defs.csp"
+include "S+P1_csp_gen/defs/robochart_defs.csp"
+include "S+P1_csp_gen/instantiations.csp"
+channel r__
+
+-- generate Segway_P1, which is the Parallel Segway module semantics, version 1. 
+P_Segway_P1 = let
+	id__ = 0
+	
+	
+	
+	const_Segway_P1_SegwayController_stm_ref1_P = const_AnglePID_S_P
+	const_Segway_P1_SegwayController_stm_ref1_D = const_AnglePID_S_D
+	const_Segway_P1_SegwayController_stm_ref2_P = const_SpeedPID_S_P
+	const_Segway_P1_SegwayController_stm_ref2_I = const_SpeedPID_S_I
+	const_Segway_P1_SegwayController_stm_ref2_maxIntegral = const_SpeedPID_S_maxIntegral
+	const_Segway_P1_SegwayController_stm_ref0_maxAngle = const_BalanceSTM_P1_maxAngle
+	const_Segway_P1_SegwayController_stm_ref0_loopTime = const_BalanceSTM_P1_loopTime
+	const_Segway_P1_SegwayController_stm_ref0_startupDelay = const_BalanceSTM_P1_startupDelay
+	const_Segway_P1_SegwayController_stm_ref0_speedUpdate = const_BalanceSTM_P1_speedUpdate
+	const_Segway_P1_SegwayController_stm_ref0_rotationUpdate = const_BalanceSTM_P1_rotationUpdate
+	const_Segway_P1_SegwayController_stm_ref0_motorBudget = const_BalanceSTM_P1_motorBudget
+	const_Segway_P1_SegwayController_stm_ref0_angleBudget = const_BalanceSTM_P1_angleBudget
+	const_Segway_P1_SegwayController_stm_ref0_speedBudget = const_BalanceSTM_P1_speedBudget
+	const_Segway_P1_SegwayController_stm_ref0_rotationBudget = const_BalanceSTM_P1_rotationBudget
+	const_Segway_P1_SegwayController_stm_ref3_D = const_RotationPID_S_D
+		
+	
+within
+	Segway_P1::O__(id__,
+			    const_Segway_P1_SegwayController_stm_ref0_maxAngle,
+			    const_Segway_P1_SegwayController_stm_ref0_loopTime,
+			    const_Segway_P1_SegwayController_stm_ref0_startupDelay,
+			    const_Segway_P1_SegwayController_stm_ref0_speedUpdate,
+			    const_Segway_P1_SegwayController_stm_ref0_rotationUpdate,
+			    const_Segway_P1_SegwayController_stm_ref0_motorBudget,
+			    const_Segway_P1_SegwayController_stm_ref0_angleBudget,
+			    const_Segway_P1_SegwayController_stm_ref0_speedBudget,
+			    const_Segway_P1_SegwayController_stm_ref0_rotationBudget,
+			    const_Segway_P1_SegwayController_stm_ref1_P,
+			    const_Segway_P1_SegwayController_stm_ref1_D,
+			    const_Segway_P1_SegwayController_stm_ref2_P,
+			    const_Segway_P1_SegwayController_stm_ref2_I,
+			    const_Segway_P1_SegwayController_stm_ref2_maxIntegral,
+			    const_Segway_P1_SegwayController_stm_ref3_D)
+				
+--Basic Assertions on P1
+assert P_Segway_P1 :[deadlock-free]	
+assert P_Segway_P1;RUN({r__}) :[deadlock-free]
+assert P_Segway_P1 :[deterministic]
+assert P_Segway_P1 :[divergence-free]
+
+--Generate process for segway sequential: 
+
+-- generate Segway
+P_Segway = let
+	id__ = 0
+	
+	
+	
+	const_Segway_SegwayController_stm_ref0_maxAngle = const_BalanceSTM_maxAngle
+	const_Segway_SegwayController_stm_ref0_loopTime = const_BalanceSTM_loopTime
+	const_Segway_SegwayController_stm_ref0_startupDelay = const_BalanceSTM_startupDelay
+	const_Segway_SegwayController_stm_ref0_speedUpdate = const_BalanceSTM_speedUpdate
+	const_Segway_SegwayController_stm_ref0_rotationUpdate = const_BalanceSTM_rotationUpdate
+	const_Segway_SegwayController_stm_ref0_angleBudget = const_BalanceSTM_angleBudget
+	const_Segway_SegwayController_stm_ref0_speedBudget = const_BalanceSTM_speedBudget
+	const_Segway_SegwayController_stm_ref0_rotationBudget = const_BalanceSTM_rotationBudget
+	const_Segway_SegwayController_stm_ref0_motorBudget = const_BalanceSTM_motorBudget
+		
+	const_Segway_SegwayController_op_ref1_P = const_SpeedPID_P
+	const_Segway_SegwayController_op_ref1_I = const_SpeedPID_I
+	const_Segway_SegwayController_op_ref1_maxIntegral = const_SpeedPID_maxIntegral
+	const_Segway_SegwayController_op_ref2_D = const_RotationPID_D
+	const_Segway_SegwayController_op_ref0_P = const_AnglePID_P
+	const_Segway_SegwayController_op_ref0_D = const_AnglePID_D
+	
+within
+	Segway::O__(id__,
+			    const_Segway_SegwayController_stm_ref0_maxAngle,
+			    const_Segway_SegwayController_stm_ref0_loopTime,
+			    const_Segway_SegwayController_stm_ref0_startupDelay,
+			    const_Segway_SegwayController_stm_ref0_speedUpdate,
+			    const_Segway_SegwayController_stm_ref0_rotationUpdate,
+			    const_Segway_SegwayController_stm_ref0_angleBudget,
+			    const_Segway_SegwayController_stm_ref0_speedBudget,
+			    const_Segway_SegwayController_stm_ref0_rotationBudget,
+			    const_Segway_SegwayController_stm_ref0_motorBudget,
+			   	const_Segway_SegwayController_op_ref0_P,
+			   	const_Segway_SegwayController_op_ref0_D,
+			   	const_Segway_SegwayController_op_ref1_P,
+			   	const_Segway_SegwayController_op_ref1_I,
+			   	const_Segway_SegwayController_op_ref1_maxIntegral,
+			   	const_Segway_SegwayController_op_ref2_D)
+				
+--assertions on sequential segway. 
+assert P_Segway :[deadlock-free]	
+assert P_Segway;RUN({r__}) :[deadlock-free]
+assert P_Segway :[deterministic]
+assert P_Segway :[divergence-free]
+
+--Simplified versions of both. 
+--Start with sequential. 
+
+
+
