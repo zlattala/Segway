@@ -26,19 +26,34 @@ include "S+P1_csp_gen/defs/file_Segway_defs.csp"
 include "S+P1_csp_gen/defs/file_Segway.csp"
 include "S+P1_csp_gen/defs/file_SegwayRP_defs.csp"
 
+--Imports for P2 parallel version. 
+
+include "S+P1+P2_csp_gen/defs/file_AnglePID_defs.csp"
+include "S+P1+P2_csp_gen/defs/file_BalanceSTM_P1_defs.csp"
+include "S+P1+P2_csp_gen/defs/file_RotationPID_S_defs.csp"
+include "S+P1+P2_csp_gen/defs/file_BalanceSTM_P2_defs.csp"
+include "S+P1+P2_csp_gen/defs/file_Segway_P2_defs.csp"
+include "S+P1+P2_csp_gen/defs/file_Segway_P1_defs.csp"
+include "S+P1+P2_csp_gen/defs/file_SpeedPID_defs.csp"
+include "S+P1+P2_csp_gen/defs/file_SpeedPID_S_defs.csp"
+include "S+P1+P2_csp_gen/defs/file_BalanceSTM_defs.csp"
+include "S+P1+P2_csp_gen/defs/file_RotationPID_defs.csp"
+include "S+P1+P2_csp_gen/defs/file_Segway_P2.csp"
+include "S+P1+P2_csp_gen/defs/file_AnglePID_S_defs.csp"
+include "S+P1+P2_csp_gen/defs/file_Segway_defs.csp"
+include "S+P1+P2_csp_gen/defs/file_SegwayRP_defs.csp"
+
+
 --Universal Imports
 include "S+P1_csp_gen/defs/state_defs.csp"
 include "S+P1_csp_gen/defs/core_defs.csp"
 include "S+P1_csp_gen/defs/robochart_defs.csp"
-include "S+P1_csp_gen/instantiations.csp"
+include "S+P1+P2_csp_gen/instantiations.csp"
 channel r__
 
 -- generate Segway_P1, which is the Parallel Segway module semantics, version 1. 
 P_Segway_P1 = let
 	id__ = 0
-	
-	
-	
 	const_Segway_P1_SegwayController_stm_ref1_P = const_AnglePID_S_P
 	const_Segway_P1_SegwayController_stm_ref1_D = const_AnglePID_S_D
 	const_Segway_P1_SegwayController_stm_ref2_P = const_SpeedPID_S_P
@@ -129,8 +144,99 @@ assert P_Segway;RUN({r__}) :[deadlock-free]
 assert P_Segway :[deterministic]
 assert P_Segway :[divergence-free]
 
+
+-- generate Segway_P2
+P_Segway_P2 = let
+	id__ = 0
+	
+	
+	
+	const_Segway_P2_SegwayController_stm_ref0_maxAngle = const_BalanceSTM_P2_maxAngle
+	const_Segway_P2_SegwayController_stm_ref0_loopTime = const_BalanceSTM_P2_loopTime
+	const_Segway_P2_SegwayController_stm_ref0_startupDelay = const_BalanceSTM_P2_startupDelay
+	const_Segway_P2_SegwayController_stm_ref0_speedUpdate = const_BalanceSTM_P2_speedUpdate
+	const_Segway_P2_SegwayController_stm_ref0_rotationUpdate = const_BalanceSTM_P2_rotationUpdate
+	const_Segway_P2_SegwayController_stm_ref0_motorBudget = const_BalanceSTM_P2_motorBudget
+	const_Segway_P2_SegwayController_stm_ref0_angleBudget = const_BalanceSTM_P2_angleBudget
+	const_Segway_P2_SegwayController_stm_ref0_speedBudget = const_BalanceSTM_P2_speedBudget
+	const_Segway_P2_SegwayController_stm_ref0_rotationBudget = const_BalanceSTM_P2_rotationBudget
+	const_Segway_P2_SegwayController_stm_ref2_P = const_SpeedPID_S_P
+	const_Segway_P2_SegwayController_stm_ref2_I = const_SpeedPID_S_I
+	const_Segway_P2_SegwayController_stm_ref2_maxIntegral = const_SpeedPID_S_maxIntegral
+	const_Segway_P2_SegwayController_stm_ref1_P = const_AnglePID_S_P
+	const_Segway_P2_SegwayController_stm_ref1_D = const_AnglePID_S_D
+	const_Segway_P2_SegwayController_stm_ref3_D = const_RotationPID_S_D
+		
+	
+within
+	Segway_P2::O__(id__,
+			    const_Segway_P2_SegwayController_stm_ref0_maxAngle,
+			    const_Segway_P2_SegwayController_stm_ref0_loopTime,
+			    const_Segway_P2_SegwayController_stm_ref0_startupDelay,
+			    const_Segway_P2_SegwayController_stm_ref0_speedUpdate,
+			    const_Segway_P2_SegwayController_stm_ref0_rotationUpdate,
+			    const_Segway_P2_SegwayController_stm_ref0_motorBudget,
+			    const_Segway_P2_SegwayController_stm_ref0_angleBudget,
+			    const_Segway_P2_SegwayController_stm_ref0_speedBudget,
+			    const_Segway_P2_SegwayController_stm_ref0_rotationBudget,
+			    const_Segway_P2_SegwayController_stm_ref1_P,
+			    const_Segway_P2_SegwayController_stm_ref1_D,
+			    const_Segway_P2_SegwayController_stm_ref2_P,
+			    const_Segway_P2_SegwayController_stm_ref2_I,
+			    const_Segway_P2_SegwayController_stm_ref2_maxIntegral,
+			    const_Segway_P2_SegwayController_stm_ref3_D)
+				
+				
+--Renamed accordance with 
 --Simplified versions of both. 
 --Start with sequential. 
+P_Segway_P1_Renamed = P_Segway_P1[[
+  Segway_P1::leftMotorVelocity <- Segway::leftMotorVelocity,
+  Segway_P1::rightMotorVelocity <- Segway::rightMotorVelocity,
+  Segway_P1::angle <- Segway::angle,
+  Segway_P1::gyroX <- Segway::gyroX,
+  Segway_P1::gyroY <- Segway::gyroY,
+  Segway_P1::gyroZ <- Segway::gyroZ,
+  Segway_P1::setLeftMotorSpeedCall <- Segway::setLeftMotorSpeedCall,
+  Segway_P1::setRightMotorSpeedCall <- Segway::setRightMotorSpeedCall,
+  Segway_P1::enableInterruptsCall <- Segway::enableInterruptsCall,
+  Segway_P1::disableInterruptsCall <- Segway::disableInterruptsCall
+  ]]
+--This should hold. THIS PASSES. 20/08/23, passes. 
+assert P_Segway_P1_Renamed [T= P_Segway
+--This won't hold. FAILED. 20/08/23, 
+assert P_Segway [T= P_Segway_P1_Renamed
+
+P_Segway_P2_Renamed = P_Segway_P2[[
+  Segway_P2::leftMotorVelocity <- Segway::leftMotorVelocity,
+  Segway_P2::rightMotorVelocity <- Segway::rightMotorVelocity,
+  Segway_P2::angle <- Segway::angle,
+  Segway_P2::gyroX <- Segway::gyroX,
+  Segway_P2::gyroY <- Segway::gyroY,
+  Segway_P2::gyroZ <- Segway::gyroZ,
+  Segway_P2::setLeftMotorSpeedCall <- Segway::setLeftMotorSpeedCall,
+  Segway_P2::setRightMotorSpeedCall <- Segway::setRightMotorSpeedCall,
+  Segway_P2::enableInterruptsCall <- Segway::enableInterruptsCall,
+  Segway_P2::disableInterruptsCall <- Segway::disableInterruptsCall
+  ]]
+ 
+--P2 and Segway assertions.
+--This should hold. HOLDS. Passes, 20/08/23
+assert P_Segway_P2_Renamed [T= P_Segway
+--This should hold. HOLDS. Passes, 20/08/23
+assert P_Segway [T= P_Segway_P2_Renamed
 
 
+--NO LONGER USING SIMPLIFIED VERSION: 
+--Make simplified Version
+Simp_P_Segway = Segway::disableInterruptsCall -> Segway::enableInterruptsCall -> 
+Segway::angle.in?x -> Segway::gyroX.in?x1 -> Segway::leftMotorVelocity.in?x2 ->
+Segway::rightMotorVelocity.in?x3 -> Segway::gyroZ.in?x4 -> Segway::setLeftMotorSpeedCall?y1 -> 
+Segway::setRightMotorSpeedCall?y2 -> Simp_P_Segway
 
+--This is true. THIS PASSES. 20/08/23, passes. 
+assert Simp_P_Segway [T= P_Segway
+--This should be false. 
+assert Simp_P_Segway [T= P_Segway_P1
+--This is false. 
+assert P_Segway [T= Simp_P_Segway
