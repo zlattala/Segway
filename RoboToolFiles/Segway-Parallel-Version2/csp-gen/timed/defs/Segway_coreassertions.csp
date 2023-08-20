@@ -1,7 +1,7 @@
 
 --
 -- RoboChart generator version 3.0.0.202306261132
--- Automatically generated on 19-08-2023 21:11:34
+-- Automatically generated on 20-08-2023 18:26:36
 --
 -- Iterated compression status: true
 -- Assertions compression status: false
@@ -23,6 +23,8 @@ P_Segway = let
 	
 	
 	
+	const_Segway_SegwayController_stm_ref1_P = const_AnglePID_P
+	const_Segway_SegwayController_stm_ref1_D = const_AnglePID_D
 	const_Segway_SegwayController_stm_ref0_maxAngle = const_BalanceSTM_maxAngle
 	const_Segway_SegwayController_stm_ref0_loopTime = const_BalanceSTM_loopTime
 	const_Segway_SegwayController_stm_ref0_startupDelay = const_BalanceSTM_startupDelay
@@ -36,8 +38,6 @@ P_Segway = let
 	const_Segway_SegwayController_stm_ref2_P = const_SpeedPID_P
 	const_Segway_SegwayController_stm_ref2_I = const_SpeedPID_I
 	const_Segway_SegwayController_stm_ref2_maxIntegral = const_SpeedPID_maxIntegral
-	const_Segway_SegwayController_stm_ref1_P = const_AnglePID_P
-	const_Segway_SegwayController_stm_ref1_D = const_AnglePID_D
 		
 	
 within

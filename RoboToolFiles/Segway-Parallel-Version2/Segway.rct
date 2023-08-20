@@ -20,6 +20,7 @@ module Segway {
 	sref stm_ref2 = SpeedPID
 		connection stm_ref2 on speedOutputE to stm_ref0 on speedOutputE
 		connection stm_ref0 on snewError to stm_ref2 on snewError
+		
 	sref stm_ref3 = RotationPID
 		connection stm_ref3 on rotationOutputE to stm_ref0 on rotationOutputE
 		connection stm_ref0 on rdiff to stm_ref3 on rdiff
