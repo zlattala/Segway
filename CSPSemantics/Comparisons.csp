@@ -43,6 +43,8 @@ include "S+P1+P2_csp_gen/defs/file_AnglePID_S_defs.csp"
 include "S+P1+P2_csp_gen/defs/file_Segway_defs.csp"
 include "S+P1+P2_csp_gen/defs/file_SegwayRP_defs.csp"
 
+--Adding ANN controller semantics
+include "ANN_semantics/ANNController_simplified.csp"
 
 --Universal Imports
 include "S+P1_csp_gen/defs/state_defs.csp"
@@ -225,6 +227,25 @@ P_Segway_P2_Renamed = P_Segway_P2[[
 assert P_Segway_P2_Renamed [T= P_Segway
 --This should hold. HOLDS. Passes, 20/08/23
 assert P_Segway [T= P_Segway_P2_Renamed
+
+--ANN component. 
+P_ANN = ANNSimp::Full
+
+--Passes all checks. 
+assert P_ANN :[deadlock-free]	
+assert P_ANN;RUN({r__}) :[deadlock-free]
+assert P_ANN :[deterministic]
+assert P_ANN :[divergence-free]
+
+--Rename it. 
+--Might need to add one more renaming, because we are relating to a component called ANN in original. We will be using AnglePID, so may need to rename
+--All send events, as in AngleOutputE, to be in terms of what we are, which is AnglePID
+--Might need ANNSimp::angleOutputE.out <- AnglePID_C::angleOutputE.out
+--P_ANN_Renamed = P_ANN[[
+--  ANNSimp::adiff.in <- SegwayController::adiff.out,
+--  ANNSimp::adiff.out <- SegwayController::adiff.in,
+--  ANNSimp::anewError.in <- SegwayController::anewError.out,
+--  ANNSimp::anewError.out <- SegwayController::anewError.in]]
 
 
 --NO LONGER USING SIMPLIFIED VERSION: 
