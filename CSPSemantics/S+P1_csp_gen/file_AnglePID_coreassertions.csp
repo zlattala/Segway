@@ -30,4 +30,7 @@ assert P_OP_AnglePID;RUN({r__}) :[deadlock-free]
 assert P_OP_AnglePID :[deterministic]
 assert P_OP_AnglePID :[divergence-free]
 
+--Simplified version
+Simp_AnglePID = set_angleOutput.0 -> SKIP
+assert Simp_AnglePID [T= P_OP_AnglePID
 

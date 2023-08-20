@@ -32,7 +32,7 @@ exports
 	
 	-- Variable channels
 	channel get_angleOutput, set_angleOutput, setL_angleOutput, setR_angleOutput: core_real
-	
+
 	-- Shared variable channels
 	channel set_EXT_angleOutput: core_real
 	

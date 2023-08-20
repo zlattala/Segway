@@ -119,7 +119,7 @@ P_Segway = let
 	const_Segway_SegwayController_op_ref1_I = const_SpeedPID_I
 	const_Segway_SegwayController_op_ref1_maxIntegral = const_SpeedPID_maxIntegral
 	const_Segway_SegwayController_op_ref2_D = const_RotationPID_D
-	const_Segway_SegwayController_op_ref0_P = const_AnglePID_P
+	const_Segway_SegwayController_op_ref0_P = 2
 	const_Segway_SegwayController_op_ref0_D = const_AnglePID_D
 	
 within
@@ -248,12 +248,15 @@ assert P_ANN :[divergence-free]
 --  ANNSimp::anewError.out <- SegwayController::anewError.in]]
 
 
---NO LONGER USING SIMPLIFIED VERSION: 
+--NO LONGER USING SIMPLIFIED VERSION: JUST FOR SANITY CHECK NOW.
 --Make simplified Version
+--Not just 0, there is a chance it is something else? Or is that just meaning it is literally always 0. 
+--It is always 0, that is good, if we change p to 1, this will fail. 
+--This works with P = 1 and D = 0 but not P = 1 and D = 1. 
 Simp_P_Segway = Segway::disableInterruptsCall -> Segway::enableInterruptsCall -> 
 Segway::angle.in?x -> Segway::gyroX.in?x1 -> Segway::leftMotorVelocity.in?x2 ->
-Segway::rightMotorVelocity.in?x3 -> Segway::gyroZ.in?x4 -> Segway::setLeftMotorSpeedCall?y1 -> 
-Segway::setRightMotorSpeedCall?y2 -> Simp_P_Segway
+Segway::rightMotorVelocity.in?x3 -> Segway::gyroZ.in?x4 -> Segway::setLeftMotorSpeedCall.0 -> 
+Segway::setRightMotorSpeedCall.0 -> Simp_P_Segway
 
 --This is true. THIS PASSES. 20/08/23, passes. 
 assert Simp_P_Segway [T= P_Segway
