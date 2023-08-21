@@ -1,7 +1,7 @@
 
 --
 -- RoboChart generator version 3.0.0.202306261132
--- Automatically generated on 20-08-2023 18:58:28
+-- Automatically generated on 21-08-2023 13:01:44
 --
 -- Iterated compression status: true
 -- Assertions compression status: false
@@ -74,13 +74,13 @@ exports
 	channel gyroZ: InOut.core_real
 	
 	-- Declaring call and ret events for undefined operations
-	channel RotationPIDCall: core_real
 	channel disableInterruptsCall
-	channel setRightMotorSpeedCall: core_real
-	channel enableInterruptsCall
-	channel setLeftMotorSpeedCall: core_real
 	channel SpeedPIDCall: core_real
+	channel setRightMotorSpeedCall: core_real
 	channel AnglePIDCall: core_real.core_real
+	channel setLeftMotorSpeedCall: core_real
+	channel RotationPIDCall: core_real
+	channel enableInterruptsCall
 	
 	enterSS = {|
 	i0::enter,
@@ -121,13 +121,13 @@ exports
 		gyroX,
 		gyroY,
 		gyroZ
-	,	RotationPIDCall,
-		disableInterruptsCall,
-		setRightMotorSpeedCall,
-		enableInterruptsCall,
-		setLeftMotorSpeedCall,
+	,	disableInterruptsCall,
 		SpeedPIDCall,
-		AnglePIDCall
+		setRightMotorSpeedCall,
+		AnglePIDCall,
+		setLeftMotorSpeedCall,
+		RotationPIDCall,
+		enableInterruptsCall
 		|}
 
 	-- Nodes --
@@ -575,7 +575,7 @@ exports
 			
 			Termination = terminate -> SKIP
 			
-			Active 		= share__choice(get_rotationOutput?rotationOutput -> share__choice(get_speedOutput?speedOutput -> share__choice(get_angleOutput?angleOutput -> true&CALL__setLeftMotorSpeed(
+			Active 		= share__choice(get_angleOutput?angleOutput -> share__choice(get_speedOutput?speedOutput -> share__choice(get_rotationOutput?rotationOutput -> true&CALL__setLeftMotorSpeed(
 						id__,
 					    const_BalanceSTM_maxAngle,
 					    const_BalanceSTM_loopTime,
@@ -587,7 +587,7 @@ exports
 					    const_BalanceSTM_rotationBudget,
 					    const_BalanceSTM_motorBudget,
 						Minus(Plus(angleOutput, speedOutput, core_real), rotationOutput, core_real)
-					))));share__choice(get_rotationOutput?rotationOutput -> share__choice(get_speedOutput?speedOutput -> share__choice(get_angleOutput?angleOutput -> true&CALL__setRightMotorSpeed(
+					))));share__choice(get_angleOutput?angleOutput -> share__choice(get_speedOutput?speedOutput -> share__choice(get_rotationOutput?rotationOutput -> true&CALL__setRightMotorSpeed(
 						id__,
 					    const_BalanceSTM_maxAngle,
 					    const_BalanceSTM_loopTime,
@@ -624,7 +624,7 @@ exports
 			
 			Termination = terminate -> SKIP
 			
-			Active 		= share__choice(get_rotationOutput?rotationOutput -> share__choice(get_speedOutput?speedOutput -> share__choice(get_angleOutput?angleOutput -> true&CALL__setLeftMotorSpeed(
+			Active 		= share__choice(get_angleOutput?angleOutput -> share__choice(get_speedOutput?speedOutput -> share__choice(get_rotationOutput?rotationOutput -> true&CALL__setLeftMotorSpeed(
 						id__,
 					    const_BalanceSTM_maxAngle,
 					    const_BalanceSTM_loopTime,
@@ -636,7 +636,7 @@ exports
 					    const_BalanceSTM_rotationBudget,
 					    const_BalanceSTM_motorBudget,
 						Minus(Plus(angleOutput, speedOutput, core_real), rotationOutput, core_real)
-					))));share__choice(get_rotationOutput?rotationOutput -> share__choice(get_speedOutput?speedOutput -> share__choice(get_angleOutput?angleOutput -> true&CALL__setRightMotorSpeed(
+					))));share__choice(get_angleOutput?angleOutput -> share__choice(get_speedOutput?speedOutput -> share__choice(get_rotationOutput?rotationOutput -> true&CALL__setRightMotorSpeed(
 						id__,
 					    const_BalanceSTM_maxAngle,
 					    const_BalanceSTM_loopTime,
@@ -1162,17 +1162,6 @@ exports
 	-- If it is in the context of a controller, the required operations not provided by the
 	-- controller will be declared here, and the defined operations will be defined in the
 	-- context of the Controller module, and therefore within scope of the state machine module.
-	CALL__RotationPID(id__,
-			    const_BalanceSTM_maxAngle,
-			    const_BalanceSTM_loopTime,
-			    const_BalanceSTM_startupDelay,
-			    const_BalanceSTM_speedUpdate,
-			    const_BalanceSTM_rotationUpdate,
-			    const_BalanceSTM_angleBudget,
-			    const_BalanceSTM_speedBudget,
-			    const_BalanceSTM_rotationBudget,
-			    const_BalanceSTM_motorBudget,
-				param_diff) 	= RotationPIDCall.param_diff -> SKIP
 	CALL__disableInterrupts(id__,
 			    const_BalanceSTM_maxAngle,
 			    const_BalanceSTM_loopTime,
@@ -1183,38 +1172,6 @@ exports
 			    const_BalanceSTM_speedBudget,
 			    const_BalanceSTM_rotationBudget,
 			    const_BalanceSTM_motorBudget) 	= disableInterruptsCall -> SKIP
-	CALL__setRightMotorSpeed(id__,
-			    const_BalanceSTM_maxAngle,
-			    const_BalanceSTM_loopTime,
-			    const_BalanceSTM_startupDelay,
-			    const_BalanceSTM_speedUpdate,
-			    const_BalanceSTM_rotationUpdate,
-			    const_BalanceSTM_angleBudget,
-			    const_BalanceSTM_speedBudget,
-			    const_BalanceSTM_rotationBudget,
-			    const_BalanceSTM_motorBudget,
-				param_speed) 	= setRightMotorSpeedCall.param_speed -> SKIP
-	CALL__enableInterrupts(id__,
-			    const_BalanceSTM_maxAngle,
-			    const_BalanceSTM_loopTime,
-			    const_BalanceSTM_startupDelay,
-			    const_BalanceSTM_speedUpdate,
-			    const_BalanceSTM_rotationUpdate,
-			    const_BalanceSTM_angleBudget,
-			    const_BalanceSTM_speedBudget,
-			    const_BalanceSTM_rotationBudget,
-			    const_BalanceSTM_motorBudget) 	= enableInterruptsCall -> SKIP
-	CALL__setLeftMotorSpeed(id__,
-			    const_BalanceSTM_maxAngle,
-			    const_BalanceSTM_loopTime,
-			    const_BalanceSTM_startupDelay,
-			    const_BalanceSTM_speedUpdate,
-			    const_BalanceSTM_rotationUpdate,
-			    const_BalanceSTM_angleBudget,
-			    const_BalanceSTM_speedBudget,
-			    const_BalanceSTM_rotationBudget,
-			    const_BalanceSTM_motorBudget,
-				param_speed) 	= setLeftMotorSpeedCall.param_speed -> SKIP
 	CALL__SpeedPID(id__,
 			    const_BalanceSTM_maxAngle,
 			    const_BalanceSTM_loopTime,
@@ -1226,6 +1183,17 @@ exports
 			    const_BalanceSTM_rotationBudget,
 			    const_BalanceSTM_motorBudget,
 				param_newError) 	= SpeedPIDCall.param_newError -> SKIP
+	CALL__setRightMotorSpeed(id__,
+			    const_BalanceSTM_maxAngle,
+			    const_BalanceSTM_loopTime,
+			    const_BalanceSTM_startupDelay,
+			    const_BalanceSTM_speedUpdate,
+			    const_BalanceSTM_rotationUpdate,
+			    const_BalanceSTM_angleBudget,
+			    const_BalanceSTM_speedBudget,
+			    const_BalanceSTM_rotationBudget,
+			    const_BalanceSTM_motorBudget,
+				param_speed) 	= setRightMotorSpeedCall.param_speed -> SKIP
 	CALL__AnglePID(id__,
 			    const_BalanceSTM_maxAngle,
 			    const_BalanceSTM_loopTime,
@@ -1238,6 +1206,38 @@ exports
 			    const_BalanceSTM_motorBudget,
 				param_newError,
 				param_diff) 	= AnglePIDCall.param_newError.param_diff -> SKIP
+	CALL__setLeftMotorSpeed(id__,
+			    const_BalanceSTM_maxAngle,
+			    const_BalanceSTM_loopTime,
+			    const_BalanceSTM_startupDelay,
+			    const_BalanceSTM_speedUpdate,
+			    const_BalanceSTM_rotationUpdate,
+			    const_BalanceSTM_angleBudget,
+			    const_BalanceSTM_speedBudget,
+			    const_BalanceSTM_rotationBudget,
+			    const_BalanceSTM_motorBudget,
+				param_speed) 	= setLeftMotorSpeedCall.param_speed -> SKIP
+	CALL__RotationPID(id__,
+			    const_BalanceSTM_maxAngle,
+			    const_BalanceSTM_loopTime,
+			    const_BalanceSTM_startupDelay,
+			    const_BalanceSTM_speedUpdate,
+			    const_BalanceSTM_rotationUpdate,
+			    const_BalanceSTM_angleBudget,
+			    const_BalanceSTM_speedBudget,
+			    const_BalanceSTM_rotationBudget,
+			    const_BalanceSTM_motorBudget,
+				param_diff) 	= RotationPIDCall.param_diff -> SKIP
+	CALL__enableInterrupts(id__,
+			    const_BalanceSTM_maxAngle,
+			    const_BalanceSTM_loopTime,
+			    const_BalanceSTM_startupDelay,
+			    const_BalanceSTM_speedUpdate,
+			    const_BalanceSTM_rotationUpdate,
+			    const_BalanceSTM_angleBudget,
+			    const_BalanceSTM_speedBudget,
+			    const_BalanceSTM_rotationBudget,
+			    const_BalanceSTM_motorBudget) 	= enableInterruptsCall -> SKIP
 	
 	-- END of Operation calls --
 	
@@ -1335,7 +1335,7 @@ exports
 			    const_BalanceSTM_speedBudget,
 			    const_BalanceSTM_rotationBudget,
 			    const_BalanceSTM_motorBudget) = ((let
-		Trans = share__choice(get_rotationCount?rotationCount -> get_speedCount?speedCount -> get_currAngle?currAngle -> (
+		Trans = share__choice(get_currAngle?currAngle -> get_speedCount?speedCount -> get_rotationCount?rotationCount -> (
 			((share__ -> SKIP
 			 [] dbisim(((speedCount>=const_BalanceSTM_speedUpdate))&(internal__!NID_j0 -> SKIP ;  ((SKIP ; CalculateSpeed::enter -> SKIP))))
 			 	 [] dbisim((true)&(internal__!NID_CalculateSpeed -> SKIP ;  share__choice(exit -> SKIP) ; (share__choice(exited -> SKIP) ; SKIP ; j1::enter -> SKIP)))
@@ -1578,12 +1578,12 @@ exports
 					 [[j3::interrupt <- x__ | x__ <- {|internal__.NID_j3,internal__.NID_j3|}]]
 					 )
 					  [[ share__ <- x__ | x__ <- {| share__ |} ]] 
-					  [[set_rotationCount <- setL_rotationCount,set_speedCount <- setL_speedCount,set_currAngle <- setL_currAngle]]
+					  [[set_currAngle <- setL_currAngle,set_speedCount <- setL_speedCount,set_rotationCount <- setL_rotationCount]]
 					 )
 					 [| union(union(union(flowevts,transSync),{terminate}),{|share__
-					 			,setL_rotationCount
-					 			,setL_speedCount
 					 			,setL_currAngle
+					 			,setL_speedCount
+					 			,setL_rotationCount
 					|}) |]
 					 ((i0::enter -> Transitions(id__,
 					 		    const_BalanceSTM_maxAngle,
@@ -1595,9 +1595,9 @@ exports
 					 		    const_BalanceSTM_speedBudget,
 					 		    const_BalanceSTM_rotationBudget,
 					 		    const_BalanceSTM_motorBudget))
-					  [[ share__ <- x__ | x__ <- {| share__,setL_rotationCount,setL_speedCount,setL_currAngle |} ]]
+					  [[ share__ <- x__ | x__ <- {| share__,setL_currAngle,setL_speedCount,setL_rotationCount |} ]]
 					 )
-					)[[setL_rotationCount <- set_rotationCount,setL_speedCount <- set_speedCount,setL_currAngle <- set_currAngle]]
+					)[[setL_currAngle <- set_currAngle,setL_speedCount <- set_speedCount,setL_rotationCount <- set_rotationCount]]
 					)
 				)
 				 \ hideSet)
@@ -1987,12 +1987,12 @@ exports
 					 [[j3::interrupt <- x__ | x__ <- {|internal__.NID_j3,internal__.NID_j3|}]]
 					 )
 					  [[ share__ <- x__ | x__ <- {| share__ |} ]] 
-					  [[set_rotationCount <- setL_rotationCount,set_speedCount <- setL_speedCount,set_currAngle <- setL_currAngle]]
+					  [[set_currAngle <- setL_currAngle,set_speedCount <- setL_speedCount,set_rotationCount <- setL_rotationCount]]
 					 )
 					 [| union(union(union(flowevts,transSync),{terminate}),{|share__
-					 			,setL_rotationCount
-					 			,setL_speedCount
 					 			,setL_currAngle
+					 			,setL_speedCount
+					 			,setL_rotationCount
 					|}) |]
 					 ((i0::enter -> Transitions(id__,
 					 		    const_BalanceSTM_maxAngle,
@@ -2004,9 +2004,9 @@ exports
 					 		    const_BalanceSTM_speedBudget,
 					 		    const_BalanceSTM_rotationBudget,
 					 		    const_BalanceSTM_motorBudget))
-					  [[ share__ <- x__ | x__ <- {| share__,setL_rotationCount,setL_speedCount,setL_currAngle |} ]]
+					  [[ share__ <- x__ | x__ <- {| share__,setL_currAngle,setL_speedCount,setL_rotationCount |} ]]
 					 )
-					)[[setL_rotationCount <- set_rotationCount,setL_speedCount <- set_speedCount,setL_currAngle <- set_currAngle]]
+					)[[setL_currAngle <- set_currAngle,setL_speedCount <- set_speedCount,setL_rotationCount <- set_rotationCount]]
 					)
 				)
 				 \ hideSet)

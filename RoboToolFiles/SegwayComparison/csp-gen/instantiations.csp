@@ -1,14 +1,27 @@
 -- generate const_Segway_SegwayController_stm_ref2_I
 const_Segway_SegwayController_stm_ref2_I = 0
 
+-- generate const_Segway_P31_AnglePID_C_stm_ref0_D
+const_Segway_P31_AnglePID_C_stm_ref0_D = 0
+
+-- OPERATION CONSTANTS
+
+-- BASIC TYPES
+
 -- generate const_Segway_P3_SegwayController_stm_ref0_angleBudget
 const_Segway_P3_SegwayController_stm_ref0_angleBudget = 0
 
 -- generate const_Segway_P1_SegwayController_stm_ref2_P
 const_Segway_P1_SegwayController_stm_ref2_P = 0
 
+-- generate const_Segway_P31_SegwayController_stm_ref2_P
+const_Segway_P31_SegwayController_stm_ref2_P = 0
+
 -- generate const_Segway_P1_SegwayController_stm_ref2_I
 const_Segway_P1_SegwayController_stm_ref2_I = 0
+
+-- generate const_Segway_P31_SegwayController_stm_ref2_I
+const_Segway_P31_SegwayController_stm_ref2_I = 0
 
 -- generate const_BalanceSTM_angleBudget
 const_BalanceSTM_angleBudget = 0
@@ -31,6 +44,9 @@ const_Segway_P2_SegwayController_stm_ref3_D = 0
 -- generate const_BalanceSTM_startupDelay
 const_BalanceSTM_startupDelay = 0
 
+-- generate const_Segway_P31_SegwayController_stm_ref0_angleBudget
+const_Segway_P31_SegwayController_stm_ref0_angleBudget = 0
+
 -- generate const_BalanceSTM_P1_startupDelay
 const_BalanceSTM_P1_startupDelay = 0
 
@@ -42,6 +58,9 @@ const_Segway_P2_SegwayController_stm_ref0_motorBudget = 0
 
 -- generate const_BalanceSTM_P1_angleBudget
 const_BalanceSTM_P1_angleBudget = 0
+
+-- generate const_Segway_P31_SegwayController_stm_ref0_rotationUpdate
+const_Segway_P31_SegwayController_stm_ref0_rotationUpdate = 0
 
 -- generate const_Segway_SegwayController_stm_ref0_speedUpdate
 const_Segway_SegwayController_stm_ref0_speedUpdate = 0
@@ -58,11 +77,17 @@ const_BalanceSTM_rotationBudget = 0
 -- generate Modulus
 Modulus(e1,e2,T) = if member(e1%e2,T) then e1%e2 else e1
 
+-- generate const_Segway_P31_AnglePID_C_stm_ref0_P
+const_Segway_P31_AnglePID_C_stm_ref0_P = 0
+
 -- generate const_Segway_P3_SegwayController_stm_ref0_rotationUpdate
 const_Segway_P3_SegwayController_stm_ref0_rotationUpdate = 0
 
 -- generate const_Segway_P2_SegwayController_stm_ref0_speedBudget
 const_Segway_P2_SegwayController_stm_ref0_speedBudget = 0
+
+-- generate const_Segway_P31_SegwayController_stm_ref0_motorBudget
+const_Segway_P31_SegwayController_stm_ref0_motorBudget = 0
 
 -- generate Minus
 Minus(e1,e2,T) = if member(e1-e2,T) then e1-e2 else e1
@@ -91,11 +116,17 @@ const_Segway_SegwayController_stm_ref2_maxIntegral = 0
 -- generate const_Segway_SegwayController_stm_ref1_D
 const_Segway_SegwayController_stm_ref1_D = 0
 
+-- generate const_Segway_P31_SegwayController_stm_ref0_speedBudget
+const_Segway_P31_SegwayController_stm_ref0_speedBudget = 0
+
 -- generate const_Segway_P3_SegwayController_stm_ref0_maxAngle
 const_Segway_P3_SegwayController_stm_ref0_maxAngle = 0
 
 -- generate const_BalanceSTM_rotationUpdate
 const_BalanceSTM_rotationUpdate = 0
+
+-- generate const_Segway_P31_SegwayController_stm_ref2_maxIntegral
+const_Segway_P31_SegwayController_stm_ref2_maxIntegral = 0
 
 -- generate const_Segway_P1_SegwayController_stm_ref1_D
 const_Segway_P1_SegwayController_stm_ref1_D = 0
@@ -154,6 +185,9 @@ const_Segway_SegwayController_stm_ref0_rotationUpdate = 0
 -- generate const_Segway_P3_AnglePID_C_stm_ref0_D
 const_Segway_P3_AnglePID_C_stm_ref0_D = 0
 
+-- generate const_Segway_P31_SegwayController_stm_ref0_rotationBudget
+const_Segway_P31_SegwayController_stm_ref0_rotationBudget = 0
+
 -- generate const_BalanceSTM_P2_maxAngle
 const_BalanceSTM_P2_maxAngle = 0
 
@@ -162,6 +196,9 @@ const_Segway_P1_SegwayController_stm_ref0_angleBudget = 0
 
 -- generate const_Segway_P2_SegwayController_stm_ref0_speedUpdate
 const_Segway_P2_SegwayController_stm_ref0_speedUpdate = 0
+
+-- generate const_Segway_P31_SegwayController_stm_ref0_loopTime
+const_Segway_P31_SegwayController_stm_ref0_loopTime = 0
 
 -- generate const_BalanceSTM_P1_loopTime
 const_BalanceSTM_P1_loopTime = 0
@@ -177,6 +214,9 @@ const_Segway_P3_AnglePID_C_stm_ref0_P = 0
 
 -- generate const_SpeedPID_S_P
 const_SpeedPID_S_P = 0
+
+-- generate const_Segway_P31_SegwayController_stm_ref0_startupDelay
+const_Segway_P31_SegwayController_stm_ref0_startupDelay = 0
 
 -- generate Plus
 Plus(e1,e2,T) = if member(e1+e2,T) then e1+e2 else e1
@@ -249,6 +289,9 @@ const_Segway_P2_SegwayController_stm_ref1_P = 0
 -- generate const_AnglePID_P
 const_AnglePID_P = 0
 
+-- generate const_Segway_P31_SegwayController_stm_ref0_maxAngle
+const_Segway_P31_SegwayController_stm_ref0_maxAngle = 0
+
 -- generate const_SpeedPID_P
 const_SpeedPID_P = 0
 
@@ -301,6 +344,9 @@ const_Segway_P1_SegwayController_stm_ref3_D = 0
 
 -- BASIC TYPES
 
+-- generate const_Segway_P31_SegwayController_stm_ref3_D
+const_Segway_P31_SegwayController_stm_ref3_D = 0
+
 -- generate const_BalanceSTM_P2_loopTime
 const_BalanceSTM_P2_loopTime = 0
 
@@ -343,6 +389,9 @@ nametype core_boolean = Bool
 
 -- generate const_Segway_P2_SegwayController_stm_ref2_P
 const_Segway_P2_SegwayController_stm_ref2_P = 0
+
+-- generate const_Segway_P31_SegwayController_stm_ref0_speedUpdate
+const_Segway_P31_SegwayController_stm_ref0_speedUpdate = 0
 
 -- generate const_BalanceSTM_speedUpdate
 const_BalanceSTM_speedUpdate = 0

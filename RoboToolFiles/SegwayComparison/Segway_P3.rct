@@ -41,9 +41,9 @@ module Segway_P3 {
 	connection rp_ref0 on gyroZ to SegwayController on gyroZ ( _async )
 	connection rp_ref0 on leftMotorVelocity to SegwayController on leftMotorVelocity ( _async )
 	connection rp_ref0 on rightMotorVelocity to SegwayController on rightMotorVelocity ( _async )
-	connection SegwayController on anewError to AnglePID_C on anewError ( _async )
-	connection SegwayController on adiff to AnglePID_C on adiff ( _async )
-	connection AnglePID_C on angleOutputE to SegwayController on angleOutputE ( _async )
+	connection SegwayController on anewError to AnglePID_C on anewError 
+	connection SegwayController on adiff to AnglePID_C on adiff 
+	connection AnglePID_C on angleOutputE to SegwayController on angleOutputE 
 	
 	rref rp_ref0 = SegwayRP
 	}
