@@ -79,7 +79,7 @@ stm BalanceSTM {
 	transition t13 {
 		from ReceiveInput
 		to SendSpeed
-		condition ( speedSent == false /\ ( speedCount >= speedUpdate /\ speedCount > 0 ) ) /\ angleSent == true
+		condition ( speedSent == false /\ ( speedCount >= speedUpdate /\ speedCount > 0 ) ) /\ angleReceived == true
 	}
 
 	transition t14 {
@@ -101,7 +101,7 @@ stm BalanceSTM {
 	transition t16 {
 		from ReceiveInput
 		to SendRotation
-		condition ( rotationSent == false /\ ( rotationCount >= rotationUpdate /\ rotationCount > 0 ) ) /\ angleSent == true /\ ( ( speedCount == 0 ) \/ ( speedCount < speedUpdate ) )
+		condition ( rotationSent == false /\ ( rotationCount >= rotationUpdate /\ rotationCount > 0 ) ) /\ angleReceived == true /\ ( ( speedCount == 0 ) \/ ( speedCount < speedUpdate ) )
 	}
 
 	transition t17 {
