@@ -1,17 +1,7 @@
-
---
--- RoboChart generator version 3.0.0.202306261132
--- Automatically generated on 20-08-2023 18:58:31
---
--- Iterated compression status: true
--- Assertions compression status: false
---
-
 include "defs/file_AnglePID_defs.csp"
 include "defs/file_BalanceSTM_P1_defs.csp"
 include "defs/file_RotationPID_S_defs.csp"
 include "defs/file_Segway_P3_defs.csp"
-include "defs/state_defs.csp"
 include "defs/core_defs.csp"
 include "defs/file_BalanceSTM_P2_defs.csp"
 include "defs/file_Segway_P2_defs.csp"

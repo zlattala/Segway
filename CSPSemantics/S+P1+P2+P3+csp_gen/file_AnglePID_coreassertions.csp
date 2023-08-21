@@ -1,12 +1,3 @@
-
---
--- RoboChart generator version 3.0.0.202306261132
--- Automatically generated on 20-08-2023 18:58:27
---
--- Iterated compression status: true
--- Assertions compression status: false
---
-
 include "file_AnglePID.csp"
 
 
@@ -14,15 +5,15 @@ include "file_AnglePID.csp"
 P_OP_AnglePID = let
 	id__ = 0
 	
-	param_newError = 0
-	param_diff = 0
+	newError = 0
+	diff = 0
 	
 	
 	
 within
 	OP_AnglePID::O__(id__,
-				param_newError,
-				param_diff,
+				newError,
+				diff,
 			    const_AnglePID_P,
 			    const_AnglePID_D)
 assert P_OP_AnglePID :[deadlock-free]	

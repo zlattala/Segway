@@ -1,759 +1,658 @@
 
---
--- RoboChart generator version 3.0.0.202306261132
--- Automatically generated on 20-08-2023 18:58:33
---
--- Iterated compression status: true
--- Assertions compression status: false
---
-
-
 
 
 module SpeedPID_S
 exports
-	transparent diamond
-	transparent sbisim
-	transparent dbisim
-	transparent chase
-
-	-- Transition identifiers
-	-- declaring identifiers of transitions
-	datatype NIDS = 
-	              NID_i0|
-	              NID_Read|
-	              NID_UpdateIntegral|
-	              NID_UpdateOutput
-	
-	channel internal__ : NIDS
-	
-	-- Flow channels		
-	channel interrupt
-	channel exited
-	channel exit
+	-- flow channels
+	channel internal__ : TIDS
+	channel enteredV, enterV, exitV, exitedV : SIDS
+	channel enter, entered: SIDS.SIDS
+	channel exit,exited: SIDS.SIDS
 	channel terminate
 	
-	-- Variable channels
-	channel get_currNewError, set_currNewError, setL_currNewError, setR_currNewError: core_real
-	channel get_currSpeedOutput, set_currSpeedOutput, setL_currSpeedOutput, setR_currSpeedOutput: core_real
-	channel get_speedIntegral, set_speedIntegral, setL_speedIntegral, setR_speedIntegral: core_real
+	-- variable channels
+	channel get_currNewError, set_currNewError: core_real
+	channel get_currSpeedOutput, set_currSpeedOutput: core_real
+	channel get_speedIntegral, set_speedIntegral: core_real
+			
+	-- shared variable channels
 	
-	-- Shared variable channels
+	-- local variable channels for defined operations that are required by the state machine
 	
-	-- Local variable channels for defined operations that are required by the state machine
-	
-	-- Declaring state machine events
-	channel snewError__: NIDS.InOut.core_real
+	-- declaring state machine events
+	channel snewError__: TIDS.InOut.core_real
 	channel snewError: InOut.core_real
-	channel speedOutputE__: NIDS.InOut.core_real
+	channel speedOutputE__: TIDS.InOut.core_real
 	channel speedOutputE: InOut.core_real
 	
-	-- Declaring call and ret events for undefined operations
+	-- declaring call and ret events for undefined operations
 	
-	enterSS = {|
-	i0::enter,
-	Read::enter,
-	UpdateIntegral::enter,
-	UpdateOutput::enter
-	|}
-	
-	enteredSS = 	{|
-	Read::entered,
-	UpdateIntegral::entered,
-	UpdateOutput::entered
-	|}
-	
-	internal_events = union(enteredSS,union(enterSS,{|interrupt,exited|}))
-	
-	shared_variable_events = {|
-	|}
-	
-	-- channel set with all visible events
-	sem__events = {|
-		terminate
-	,	snewError,
-		speedOutputE
-		|}
-
-	-- Nodes --
-	-- declaring all nodes
-	
-	----------------------------------------------------------------------
-	-- Initial: i0
-	module i0
-	exports
-	
-		channel enter, interrupt
-		
-		D__(id__,
-				    const_SpeedPID_S_P,
-				    const_SpeedPID_S_I,
-				    const_SpeedPID_S_maxIntegral) = 
-			dbisim(let
-				Inactive 	= share__choice(enter -> SKIP [] terminate -> SKIP) ; Active
-				
-				Termination = terminate -> SKIP
-				
-				Active 		= share__choice(interrupt -> SKIP) ; Inactive
-			within
-				Inactive [| {terminate} |> SKIP)
-		
-		VS_O__(id__,
-				    const_SpeedPID_S_P,
-				    const_SpeedPID_S_I,
-				    const_SpeedPID_S_maxIntegral) = D__(id__,
-				    const_SpeedPID_S_P,
-				    const_SpeedPID_S_I,
-				    const_SpeedPID_S_maxIntegral)
-	
-	endmodule
-	----------------------------------------------------------------------
-	
-	
-	----------------------------------------------------------------------
-	-- State: Read
-	module Read
-	
-	enterSS = {}
-	
-	enteredSS = {}
-	
-	exports
-	
-		--  Declarations
-		
-		channel enter, entered, interrupt
-		channel enteredL, enteredR
-		
-						
-		
-		--	Nodes
-		-- declaring all nodes
-		
-		
-		--	Rule: behaviours(Node)
-		--  Note that FDR has problems with efficiently compiling the process below
-		-- 	if using a different recursion pattern.
-		D__(id__,
-				    const_SpeedPID_S_P,
-				    const_SpeedPID_S_I,
-				    const_SpeedPID_S_maxIntegral) = 
-		dbisim(let
-			-- IMPLEMENTATION NOTE: 
-			-- The following should be defined as: Inactive = share__choice(Activation [] Termination),
-			-- however FDR struggles with that form in certain cases. So we use the exception operator
-			-- instead to 'terminate'.
-			
-			Inactive 	= share__choice(enter -> SKIP [] terminate -> SKIP) ; Active
-			
-			Termination = terminate -> SKIP
-			
-			Active 		= SKIP ; 
-					 	  Behaviour ; 
-					 	  share__choice(exit -> SKIP) ; SKIP ; 
-					 	  share__choice(exited -> SKIP) ; Inactive
-		
-			Behaviour 	= entered -> During
-			During 		= ((SKIP ; SStop) /\ interrupt -> SKIP)
-		within
-			Inactive [| {terminate} |> SKIP)
-			
-		VS_O__(id__,
-				    const_SpeedPID_S_P,
-				    const_SpeedPID_S_I,
-				    const_SpeedPID_S_maxIntegral) = 
-		dbisim(let
-			Inactive 	= share__choice(enter -> SKIP [] terminate -> SKIP) ; Active
-			
-			Termination = terminate -> SKIP
-			
-			Active 		= SKIP ; 
-					 	  Behaviour ; 
-					 	  share__choice(exit -> SKIP) ; SKIP ; 
-					 	  share__choice(exited -> SKIP) ; Inactive
-		
-			Behaviour 	= entered -> During
-			During 		= ((SKIP ; SStop) /\ interrupt -> SKIP)
-		within
-			Inactive [| {terminate} |> SKIP)
-		
-	
-	endmodule
-	----------------------------------------------------------------------
-	
-	
-	----------------------------------------------------------------------
-	-- State: UpdateIntegral
-	module UpdateIntegral
-	
-	enterSS = {}
-	
-	enteredSS = {}
-	
-	exports
-	
-		--  Declarations
-		
-		channel enter, entered, interrupt
-		channel enteredL, enteredR
-		
-						
-		
-		--	Nodes
-		-- declaring all nodes
-		
-		
-		--	Rule: behaviours(Node)
-		--  Note that FDR has problems with efficiently compiling the process below
-		-- 	if using a different recursion pattern.
-		D__(id__,
-				    const_SpeedPID_S_P,
-				    const_SpeedPID_S_I,
-				    const_SpeedPID_S_maxIntegral) = 
-		dbisim(let
-			-- IMPLEMENTATION NOTE: 
-			-- The following should be defined as: Inactive = share__choice(Activation [] Termination),
-			-- however FDR struggles with that form in certain cases. So we use the exception operator
-			-- instead to 'terminate'.
-			
-			Inactive 	= share__choice(enter -> SKIP [] terminate -> SKIP) ; Active
-			
-			Termination = terminate -> SKIP
-			
-			Active 		= share__choice(share__choice(get_currNewError?currNewError -> share__choice(get_speedIntegral?speedIntegral -> true & (share__choice(set_speedIntegral!Plus(speedIntegral, currNewError, core_real) -> SKIP)))));share__choice(share__choice(get_speedIntegral?speedIntegral -> true & (share__choice(set_speedIntegral!(if (speedIntegral>const_SpeedPID_S_maxIntegral) then const_SpeedPID_S_maxIntegral else (if (speedIntegral<Neg(const_SpeedPID_S_maxIntegral, core_real)) then Neg(const_SpeedPID_S_maxIntegral, core_real) else speedIntegral)) -> SKIP)))) ; 
-					 	  Behaviour ; 
-					 	  share__choice(exit -> SKIP) ; SKIP ; 
-					 	  share__choice(exited -> SKIP) ; Inactive
-		
-			Behaviour 	= entered -> During
-			During 		= ((SKIP ; SStop) /\ interrupt -> SKIP)
-		within
-			Inactive [| {terminate} |> SKIP)
-			
-		VS_O__(id__,
-				    const_SpeedPID_S_P,
-				    const_SpeedPID_S_I,
-				    const_SpeedPID_S_maxIntegral) = 
-		dbisim(let
-			Inactive 	= share__choice(enter -> SKIP [] terminate -> SKIP) ; Active
-			
-			Termination = terminate -> SKIP
-			
-			Active 		= share__choice(share__choice(get_currNewError?currNewError -> share__choice(get_speedIntegral?speedIntegral -> true & (share__choice(set_speedIntegral!Plus(speedIntegral, currNewError, core_real) -> SKIP)))));share__choice(share__choice(get_speedIntegral?speedIntegral -> true & (share__choice(set_speedIntegral!(if (speedIntegral>const_SpeedPID_S_maxIntegral) then const_SpeedPID_S_maxIntegral else (if (speedIntegral<Neg(const_SpeedPID_S_maxIntegral, core_real)) then Neg(const_SpeedPID_S_maxIntegral, core_real) else speedIntegral)) -> SKIP)))) ; 
-					 	  Behaviour ; 
-					 	  share__choice(exit -> SKIP) ; SKIP ; 
-					 	  share__choice(exited -> SKIP) ; Inactive
-		
-			Behaviour 	= entered -> During
-			During 		= ((SKIP ; SStop) /\ interrupt -> SKIP)
-		within
-			Inactive [| {terminate} |> SKIP)
-		
-	
-	endmodule
-	----------------------------------------------------------------------
-	
-	
-	----------------------------------------------------------------------
-	-- State: UpdateOutput
-	module UpdateOutput
-	
-	enterSS = {}
-	
-	enteredSS = {}
-	
-	exports
-	
-		--  Declarations
-		
-		channel enter, entered, interrupt
-		channel enteredL, enteredR
-		
-						
-		
-		--	Nodes
-		-- declaring all nodes
-		
-		
-		--	Rule: behaviours(Node)
-		--  Note that FDR has problems with efficiently compiling the process below
-		-- 	if using a different recursion pattern.
-		D__(id__,
-				    const_SpeedPID_S_P,
-				    const_SpeedPID_S_I,
-				    const_SpeedPID_S_maxIntegral) = 
-		dbisim(let
-			-- IMPLEMENTATION NOTE: 
-			-- The following should be defined as: Inactive = share__choice(Activation [] Termination),
-			-- however FDR struggles with that form in certain cases. So we use the exception operator
-			-- instead to 'terminate'.
-			
-			Inactive 	= share__choice(enter -> SKIP [] terminate -> SKIP) ; Active
-			
-			Termination = terminate -> SKIP
-			
-			Active 		= share__choice(share__choice(get_currNewError?currNewError -> share__choice(get_speedIntegral?speedIntegral -> true & (share__choice(set_currSpeedOutput!Plus(Mult(currNewError, const_SpeedPID_S_P, core_real), Mult(speedIntegral, const_SpeedPID_S_I, core_real), core_real) -> SKIP))))) ; 
-					 	  Behaviour ; 
-					 	  share__choice(exit -> SKIP) ; SKIP ; 
-					 	  share__choice(exited -> SKIP) ; Inactive
-		
-			Behaviour 	= entered -> During
-			During 		= ((SKIP ; SStop) /\ interrupt -> SKIP)
-		within
-			Inactive [| {terminate} |> SKIP)
-			
-		VS_O__(id__,
-				    const_SpeedPID_S_P,
-				    const_SpeedPID_S_I,
-				    const_SpeedPID_S_maxIntegral) = 
-		dbisim(let
-			Inactive 	= share__choice(enter -> SKIP [] terminate -> SKIP) ; Active
-			
-			Termination = terminate -> SKIP
-			
-			Active 		= share__choice(share__choice(get_currNewError?currNewError -> share__choice(get_speedIntegral?speedIntegral -> true & (share__choice(set_currSpeedOutput!Plus(Mult(currNewError, const_SpeedPID_S_P, core_real), Mult(speedIntegral, const_SpeedPID_S_I, core_real), core_real) -> SKIP))))) ; 
-					 	  Behaviour ; 
-					 	  share__choice(exit -> SKIP) ; SKIP ; 
-					 	  share__choice(exited -> SKIP) ; Inactive
-		
-			Behaviour 	= entered -> During
-			During 		= ((SKIP ; SStop) /\ interrupt -> SKIP)
-		within
-			Inactive [| {terminate} |> SKIP)
-		
-	
-	endmodule
-	----------------------------------------------------------------------
-	
-	-- END of Nodes --
-	
-	-- Operation calls --
 	-- Only the undefined operations are declared here.
 	-- If the state machine is in isolation, all required operations will be undefined.
 	-- If it is in the context of a controller, the required operations not provided by the
 	-- controller will be declared here, and the defined operations will be defined in the
-	-- context of the Controller module, and therefore within scope of the state machine module.
+	-- context of the Controller module, and therefore within scope of the state machien module.
 	
-	-- END of Operation calls --
 	
-	-- STM processes
+	-- definition of functions used to expose flow channels
+	ShowEvents(P,E) = P[[ entered.x____.y____ <- enteredV.y____ | entered.x____.y____ <- E]]
+					   [[ enter.x____.y____ <- enterV.y____ | enter.x____.y____ <- E]]
+					   [[ exit.x____.y____ <- exitV.y____ | exit.x____.y____ <- E]]
+					   [[ exited.x____.y____ <- exitedV.y____ | exited.x____.y____ <- E ]]
+						 
+	ShowEnteredV(P) = P[[ entered.x____.y____ <- enteredV.y____ | x____ <- SIDS, y____ <- SIDS ]]
+	ShowEnterV(P) = P[[ enter.x____.y____ <- enterV.y____ | x____ <- SIDS, y____ <- SIDS ]]
+	ShowExitV(P) = P[[ exit.x____.y____ <- exitV.y____ | x____ <- SIDS, y____ <- SIDS ]]
+	ShowExitedV(P) = P[[ exited.x____.y____ <- exitedV.y____ | x____ <- SIDS, y____ <- SIDS ]]
+	ShowV(P) = P[[ entered.x____.y____ <- enteredV.y____ | x____ <- SIDS, y____ <- SIDS]]
+				[[ enter.x____.y____ <- enterV.y____ | x____ <- SIDS, y____ <- SIDS ]]
+				[[ exit.x____.y____ <- exitV.y____ | x____ <- SIDS, y____ <- SIDS]]
+				[[ exited.x____.y____ <- exitedV.y____ | x____ <- SIDS, y____ <- SIDS ]]
+	
+	-- declaring identifiers of state and final states
+	datatype SIDS = SID_SpeedPID_S
+	              | SID_SpeedPID_S_Read
+	              | SID_SpeedPID_S_UpdateIntegral
+	              | SID_SpeedPID_S_UpdateOutput
+	
+	-- declaring identifiers of transitions
+	datatype TIDS = NULLTRANSITION__
+	              | TID_SpeedPID_S_t0
+	              | TID_SpeedPID_S_t1
+	              | TID_SpeedPID_S_t2
+	              | TID_SpeedPID_S_t3
+	
+	-- declaring identifiers of transitions that can interupt a state (excludes transitions from junctions)
+	
+	ITIDS = {
+		TID_SpeedPID_S_t1,	TID_SpeedPID_S_t2,	TID_SpeedPID_S_t3
+	}
+	
+	int_int = {|
+		snewError__.TID_SpeedPID_S_t1,
+		speedOutputE__.TID_SpeedPID_S_t1,
+		internal__.TID_SpeedPID_S_t1,
+		snewError__.TID_SpeedPID_S_t2,
+		speedOutputE__.TID_SpeedPID_S_t2,
+		internal__.TID_SpeedPID_S_t2,
+		snewError__.TID_SpeedPID_S_t3,
+		speedOutputE__.TID_SpeedPID_S_t3,
+		internal__.TID_SpeedPID_S_t3
+	|}
+		
+	
+	internal_events = {|enter,entered,exit,exited|}
+	shared_variable_events = {|
+	|}
+			
+	
+	-- declaring all states
+	CS_SpeedPID_S_Read_sync = {|
+		enter.y____.x____, 
+		entered.y____.x____, 
+		exit.y____.x____, 
+		exited.y____.x____,
+		enter.x____.y____, 
+		entered.x____.y____, 
+		exit.x____.y____, 
+		exited.x____.y____ |
+		x____ <- {SID_SpeedPID_S_Read,SID_SpeedPID_S_UpdateIntegral,SID_SpeedPID_S_UpdateOutput},
+		y____ <- {SID_SpeedPID_S_Read}
+	|}
+	
+	
+	SpeedPID_S_Read_triggers = {|
+		snewError__.TID_SpeedPID_S_t3,
+		internal__.TID_SpeedPID_S_t1,
+		internal__.TID_SpeedPID_S_t2
+	|}
+	
+	State_SpeedPID_S_Read(id__,
+			    const_SpeedPID_S_P,
+			    const_SpeedPID_S_I,
+			    const_SpeedPID_S_maxIntegral) = let
+		T_SpeedPID_S_t3(id__,
+				    const_SpeedPID_S_P,
+				    const_SpeedPID_S_I,
+				    const_SpeedPID_S_maxIntegral) = snewError__!TID_SpeedPID_S_t3.in?currNewError -> set_currNewError!currNewError ->  (exit.SID_SpeedPID_S_Read.SID_SpeedPID_S_Read -> SKIP;
+							SKIP;exited.SID_SpeedPID_S_Read.SID_SpeedPID_S_Read -> SKIP;
+							enter!SID_SpeedPID_S_Read!SID_SpeedPID_S_UpdateIntegral -> entered!SID_SpeedPID_S_Read!SID_SpeedPID_S_UpdateIntegral ->
+							State_SpeedPID_S_Read(id__,
+									    const_SpeedPID_S_P,
+									    const_SpeedPID_S_I,
+									    const_SpeedPID_S_maxIntegral)
+		)
+		State_SpeedPID_S_Read_execute(id__,o____) = SKIP; 
+			entered!o____!SID_SpeedPID_S_Read ->
+			(SKIP; STOP /\ (
+				T_SpeedPID_S_t3(id__,
+						    const_SpeedPID_S_P,
+						    const_SpeedPID_S_I,
+						    const_SpeedPID_S_maxIntegral)
+				[]
+				internal__?x____:diff(ITIDS,{NULLTRANSITION__,TID_SpeedPID_S_t3,TID_SpeedPID_S_t1,TID_SpeedPID_S_t2}) -> exit?y____:diff(SIDS,{SID_SpeedPID_S_Read})!SID_SpeedPID_S_Read -> (
+						SKIP;
+						exited!y____!SID_SpeedPID_S_Read -> SKIP);
+						State_SpeedPID_S_Read(id__,
+								    const_SpeedPID_S_P,
+								    const_SpeedPID_S_I,
+								    const_SpeedPID_S_maxIntegral)
+				[] snewError__?x____:diff(ITIDS,{NULLTRANSITION__,TID_SpeedPID_S_t3,TID_SpeedPID_S_t1,TID_SpeedPID_S_t2})?d____?aux____ ->	exit?y____:diff(SIDS,{SID_SpeedPID_S_Read})!SID_SpeedPID_S_Read -> (
+						SKIP;
+						exited!y____!SID_SpeedPID_S_Read -> SKIP);
+						State_SpeedPID_S_Read(id__,
+								    const_SpeedPID_S_P,
+								    const_SpeedPID_S_I,
+								    const_SpeedPID_S_maxIntegral)
+				[] speedOutputE__?x____:diff(ITIDS,{NULLTRANSITION__,TID_SpeedPID_S_t3,TID_SpeedPID_S_t1,TID_SpeedPID_S_t2})?d____?aux____ ->	exit?y____:diff(SIDS,{SID_SpeedPID_S_Read})!SID_SpeedPID_S_Read -> (
+						SKIP;
+						exited!y____!SID_SpeedPID_S_Read -> SKIP);
+						State_SpeedPID_S_Read(id__,
+								    const_SpeedPID_S_P,
+								    const_SpeedPID_S_I,
+								    const_SpeedPID_S_maxIntegral)
+			))
+	within
+		enter?x____:diff(SIDS,{SID_SpeedPID_S_Read})!SID_SpeedPID_S_Read -> (State_SpeedPID_S_Read_execute(id__,x____))
+	
+	CS_SpeedPID_S_UpdateIntegral_sync = {|
+		enter.y____.x____, 
+		entered.y____.x____, 
+		exit.y____.x____, 
+		exited.y____.x____,
+		enter.x____.y____, 
+		entered.x____.y____, 
+		exit.x____.y____, 
+		exited.x____.y____ |
+		x____ <- {SID_SpeedPID_S_Read,SID_SpeedPID_S_UpdateIntegral,SID_SpeedPID_S_UpdateOutput},
+		y____ <- {SID_SpeedPID_S_UpdateIntegral}
+	|}
+	
+	
+	SpeedPID_S_UpdateIntegral_triggers = {|
+		snewError__.TID_SpeedPID_S_t3,
+		internal__.TID_SpeedPID_S_t1,
+		internal__.TID_SpeedPID_S_t2
+	|}
+	
+	State_SpeedPID_S_UpdateIntegral(id__,
+			    const_SpeedPID_S_P,
+			    const_SpeedPID_S_I,
+			    const_SpeedPID_S_maxIntegral) = let
+		T_SpeedPID_S_t1(id__,
+				    const_SpeedPID_S_P,
+				    const_SpeedPID_S_I,
+				    const_SpeedPID_S_maxIntegral) = internal__!TID_SpeedPID_S_t1 ->  exit.SID_SpeedPID_S_UpdateIntegral.SID_SpeedPID_S_UpdateIntegral -> SKIP;
+							SKIP;exited.SID_SpeedPID_S_UpdateIntegral.SID_SpeedPID_S_UpdateIntegral -> SKIP;
+							enter!SID_SpeedPID_S_UpdateIntegral!SID_SpeedPID_S_UpdateOutput -> entered!SID_SpeedPID_S_UpdateIntegral!SID_SpeedPID_S_UpdateOutput ->
+							State_SpeedPID_S_UpdateIntegral(id__,
+									    const_SpeedPID_S_P,
+									    const_SpeedPID_S_I,
+									    const_SpeedPID_S_maxIntegral)
+		State_SpeedPID_S_UpdateIntegral_execute(id__,o____) = get_speedIntegral?speedIntegral -> get_currNewError?currNewError -> true & (set_speedIntegral!Plus(speedIntegral, currNewError, core_real) -> SKIP);get_speedIntegral?speedIntegral -> true & (set_speedIntegral!(if (speedIntegral>const_SpeedPID_S_maxIntegral) then const_SpeedPID_S_maxIntegral else (if (speedIntegral<Neg(const_SpeedPID_S_maxIntegral, core_int)) then Neg(const_SpeedPID_S_maxIntegral, core_int) else speedIntegral)) -> SKIP); 
+			entered!o____!SID_SpeedPID_S_UpdateIntegral ->
+			(SKIP; STOP /\ (
+				T_SpeedPID_S_t1(id__,
+						    const_SpeedPID_S_P,
+						    const_SpeedPID_S_I,
+						    const_SpeedPID_S_maxIntegral)
+				[]
+				internal__?x____:diff(ITIDS,{NULLTRANSITION__,TID_SpeedPID_S_t3,TID_SpeedPID_S_t1,TID_SpeedPID_S_t2}) -> exit?y____:diff(SIDS,{SID_SpeedPID_S_UpdateIntegral})!SID_SpeedPID_S_UpdateIntegral -> (
+						SKIP;
+						exited!y____!SID_SpeedPID_S_UpdateIntegral -> SKIP);
+						State_SpeedPID_S_UpdateIntegral(id__,
+								    const_SpeedPID_S_P,
+								    const_SpeedPID_S_I,
+								    const_SpeedPID_S_maxIntegral)
+				[] snewError__?x____:diff(ITIDS,{NULLTRANSITION__,TID_SpeedPID_S_t3,TID_SpeedPID_S_t1,TID_SpeedPID_S_t2})?d____?aux____ ->	exit?y____:diff(SIDS,{SID_SpeedPID_S_UpdateIntegral})!SID_SpeedPID_S_UpdateIntegral -> (
+						SKIP;
+						exited!y____!SID_SpeedPID_S_UpdateIntegral -> SKIP);
+						State_SpeedPID_S_UpdateIntegral(id__,
+								    const_SpeedPID_S_P,
+								    const_SpeedPID_S_I,
+								    const_SpeedPID_S_maxIntegral)
+				[] speedOutputE__?x____:diff(ITIDS,{NULLTRANSITION__,TID_SpeedPID_S_t3,TID_SpeedPID_S_t1,TID_SpeedPID_S_t2})?d____?aux____ ->	exit?y____:diff(SIDS,{SID_SpeedPID_S_UpdateIntegral})!SID_SpeedPID_S_UpdateIntegral -> (
+						SKIP;
+						exited!y____!SID_SpeedPID_S_UpdateIntegral -> SKIP);
+						State_SpeedPID_S_UpdateIntegral(id__,
+								    const_SpeedPID_S_P,
+								    const_SpeedPID_S_I,
+								    const_SpeedPID_S_maxIntegral)
+			))
+	within
+		enter?x____:diff(SIDS,{SID_SpeedPID_S_UpdateIntegral})!SID_SpeedPID_S_UpdateIntegral -> (State_SpeedPID_S_UpdateIntegral_execute(id__,x____))
+	
+	CS_SpeedPID_S_UpdateOutput_sync = {|
+		enter.y____.x____, 
+		entered.y____.x____, 
+		exit.y____.x____, 
+		exited.y____.x____,
+		enter.x____.y____, 
+		entered.x____.y____, 
+		exit.x____.y____, 
+		exited.x____.y____ |
+		x____ <- {SID_SpeedPID_S_Read,SID_SpeedPID_S_UpdateIntegral,SID_SpeedPID_S_UpdateOutput},
+		y____ <- {SID_SpeedPID_S_UpdateOutput}
+	|}
+	
+	
+	SpeedPID_S_UpdateOutput_triggers = {|
+		snewError__.TID_SpeedPID_S_t3,
+		internal__.TID_SpeedPID_S_t1,
+		internal__.TID_SpeedPID_S_t2
+	|}
+	
+	State_SpeedPID_S_UpdateOutput(id__,
+			    const_SpeedPID_S_P,
+			    const_SpeedPID_S_I,
+			    const_SpeedPID_S_maxIntegral) = let
+		T_SpeedPID_S_t2(id__,
+				    const_SpeedPID_S_P,
+				    const_SpeedPID_S_I,
+				    const_SpeedPID_S_maxIntegral) = internal__!TID_SpeedPID_S_t2 ->  exit.SID_SpeedPID_S_UpdateOutput.SID_SpeedPID_S_UpdateOutput -> SKIP;
+							SKIP;exited.SID_SpeedPID_S_UpdateOutput.SID_SpeedPID_S_UpdateOutput -> SKIP;
+							get_currSpeedOutput?currSpeedOutput -> true&(speedOutputE.out!currSpeedOutput -> SKIP);enter!SID_SpeedPID_S_UpdateOutput!SID_SpeedPID_S_Read -> entered!SID_SpeedPID_S_UpdateOutput!SID_SpeedPID_S_Read ->
+							State_SpeedPID_S_UpdateOutput(id__,
+									    const_SpeedPID_S_P,
+									    const_SpeedPID_S_I,
+									    const_SpeedPID_S_maxIntegral)
+		State_SpeedPID_S_UpdateOutput_execute(id__,o____) = get_speedIntegral?speedIntegral -> get_currNewError?currNewError -> true & (set_currSpeedOutput!Plus(Mult(currNewError, const_SpeedPID_S_P, core_real), Mult(speedIntegral, const_SpeedPID_S_I, core_real), core_real) -> SKIP); 
+			entered!o____!SID_SpeedPID_S_UpdateOutput ->
+			(SKIP; STOP /\ (
+				T_SpeedPID_S_t2(id__,
+						    const_SpeedPID_S_P,
+						    const_SpeedPID_S_I,
+						    const_SpeedPID_S_maxIntegral)
+				[]
+				internal__?x____:diff(ITIDS,{NULLTRANSITION__,TID_SpeedPID_S_t3,TID_SpeedPID_S_t1,TID_SpeedPID_S_t2}) -> exit?y____:diff(SIDS,{SID_SpeedPID_S_UpdateOutput})!SID_SpeedPID_S_UpdateOutput -> (
+						SKIP;
+						exited!y____!SID_SpeedPID_S_UpdateOutput -> SKIP);
+						State_SpeedPID_S_UpdateOutput(id__,
+								    const_SpeedPID_S_P,
+								    const_SpeedPID_S_I,
+								    const_SpeedPID_S_maxIntegral)
+				[] snewError__?x____:diff(ITIDS,{NULLTRANSITION__,TID_SpeedPID_S_t3,TID_SpeedPID_S_t1,TID_SpeedPID_S_t2})?d____?aux____ ->	exit?y____:diff(SIDS,{SID_SpeedPID_S_UpdateOutput})!SID_SpeedPID_S_UpdateOutput -> (
+						SKIP;
+						exited!y____!SID_SpeedPID_S_UpdateOutput -> SKIP);
+						State_SpeedPID_S_UpdateOutput(id__,
+								    const_SpeedPID_S_P,
+								    const_SpeedPID_S_I,
+								    const_SpeedPID_S_maxIntegral)
+				[] speedOutputE__?x____:diff(ITIDS,{NULLTRANSITION__,TID_SpeedPID_S_t3,TID_SpeedPID_S_t1,TID_SpeedPID_S_t2})?d____?aux____ ->	exit?y____:diff(SIDS,{SID_SpeedPID_S_UpdateOutput})!SID_SpeedPID_S_UpdateOutput -> (
+						SKIP;
+						exited!y____!SID_SpeedPID_S_UpdateOutput -> SKIP);
+						State_SpeedPID_S_UpdateOutput(id__,
+								    const_SpeedPID_S_P,
+								    const_SpeedPID_S_I,
+								    const_SpeedPID_S_maxIntegral)
+			))
+	within
+		enter?x____:diff(SIDS,{SID_SpeedPID_S_UpdateOutput})!SID_SpeedPID_S_UpdateOutput -> (State_SpeedPID_S_UpdateOutput_execute(id__,x____))
+	
+	
+	I_SpeedPID_S_i0(id__,
+			    const_SpeedPID_S_P,
+			    const_SpeedPID_S_I,
+			    const_SpeedPID_S_maxIntegral) = let
+		T_SpeedPID_S_t0(id__,
+				    const_SpeedPID_S_P,
+				    const_SpeedPID_S_I,
+				    const_SpeedPID_S_maxIntegral) = internal__!TID_SpeedPID_S_t0 -> enter!SID_SpeedPID_S!SID_SpeedPID_S_Read -> entered!SID_SpeedPID_S!SID_SpeedPID_S_Read ->
+		SKIP
+	within
+		T_SpeedPID_S_t0(id__,
+				    const_SpeedPID_S_P,
+				    const_SpeedPID_S_I,
+				    const_SpeedPID_S_maxIntegral)
+	
+	
+	State_SpeedPID_S_Read_R(id__,
+			    const_SpeedPID_S_P,
+			    const_SpeedPID_S_I,
+			    const_SpeedPID_S_maxIntegral) = 
+		State_SpeedPID_S_Read(id__,
+				    const_SpeedPID_S_P,
+				    const_SpeedPID_S_I,
+				    const_SpeedPID_S_maxIntegral)
+			[|diff(int_int,SpeedPID_S_Read_triggers)|]
+		SKIP
+			 		
+	State_SpeedPID_S_UpdateIntegral_R(id__,
+			    const_SpeedPID_S_P,
+			    const_SpeedPID_S_I,
+			    const_SpeedPID_S_maxIntegral) = 
+		State_SpeedPID_S_UpdateIntegral(id__,
+				    const_SpeedPID_S_P,
+				    const_SpeedPID_S_I,
+				    const_SpeedPID_S_maxIntegral)
+			[|diff(int_int,SpeedPID_S_UpdateIntegral_triggers)|]
+		SKIP
+			 		
+	State_SpeedPID_S_UpdateOutput_R(id__,
+			    const_SpeedPID_S_P,
+			    const_SpeedPID_S_I,
+			    const_SpeedPID_S_maxIntegral) = 
+		State_SpeedPID_S_UpdateOutput(id__,
+				    const_SpeedPID_S_P,
+				    const_SpeedPID_S_I,
+				    const_SpeedPID_S_maxIntegral)
+			[|diff(int_int,SpeedPID_S_UpdateOutput_triggers)|]
+		SKIP
+			 		
+		
 	STM(id__,
 			    const_SpeedPID_S_P,
 			    const_SpeedPID_S_I,
-			    const_SpeedPID_S_maxIntegral) = -- RULE: [[stm:StateMachineDef]]_STM^nops : CSPProcess
-	( 
+			    const_SpeedPID_S_maxIntegral) = (
+		I_SpeedPID_S_i0(id__,
+				    const_SpeedPID_S_P,
+				    const_SpeedPID_S_I,
+				    const_SpeedPID_S_maxIntegral)
+			[|
+				{|enter.x____.y____, entered.x____.y____, exit.x____.y____, exited.x____.y____ |
+					x____ <- diff(SIDS,{SID_SpeedPID_S_Read,SID_SpeedPID_S_UpdateIntegral,SID_SpeedPID_S_UpdateOutput}),
+					y____ <- {SID_SpeedPID_S_Read,SID_SpeedPID_S_UpdateIntegral,SID_SpeedPID_S_UpdateOutput}
+			|}|]
 		(
+			State_SpeedPID_S_Read_R(id__,
+					    const_SpeedPID_S_P,
+					    const_SpeedPID_S_I,
+					    const_SpeedPID_S_maxIntegral)
+				[|inter(CS_SpeedPID_S_Read_sync,union(CS_SpeedPID_S_UpdateIntegral_sync,CS_SpeedPID_S_UpdateOutput_sync))|]
 			(
-				(IteratedStateful(id__,
+				State_SpeedPID_S_UpdateIntegral_R(id__,
 						    const_SpeedPID_S_P,
 						    const_SpeedPID_S_I,
-						    const_SpeedPID_S_maxIntegral) \ {terminate} ; share__choice(terminate -> SKIP))
-			 	[[ share__ <- x__ | x__ <- {||} ]]
-			)
-		[| {share__} |]
-		SKIP
-		)
-		[| union(sharedVarSync,{terminate}) |]
-		dbisim(sharedVarMemory(id__,
-				    const_SpeedPID_S_P,
-				    const_SpeedPID_S_I,
-				    const_SpeedPID_S_maxIntegral))
-	)\sharedVarHide
-	
-	STM_VS_O(id__,
-			    const_SpeedPID_S_P,
-			    const_SpeedPID_S_I,
-			    const_SpeedPID_S_maxIntegral) = -- RULE: [[stm:StateMachineDef]]_STM^nops : CSPProcess
-	( 
-		(
-			(
-				(IteratedStateful_VS_O(id__,
+						    const_SpeedPID_S_maxIntegral)
+					[|inter(CS_SpeedPID_S_UpdateIntegral_sync,CS_SpeedPID_S_UpdateOutput_sync)|]
+				State_SpeedPID_S_UpdateOutput_R(id__,
 						    const_SpeedPID_S_P,
 						    const_SpeedPID_S_I,
-						    const_SpeedPID_S_maxIntegral) \ {terminate} ; share__choice(terminate -> SKIP))
-			 	[[ share__ <- x__ | x__ <- {||} ]]
+						    const_SpeedPID_S_maxIntegral)
 			)
-		[| {share__} |]
-		SKIP
 		)
-		[| union(sharedVarSync,{terminate}) |]
-		dbisim(sharedVarMemory(id__,
-				    const_SpeedPID_S_P,
-				    const_SpeedPID_S_I,
-				    const_SpeedPID_S_maxIntegral))
-	)\sharedVarHide
-	
-	-- Transitions
-	Transitions(id__,
-			    const_SpeedPID_S_P,
-			    const_SpeedPID_S_I,
-			    const_SpeedPID_S_maxIntegral) = ((let
-		Trans = (
-			((share__ -> SKIP
-			 [] dbisim((true)&(internal__!NID_i0 -> SKIP ;  ((SKIP ; Read::enter -> SKIP))))
-			 	 [] dbisim((true)&(internal__!NID_UpdateIntegral -> SKIP ;  share__choice(exit -> SKIP) ; (share__choice(exited -> SKIP) ; SKIP ; UpdateOutput::enter -> SKIP)))
-			 	 [] dbisim((true)&(internal__!NID_UpdateOutput -> SKIP ;  share__choice(exit -> SKIP) ; (share__choice(exited -> SKIP) ; share__choice(get_currSpeedOutput?currSpeedOutput -> true&(share__choice(speedOutputE.out!currSpeedOutput -> SKIP))) ; Read::enter -> SKIP)))
-			 	 [] dbisim((true)&(snewError__!NID_Read.in?currNewError:{currNewError|currNewError <- core_real, true} -> share__choice(set_currNewError!currNewError -> SKIP) ;  share__choice(exit -> SKIP) ; (share__choice(exited -> SKIP) ; SKIP ; UpdateIntegral::enter -> SKIP)))
-			 ) ; Trans)
-			 []
-			 (interrupt -> share__choice(exit -> SKIP) ; share__choice(exited -> terminate -> SKIP))
-			 []
-			 terminate -> SKIP
-		)
-	within
-		Trans
-	)
 	)
 	
-	-- Stateful
-	-- RULE: Stateful(stm:StateMachineBody) : CSPProcess
+	-- optimized memory process
+	channel getV_currNewError: core_real
+	channel getV_currSpeedOutput: core_real
+	channel getV_speedIntegral: core_real
 	
-	-- Named process definitions
-	MachineBody(id__,
-			    const_SpeedPID_S_P,
-			    const_SpeedPID_S_I,
-			    const_SpeedPID_S_maxIntegral) = 
-		dbisim((
-		let
-			finalNodesEntered = {||}
-		within
-			((let
-				-- IMPLEMENTATION NOTE:
-				-- Here the 'enter' channel set is calculated explicitly because of the use of CSPM 
-				-- modules for defining the semantics of each node.
-				enterSS = {|
-				i0::enter,
-				Read::enter,
-				UpdateIntegral::enter,
-				UpdateOutput::enter
-				|}
-				hideSet = union(enterSS,{|exit,exited,internal__|})
-			within 
-				((let
-					-- IMPLEMENTATION NOTE: the channel set 'enter' is calculated explicitly
-					-- because CSPM modules are used for the semantics of Node.
-					flowevts = union(enterSS,{|exit,exited,interrupt|})
-					transSync = {|internal__.NID_i0,internal__.NID_UpdateIntegral,internal__.NID_UpdateOutput,snewError__.NID_Read.in|}
-				within
-					((
-					 (((-- RULE composeNodes(nc:NodeContainer)^nops : CSPProcess
-					   i0::D__(id__,
-					   		    const_SpeedPID_S_P,
-					   		    const_SpeedPID_S_I,
-					   		    const_SpeedPID_S_maxIntegral)
-					   [| { share__, terminate } |] (
-					   Read::D__(id__,
-					   		    const_SpeedPID_S_P,
-					   		    const_SpeedPID_S_I,
-					   		    const_SpeedPID_S_maxIntegral)
-					   [| { share__, terminate } |] (
-					   UpdateIntegral::D__(id__,
-					   		    const_SpeedPID_S_P,
-					   		    const_SpeedPID_S_I,
-					   		    const_SpeedPID_S_maxIntegral)
-					   [| { share__, terminate } |] (
-					   UpdateOutput::D__(id__,
-					   		    const_SpeedPID_S_P,
-					   		    const_SpeedPID_S_I,
-					   		    const_SpeedPID_S_maxIntegral)
-					   )
-					   )
-					   )
-					 )
-					 [[Read::interrupt <- x__ | x__ <- {|interrupt,snewError__.NID_Read.in|}]]
-					 [[UpdateIntegral::interrupt <- x__ | x__ <- {|interrupt,internal__.NID_UpdateIntegral|}]]
-					 [[UpdateOutput::interrupt <- x__ | x__ <- {|interrupt,internal__.NID_UpdateOutput|}]]
-					 [[i0::interrupt <- x__ | x__ <- {|internal__.NID_i0|}]]
-					 )
-					  [[ share__ <- x__ | x__ <- {| share__,setR_currNewError |} ]] 
-					 )
-					 [| union(union(union(flowevts,transSync),{terminate}),{|share__
-					 			,setR_currNewError
-					 			|}) |]
-					 ((i0::enter -> Transitions(id__,
-					 		    const_SpeedPID_S_P,
-					 		    const_SpeedPID_S_I,
-					 		    const_SpeedPID_S_maxIntegral))
-					  [[ share__ <- x__ | x__ <- {| share__ |} ]]
-					  [[set_currNewError <- setR_currNewError]]
-					 )
-					)
-					 [[setR_currNewError <- set_currNewError]]
-					)
-				)
-				 \ hideSet)
-				[[
-					snewError__.x____ <- snewError,
-					speedOutputE__.x____ <- speedOutputE
-					| x____ <- NIDS
-				]]
-			)
-			 [| {| interrupt |} |] SKIP)
-		)
-		)
-	
-	Behaviour(id__,
-			    const_SpeedPID_S_P,
-			    const_SpeedPID_S_I,
-			    const_SpeedPID_S_maxIntegral) = 
-		dbisim((MachineBody(id__,
-				    const_SpeedPID_S_P,
-				    const_SpeedPID_S_I,
-				    const_SpeedPID_S_maxIntegral)\ enteredSS)
-		)
-	
-	IteratedBehaviour(id__,
-			    const_SpeedPID_S_P,
-			    const_SpeedPID_S_I,
-			    const_SpeedPID_S_maxIntegral) = 
-		dbisim((MachineBody(id__,
-				    const_SpeedPID_S_P,
-				    const_SpeedPID_S_I,
-				    const_SpeedPID_S_maxIntegral)\ enteredSS)
-		)
-	
-	Stateful(id__,
-			    const_SpeedPID_S_P,
-			    const_SpeedPID_S_I,
-			    const_SpeedPID_S_maxIntegral) = 
-		((
-			(Behaviour(id__,
-					    const_SpeedPID_S_P,
-					    const_SpeedPID_S_I,
-					    const_SpeedPID_S_maxIntegral) [| union(getsetLocalChannels,{terminate}) |] varMemory(id__,
-					    const_SpeedPID_S_P,
-					    const_SpeedPID_S_I,
-					    const_SpeedPID_S_maxIntegral))
-		 	\getsetLocalChannels
-		)
-		)
-	
-	IteratedStateful(id__,
-			    const_SpeedPID_S_P,
-			    const_SpeedPID_S_I,
-			    const_SpeedPID_S_maxIntegral) =
-		(dbisim(
-			sbisim(
-				dbisim(
-					sbisim(
-						dbisim(
-							sbisim(
-								Behaviour(id__,
-										    const_SpeedPID_S_P,
-										    const_SpeedPID_S_I,
-										    const_SpeedPID_S_maxIntegral)
-								[| {|get_speedIntegral,set_speedIntegral,terminate|} |]
-								Memory_speedIntegral(0)
-							)\{|get_speedIntegral,set_speedIntegral|}
-						)
-						[| {|get_currSpeedOutput,set_currSpeedOutput,terminate|} |]
-						Memory_currSpeedOutput(0)
-					)\{|get_currSpeedOutput,set_currSpeedOutput|}
-				)
-				[| {|get_currNewError,set_currNewError,terminate|} |]
-				Memory_currNewError(0)
-			)\{|get_currNewError,set_currNewError|}
-		)
-		)
-	
-	-- Visible counterparts
-	MachineBody_VS_O(id__,
-			    const_SpeedPID_S_P,
-			    const_SpeedPID_S_I,
-			    const_SpeedPID_S_maxIntegral) = 
-		dbisim((
-		let
-			finalNodesEntered = {||}
-		within
-			((let
-				-- IMPLEMENTATION NOTE:
-				-- Here the 'enter' channel set is calculated explicitly because of the use of CSPM 
-				-- modules for defining the semantics of each node.
-				enterSS = {|
-				i0::enter,
-				Read::enter,
-				UpdateIntegral::enter,
-				UpdateOutput::enter
-				|}
-				hideSet = union(enterSS,{|exit,exited,internal__|})
-			within 
-				((let
-					-- IMPLEMENTATION NOTE: the channel set 'enter' is calculated explicitly
-					-- because CSPM modules are used for the semantics of Node.
-					flowevts = union(enterSS,{|exit,exited,interrupt|})
-					transSync = {|internal__.NID_i0,internal__.NID_UpdateIntegral,internal__.NID_UpdateOutput,snewError__.NID_Read.in|}
-				within
-					((
-					 (((-- RULE composeNodes(nc:NodeContainer)^nops : CSPProcess
-					   i0::VS_O__(id__,
-					   		    const_SpeedPID_S_P,
-					   		    const_SpeedPID_S_I,
-					   		    const_SpeedPID_S_maxIntegral)
-					   [| { share__, terminate } |] (
-					   Read::VS_O__(id__,
-					   		    const_SpeedPID_S_P,
-					   		    const_SpeedPID_S_I,
-					   		    const_SpeedPID_S_maxIntegral)
-					   [| { share__, terminate } |] (
-					   UpdateIntegral::VS_O__(id__,
-					   		    const_SpeedPID_S_P,
-					   		    const_SpeedPID_S_I,
-					   		    const_SpeedPID_S_maxIntegral)
-					   [| { share__, terminate } |] (
-					   UpdateOutput::VS_O__(id__,
-					   		    const_SpeedPID_S_P,
-					   		    const_SpeedPID_S_I,
-					   		    const_SpeedPID_S_maxIntegral)
-					   )
-					   )
-					   )
-					 )
-					 [[Read::interrupt <- x__ | x__ <- {|interrupt,snewError__.NID_Read.in|}]]
-					 [[UpdateIntegral::interrupt <- x__ | x__ <- {|interrupt,internal__.NID_UpdateIntegral|}]]
-					 [[UpdateOutput::interrupt <- x__ | x__ <- {|interrupt,internal__.NID_UpdateOutput|}]]
-					 [[i0::interrupt <- x__ | x__ <- {|internal__.NID_i0|}]]
-					 )
-					  [[ share__ <- x__ | x__ <- {| share__,setR_currNewError |} ]] 
-					 )
-					 [| union(union(union(flowevts,transSync),{terminate}),{|share__
-					 			,setR_currNewError
-					 			|}) |]
-					 ((i0::enter -> Transitions(id__,
-					 		    const_SpeedPID_S_P,
-					 		    const_SpeedPID_S_I,
-					 		    const_SpeedPID_S_maxIntegral))
-					  [[ share__ <- x__ | x__ <- {| share__ |} ]]
-					  [[set_currNewError <- setR_currNewError]]
-					 )
-					)
-					 [[setR_currNewError <- set_currNewError]]
-					)
-				)
-				 \ hideSet)
-				[[
-					snewError__.x____ <- snewError,
-					speedOutputE__.x____ <- speedOutputE
-					| x____ <- NIDS
-				]]
-			)
-			 [| {| interrupt |} |] SKIP)
-		)
-		)
-	
-	Behaviour_VS_O(id__,
-			    const_SpeedPID_S_P,
-			    const_SpeedPID_S_I,
-			    const_SpeedPID_S_maxIntegral) = 
-		dbisim((MachineBody_VS_O(id__,
-				    const_SpeedPID_S_P,
-				    const_SpeedPID_S_I,
-				    const_SpeedPID_S_maxIntegral))
-		)
-	
-	IteratedBehaviour_VS_O(id__,
-			    const_SpeedPID_S_P,
-			    const_SpeedPID_S_I,
-			    const_SpeedPID_S_maxIntegral) = 
-		dbisim((MachineBody_VS_O(id__,
-				    const_SpeedPID_S_P,
-				    const_SpeedPID_S_I,
-				    const_SpeedPID_S_maxIntegral))
-		)
-	
-	Stateful_VS_O(id__,
-			    const_SpeedPID_S_P,
-			    const_SpeedPID_S_I,
-			    const_SpeedPID_S_maxIntegral) = 
-		dbisim((
-			(Behaviour_VS_O(id__,
-					    const_SpeedPID_S_P,
-					    const_SpeedPID_S_I,
-					    const_SpeedPID_S_maxIntegral) [| union(getsetLocalChannels,{terminate}) |] varMemory(id__,
-					    const_SpeedPID_S_P,
-					    const_SpeedPID_S_I,
-					    const_SpeedPID_S_maxIntegral))
-		 	\getsetLocalChannels
-		)
-		)
-	
-	IteratedStateful_VS_O(id__,
-			    const_SpeedPID_S_P,
-			    const_SpeedPID_S_I,
-			    const_SpeedPID_S_maxIntegral) =
-		(dbisim(
-			sbisim(
-				dbisim(
-					sbisim(
-						dbisim(
-							sbisim(
-								Behaviour_VS_O(id__,
-										    const_SpeedPID_S_P,
-										    const_SpeedPID_S_I,
-										    const_SpeedPID_S_maxIntegral)
-								[| {|get_speedIntegral,set_speedIntegral,terminate|} |]
-								Memory_speedIntegral(0)
-							)\{|get_speedIntegral,set_speedIntegral|}
-						)
-						[| {|get_currSpeedOutput,set_currSpeedOutput,terminate|} |]
-						Memory_currSpeedOutput(0)
-					)\{|get_currSpeedOutput,set_currSpeedOutput|}
-				)
-				[| {|get_currNewError,set_currNewError,terminate|} |]
-				Memory_currNewError(0)
-			)\{|get_currNewError,set_currNewError|}
-		)
-		)
-	
-	-- END
-	
-	-- Memory
-	-- Memory variables
-	Memory_currNewError(currNewError) =
+	-- individual memory processes
+	Memory_currNewError(currNewError) = (
 		get_currNewError!currNewError -> Memory_currNewError(currNewError)
+		[]
+		getV_currNewError!currNewError -> Memory_currNewError(currNewError)
 		[]
 		set_currNewError?x__ -> Memory_currNewError(x__)
 		[]
-		terminate -> SKIP
-	Memory_currSpeedOutput(currSpeedOutput) =
+		snewError__!TID_SpeedPID_S_t3.in?currNewError -> Memory_currNewError(currNewError)
+	)
+	Memory_currSpeedOutput(currSpeedOutput) = (
 		get_currSpeedOutput!currSpeedOutput -> Memory_currSpeedOutput(currSpeedOutput)
 		[]
-		set_currSpeedOutput?x__ -> Memory_currSpeedOutput(x__)
+		getV_currSpeedOutput!currSpeedOutput -> Memory_currSpeedOutput(currSpeedOutput)
 		[]
-		terminate -> SKIP
-	Memory_speedIntegral(speedIntegral) =
+		set_currSpeedOutput?x__ -> Memory_currSpeedOutput(x__)
+	)
+	Memory_speedIntegral(speedIntegral) = (
 		get_speedIntegral!speedIntegral -> Memory_speedIntegral(speedIntegral)
 		[]
-		set_speedIntegral?x__ -> Memory_speedIntegral(x__)
+		getV_speedIntegral!speedIntegral -> Memory_speedIntegral(speedIntegral)
 		[]
-		terminate -> SKIP
+		set_speedIntegral?x__ -> Memory_speedIntegral(x__)
+	)
 	
-	-- varMemory process
-	varMemory(id__,
+	-- processes that read variables and offer transitions
+	MemoryTransitions(id__, currNewError
+				, currSpeedOutput
+				, speedIntegral
+				,
 			    const_SpeedPID_S_P,
 			    const_SpeedPID_S_I,
-			    const_SpeedPID_S_maxIntegral) = Memory_currNewError(0)
-	[| { terminate } |] (
-	Memory_currSpeedOutput(0)
-	[| { terminate } |] (
-	Memory_speedIntegral(0)
-	)
+			    const_SpeedPID_S_maxIntegral) = 		
+	(internal__!TID_SpeedPID_S_t0 -> SKIP
+	[]
+	internal__!TID_SpeedPID_S_t1 -> SKIP
+	[]
+	internal__!TID_SpeedPID_S_t2 -> SKIP
+	[]
+	snewError__!TID_SpeedPID_S_t3.in?currNewError -> SKIP[]
+	set_currNewError?x__ -> SKIP[]
+	set_currSpeedOutput?x__ -> SKIP[]
+	set_speedIntegral?x__ -> SKIP)
+	
+	MemoryTransitions_SpeedPID_S(id__, const_SpeedPID_S_P, const_SpeedPID_S_I, const_SpeedPID_S_maxIntegral) = (getV_currNewError?currNewError ->
+	getV_currSpeedOutput?currSpeedOutput ->
+	getV_speedIntegral?speedIntegral ->
+	MemoryTransitions(id__, currNewError
+				, currSpeedOutput
+				, speedIntegral
+				,
+			    const_SpeedPID_S_P,
+			    const_SpeedPID_S_I,
+			    const_SpeedPID_S_maxIntegral); MemoryTransitions_SpeedPID_S(id__, const_SpeedPID_S_P, const_SpeedPID_S_I, const_SpeedPID_S_maxIntegral))			
+	
+	-- synchronisation, hiding and process sets 
+	MemoryVariablesProcesses_SpeedPID_S = Union(
+		{
+			{
+				(Memory_currNewError(0),{|getV_currNewError,set_currNewError,get_currNewError,snewError__.TID_SpeedPID_S_t3|}),
+				(Memory_currSpeedOutput(0),{|getV_currSpeedOutput,get_currSpeedOutput,set_currSpeedOutput|}),
+				(Memory_speedIntegral(0),{|set_speedIntegral,get_speedIntegral,getV_speedIntegral|})
+			}
+		}
 	)
 	
-	getsetLocalChannels = {|get_currNewError,set_currNewError,get_currSpeedOutput,set_currSpeedOutput,get_speedIntegral,set_speedIntegral|}
+	MemoryVariablesSyncSet = Union({
+		{|
+			getV_currNewError,
+			getV_currSpeedOutput,
+			set_currNewError,
+			set_speedIntegral,
+			set_currSpeedOutput,
+			snewError__.TID_SpeedPID_S_t3,
+			getV_speedIntegral
+		|}	
+	})
 	
-	-- Definition of the behaviour of state machines (default, optimised, visible, visible and optimised)
+	MemoryVariablesHideSet = Union({
+		{|
+			getV_currNewError,
+			getV_currSpeedOutput,
+			getV_speedIntegral
+		|}
+	})
+	
+	-- combined individual memory processes
+	MemoryVariables = ||| (P, alpha) : MemoryVariablesProcesses_SpeedPID_S @ P
+	
+	-- complete memory process	
+	MemoryN(id__, const_SpeedPID_S_P, const_SpeedPID_S_I, const_SpeedPID_S_maxIntegral) = sbisim(diamond((sbisim(diamond(MemoryVariables)) [| MemoryVariablesSyncSet |] sbisim(diamond(MemoryTransitions_SpeedPID_S(id__, const_SpeedPID_S_P, const_SpeedPID_S_I, const_SpeedPID_S_maxIntegral)))) \ MemoryVariablesHideSet))
+	
+	-- optimised memory
+	-- Sets of named elements identified according to transition conditions:
+	-- {}
+	-- Summary of all identified named elements:
+	-- {
+	-- currNewError
+	-- speedIntegral
+	-- currSpeedOutput
+	-- }
+	
+	-- Allocation plan:
+	-- 0:{}
+	--	=> {
+	--		TID_SpeedPID_S_t3,
+	--		TID_SpeedPID_S_t0,
+	--		TID_SpeedPID_S_t1,
+	--		TID_SpeedPID_S_t2}
+	
+	-- Memory transition processes
+	MemoryTransitions_opt_0(id__) =
+	(
+		let
+			Update = Current(id__)
+			Current(id__)
+			 	   = 
+			 	   snewError__!TID_SpeedPID_S_t3.in?currNewError -> Update
+			 	   []
+			 	   internal__!TID_SpeedPID_S_t0 -> Update
+			 	   []
+			 	   internal__!TID_SpeedPID_S_t1 -> Update
+			 	   []
+			 	   internal__!TID_SpeedPID_S_t2 -> Update
+		within
+			Update
+	)
+	
+	-- Memory cell processes
+	Memory_opt_currNewError(x__) = ( 
+		get_currNewError!x__ -> Memory_opt_currNewError(x__)
+		[]
+		set_currNewError?x__ -> Memory_opt_currNewError(x__)
+	)
+	Memory_opt_speedIntegral(x__) = ( 
+		get_speedIntegral!x__ -> Memory_opt_speedIntegral(x__)
+		[]
+		set_speedIntegral?x__ -> Memory_opt_speedIntegral(x__)
+	)
+	Memory_opt_currSpeedOutput(x__) = ( 
+		get_currSpeedOutput!x__ -> Memory_opt_currSpeedOutput(x__)
+		[]
+		set_currSpeedOutput?x__ -> Memory_opt_currSpeedOutput(x__)
+	)
+	
+	-- Composition of memory, StateMachine and Memory transition processes
+	
+	MemorySTM_opt(id__,
+			    const_SpeedPID_S_P,
+			    const_SpeedPID_S_I,
+			    const_SpeedPID_S_maxIntegral) =
+		sbisim(	
+		  dbisim(
+		    sbisim(dbisim(sbisim(Memory_opt_currNewError(0)
+		          	[| {|set_currNewError,get_currNewError|} |] 
+		          	dbisim(sbisim(Memory_opt_speedIntegral(0)
+		          	      	[| {|set_speedIntegral,get_speedIntegral|} |] 
+		          	      	dbisim(sbisim(Memory_opt_currSpeedOutput(0)
+		          	      	      	[| {|set_currSpeedOutput,get_currSpeedOutput|} |] 
+		          	      	      	STM_core(id__,
+		          	      	      			    const_SpeedPID_S_P,
+		          	      	      			    const_SpeedPID_S_I,
+		          	      	      			    const_SpeedPID_S_maxIntegral)
+		          	      	      	)\ {|set_currSpeedOutput,get_currSpeedOutput|}
+		          	      	      )
+		          	      	)\ {|set_speedIntegral,get_speedIntegral|}
+		          	      )
+		          	)\ {|set_currNewError,get_currNewError|}
+		          )
+		      	  [| {|internal__.TID_SpeedPID_S_t1,internal__.TID_SpeedPID_S_t0,snewError__.TID_SpeedPID_S_t3,internal__.TID_SpeedPID_S_t2|} |]
+		      	  MemoryTransitions_opt_0(id__)
+		      	  )\{|internal__.TID_SpeedPID_S_t1,internal__.TID_SpeedPID_S_t0,internal__.TID_SpeedPID_S_t2|})
+		      )
+	
+	-- main process
+	
+	MachineMemorySyncSet = Union({
+		union(
+			union(
+				{|get_currNewError,set_currNewError,
+				get_currSpeedOutput,set_currSpeedOutput,
+				get_speedIntegral,set_speedIntegral|},
+				{||}
+			)
+				
+			,
+			{|internal__.TID_SpeedPID_S_t0,
+			internal__.TID_SpeedPID_S_t1,
+			internal__.TID_SpeedPID_S_t2,
+			snewError__.TID_SpeedPID_S_t3|}
+		)
+	})
+	
+	MachineMemoryHidingSet = Union({
+		union(
+			{|get_currNewError,set_currNewError,
+			get_currSpeedOutput,set_currSpeedOutput,
+			get_speedIntegral,set_speedIntegral|},
+			{||}
+		)
+	})
+	
+	MachineInternalEvents = {|
+		internal__
+	|}
+	
+	AUX(id__,
+			    const_SpeedPID_S_P,
+			    const_SpeedPID_S_I,
+			    const_SpeedPID_S_maxIntegral) = (
+		(
+			STM(id__,
+					    const_SpeedPID_S_P,
+					    const_SpeedPID_S_I,
+					    const_SpeedPID_S_maxIntegral)
+				[|MachineMemorySyncSet|]
+			sbisim(diamond(MemoryN(id__, const_SpeedPID_S_P, const_SpeedPID_S_I, const_SpeedPID_S_maxIntegral)))
+		)[[
+			snewError__.x____ <- snewError,
+			speedOutputE__.x____ <- speedOutputE
+			| x____ <- TIDS
+		]]
+		\MachineMemoryHidingSet
+	)
+	[|{|terminate|}|>SKIP\MachineInternalEvents
+	
+	
+	STM_core(id__,
+			    const_SpeedPID_S_P,
+			    const_SpeedPID_S_I,
+			    const_SpeedPID_S_maxIntegral) = 
+		sbisim(diamond(STM(id__,
+				    const_SpeedPID_S_P,
+				    const_SpeedPID_S_I,
+				    const_SpeedPID_S_maxIntegral)))
+		
+	AUX_opt(id__,
+			    const_SpeedPID_S_P,
+			    const_SpeedPID_S_I,
+			    const_SpeedPID_S_maxIntegral) = 
+		(MemorySTM_opt(id__,
+				    const_SpeedPID_S_P,
+				    const_SpeedPID_S_I,
+				    const_SpeedPID_S_maxIntegral)
+		)[[
+			snewError__.x____ <- snewError,
+			speedOutputE__.x____ <- speedOutputE
+			| x____ <- TIDS
+		]]
+		[|{|terminate|}|>SKIP\MachineInternalEvents
+
+	-- definition of the behaviour of state machines (default, optimised, visible, visible and optimised)
+	transparent diamond
+	transparent sbisim
+	transparent dbisim
+	transparent chase
+			
 	FVS__(id__,
 			    const_SpeedPID_S_P,
 			    const_SpeedPID_S_I,
-			    const_SpeedPID_S_maxIntegral) = STM_VS_O(id__,
+			    const_SpeedPID_S_maxIntegral) = AUX_opt(id__,
 			    const_SpeedPID_S_P,
 			    const_SpeedPID_S_I,
 			    const_SpeedPID_S_maxIntegral)
-	
+	Dunopt__(id__,
+			    const_SpeedPID_S_P,
+			    const_SpeedPID_S_I,
+			    const_SpeedPID_S_maxIntegral) = AUX(id__,
+			    const_SpeedPID_S_P,
+			    const_SpeedPID_S_I,
+			    const_SpeedPID_S_maxIntegral) \ internal_events
 	D__(id__,
 			    const_SpeedPID_S_P,
 			    const_SpeedPID_S_I,
-			    const_SpeedPID_S_maxIntegral) = STM(id__,
+			    const_SpeedPID_S_maxIntegral) = AUX_opt(id__,
 			    const_SpeedPID_S_P,
 			    const_SpeedPID_S_I,
 			    const_SpeedPID_S_maxIntegral) \ internal_events
@@ -767,14 +666,14 @@ exports
 	VS__(id__,
 			    const_SpeedPID_S_P,
 			    const_SpeedPID_S_I,
-			    const_SpeedPID_S_maxIntegral) = FVS__(id__,
+			    const_SpeedPID_S_maxIntegral) = ShowV(FVS__(id__,
 			    const_SpeedPID_S_P,
 			    const_SpeedPID_S_I,
-			    const_SpeedPID_S_maxIntegral)
+			    const_SpeedPID_S_maxIntegral))
 	VS_O__(id__,
 			    const_SpeedPID_S_P,
 			    const_SpeedPID_S_I,
-			    const_SpeedPID_S_maxIntegral) = sbisim(diamond(FVS__(id__,
+			    const_SpeedPID_S_maxIntegral) = sbisim(diamond(VS__(id__,
 			    const_SpeedPID_S_P,
 			    const_SpeedPID_S_I,
 			    const_SpeedPID_S_maxIntegral)))
@@ -784,27 +683,7 @@ exports
 			    const_SpeedPID_S_maxIntegral) = O__(id__,
 			    const_SpeedPID_S_P,
 			    const_SpeedPID_S_I,
-			    const_SpeedPID_S_maxIntegral) [|shared_variable_events|] SKIP
-	HUP__(id__,
-			    const_SpeedPID_S_P,
-			    const_SpeedPID_S_I,
-			    const_SpeedPID_S_maxIntegral) = O__(id__,
-			    const_SpeedPID_S_P,
-			    const_SpeedPID_S_I,
-			    const_SpeedPID_S_maxIntegral) [|{share__}|] SKIP
-	
-	-- Shared memory
-	-- Shared memory variables
-	
-	-- sharedVarMemory process
-	sharedVarMemory(id__,
-			    const_SpeedPID_S_P,
-			    const_SpeedPID_S_I,
-			    const_SpeedPID_S_maxIntegral) = terminate -> SKIP
-	
-	sharedVarSync = {||}
-	
-	sharedVarHide = {||}
+			    const_SpeedPID_S_maxIntegral) [|shared_variable_events|] SKIP	
 endmodule
 
 

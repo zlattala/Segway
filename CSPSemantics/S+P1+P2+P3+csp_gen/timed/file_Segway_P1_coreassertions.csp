@@ -1,12 +1,3 @@
-
---
--- RoboChart generator version 3.0.0.202306261132
--- Automatically generated on 20-08-2023 18:58:31
---
--- Iterated compression status: true
--- Assertions compression status: false
---
-
 include "file_Segway_P1.csp"
 
 
@@ -18,8 +9,6 @@ P_Segway_P1 = let
 	
 	
 	
-	const_Segway_P1_SegwayController_stm_ref1_P = const_AnglePID_S_P
-	const_Segway_P1_SegwayController_stm_ref1_D = const_AnglePID_S_D
 	const_Segway_P1_SegwayController_stm_ref0_maxAngle = const_BalanceSTM_P1_maxAngle
 	const_Segway_P1_SegwayController_stm_ref0_loopTime = const_BalanceSTM_P1_loopTime
 	const_Segway_P1_SegwayController_stm_ref0_startupDelay = const_BalanceSTM_P1_startupDelay
@@ -29,10 +18,12 @@ P_Segway_P1 = let
 	const_Segway_P1_SegwayController_stm_ref0_angleBudget = const_BalanceSTM_P1_angleBudget
 	const_Segway_P1_SegwayController_stm_ref0_speedBudget = const_BalanceSTM_P1_speedBudget
 	const_Segway_P1_SegwayController_stm_ref0_rotationBudget = const_BalanceSTM_P1_rotationBudget
+	const_Segway_P1_SegwayController_stm_ref3_D = const_RotationPID_S_D
 	const_Segway_P1_SegwayController_stm_ref2_P = const_SpeedPID_S_P
 	const_Segway_P1_SegwayController_stm_ref2_I = const_SpeedPID_S_I
 	const_Segway_P1_SegwayController_stm_ref2_maxIntegral = const_SpeedPID_S_maxIntegral
-	const_Segway_P1_SegwayController_stm_ref3_D = const_RotationPID_S_D
+	const_Segway_P1_SegwayController_stm_ref1_P = const_AnglePID_S_P
+	const_Segway_P1_SegwayController_stm_ref1_D = const_AnglePID_S_D
 		
 	
 within
@@ -125,11 +116,6 @@ assert P_Segway_P1_SegwayController_stm_ref0 :[deadlock-free]
 assert P_Segway_P1_SegwayController_stm_ref0;RUN({r__}) :[deadlock-free]
 assert P_Segway_P1_SegwayController_stm_ref0 :[deterministic]
 assert P_Segway_P1_SegwayController_stm_ref0 :[divergence-free]
--- timed deadlock free
-assert prioritise(P_Segway_P1_SegwayController_stm_ref0[[tock<-tock,tock<-tock']],<diff(Events,{tock',tock}),{tock}>)\{tock} :[divergence free [FD]]
-
--- timelock free
-assert RUN({tock}) ||| CHAOS(diff(Events,{|tock|})) [F= P_Segway_P1_SegwayController_stm_ref0
 -- generate Segway_P1_SegwayController_stm_ref1
 P_Segway_P1_SegwayController_stm_ref1 = let
 	id__ = 0
@@ -146,11 +132,6 @@ assert P_Segway_P1_SegwayController_stm_ref1 :[deadlock-free]
 assert P_Segway_P1_SegwayController_stm_ref1;RUN({r__}) :[deadlock-free]
 assert P_Segway_P1_SegwayController_stm_ref1 :[deterministic]
 assert P_Segway_P1_SegwayController_stm_ref1 :[divergence-free]
--- timed deadlock free
-assert prioritise(P_Segway_P1_SegwayController_stm_ref1[[tock<-tock,tock<-tock']],<diff(Events,{tock',tock}),{tock}>)\{tock} :[divergence free [FD]]
-
--- timelock free
-assert RUN({tock}) ||| CHAOS(diff(Events,{|tock|})) [F= P_Segway_P1_SegwayController_stm_ref1
 -- generate Segway_P1_SegwayController_stm_ref2
 P_Segway_P1_SegwayController_stm_ref2 = let
 	id__ = 0
@@ -168,11 +149,6 @@ assert P_Segway_P1_SegwayController_stm_ref2 :[deadlock-free]
 assert P_Segway_P1_SegwayController_stm_ref2;RUN({r__}) :[deadlock-free]
 assert P_Segway_P1_SegwayController_stm_ref2 :[deterministic]
 assert P_Segway_P1_SegwayController_stm_ref2 :[divergence-free]
--- timed deadlock free
-assert prioritise(P_Segway_P1_SegwayController_stm_ref2[[tock<-tock,tock<-tock']],<diff(Events,{tock',tock}),{tock}>)\{tock} :[divergence free [FD]]
-
--- timelock free
-assert RUN({tock}) ||| CHAOS(diff(Events,{|tock|})) [F= P_Segway_P1_SegwayController_stm_ref2
 -- generate Segway_P1_SegwayController_stm_ref3
 P_Segway_P1_SegwayController_stm_ref3 = let
 	id__ = 0
@@ -188,18 +164,3 @@ assert P_Segway_P1_SegwayController_stm_ref3 :[deadlock-free]
 assert P_Segway_P1_SegwayController_stm_ref3;RUN({r__}) :[deadlock-free]
 assert P_Segway_P1_SegwayController_stm_ref3 :[deterministic]
 assert P_Segway_P1_SegwayController_stm_ref3 :[divergence-free]
--- timed deadlock free
-assert prioritise(P_Segway_P1_SegwayController_stm_ref3[[tock<-tock,tock<-tock']],<diff(Events,{tock',tock}),{tock}>)\{tock} :[divergence free [FD]]
-
--- timelock free
-assert RUN({tock}) ||| CHAOS(diff(Events,{|tock|})) [F= P_Segway_P1_SegwayController_stm_ref3
--- timed deadlock free
-assert prioritise(P_Segway_P1_SegwayController[[tock<-tock,tock<-tock']],<diff(Events,{tock',tock}),{tock}>)\{tock} :[divergence free [FD]]
-
--- timelock free
-assert RUN({tock}) ||| CHAOS(diff(Events,{|tock|})) [F= P_Segway_P1_SegwayController
--- timed deadlock free
-assert prioritise(P_Segway_P1[[tock<-tock,tock<-tock']],<diff(Events,{tock',tock}),{tock}>)\{tock} :[divergence free [FD]]
-
--- timelock free
-assert RUN({tock}) ||| CHAOS(diff(Events,{|tock|})) [F= P_Segway_P1

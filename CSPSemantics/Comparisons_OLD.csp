@@ -43,6 +43,26 @@ include "S+P1+P2_csp_gen/defs/file_AnglePID_S_defs.csp"
 include "S+P1+P2_csp_gen/defs/file_Segway_defs.csp"
 include "S+P1+P2_csp_gen/defs/file_SegwayRP_defs.csp"
 
+
+--Imports for P3 parallel version 
+
+
+include "S+P1+P2+P3+csp_gen/defs/file_AnglePID_defs.csp"
+include "S+P1+P2+P3+csp_gen/defs/file_BalanceSTM_P1_defs.csp"
+include "S+P1+P2+P3+csp_gen/defs/file_RotationPID_S_defs.csp"
+include "S+P1+P2+P3+csp_gen/defs/file_Segway_P3_defs.csp"
+include "S+P1+P2+P3+csp_gen/defs/file_BalanceSTM_P2_defs.csp"
+include "S+P1+P2+P3+csp_gen/defs/file_Segway_P2_defs.csp"
+include "S+P1+P2+P3+csp_gen/defs/file_Segway_P1_defs.csp"
+include "S+P1+P2+P3+csp_gen/defs/file_SpeedPID_defs.csp"
+include "S+P1+P2+P3+csp_gen/defs/file_Segway_P3.csp"
+include "S+P1+P2+P3+csp_gen/defs/file_SpeedPID_S_defs.csp"
+include "S+P1+P2+P3+csp_gen/defs/file_BalanceSTM_defs.csp"
+include "S+P1+P2+P3+csp_gen/defs/file_RotationPID_defs.csp"
+include "S+P1+P2+P3+csp_gen/defs/file_AnglePID_S_defs.csp"
+include "S+P1+P2+P3+csp_gen/defs/file_Segway_defs.csp"
+include "S+P1+P2+P3+csp_gen/defs/file_SegwayRP_defs.csp"
+
 --Adding ANN controller semantics
 include "ANN_semantics/ANNController_simplified.csp"
 
@@ -50,7 +70,7 @@ include "ANN_semantics/ANNController_simplified.csp"
 include "S+P1_csp_gen/defs/state_defs.csp"
 include "S+P1_csp_gen/defs/core_defs.csp"
 include "S+P1_csp_gen/defs/robochart_defs.csp"
-include "S+P1+P2_csp_gen/instantiations.csp"
+include "S+P1+P2+P3+csp_gen/instantiations.csp"
 channel r__
 
 -- generate Segway_P1, which is the Parallel Segway module semantics, version 1. 
@@ -92,6 +112,8 @@ within
 			    const_Segway_P1_SegwayController_stm_ref3_D)
 				
 --Basic Assertions on P1
+--SegwayController P1 is deadlock free, and balancestm is, so this should be also. 
+--WE STILL NEED TO ACTUALLY RUN THIS JUST TO BE SURE : 
 assert P_Segway_P1 :[deadlock-free]	
 assert P_Segway_P1;RUN({r__}) :[deadlock-free]
 assert P_Segway_P1 :[deterministic]
@@ -141,7 +163,8 @@ within
 			   	const_Segway_SegwayController_op_ref2_D)
 				
 --assertions on sequential segway. 
-assert P_Segway :[deadlock-free]	
+--Is it deadlock-free? It is. 
+assert P_Segway :[deadlock-free] --this passes. 
 assert P_Segway;RUN({r__}) :[deadlock-free]
 assert P_Segway :[deterministic]
 assert P_Segway :[divergence-free]
@@ -188,7 +211,55 @@ within
 			    const_Segway_P2_SegwayController_stm_ref2_maxIntegral,
 			    const_Segway_P2_SegwayController_stm_ref3_D)
 				
-				
+assert P_Segway_P2 :[deadlock-free]	--This fails? How in the hell did we prove equivalence? 
+--Try balancestm P2, see if it's deadlock fre. 
+--Not deadlock free, in BalanceSTM, something fails in BalanceSTM_P2, 
+assert P_Segway_P2;RUN({r__}) :[deadlock-free]
+assert P_Segway_P2 :[deterministic]
+assert P_Segway_P2 :[divergence-free]
+
+--P3 Parallel segway
+
+-- generate Segway_P3
+P_Segway_P3 = let
+	id__ = 0
+	const_Segway_P3_AnglePID_C_stm_ref0_P = const_AnglePID_S_P
+	const_Segway_P3_AnglePID_C_stm_ref0_D = const_AnglePID_S_D
+	const_Segway_P3_SegwayController_stm_ref2_P = const_SpeedPID_S_P
+	const_Segway_P3_SegwayController_stm_ref2_I = const_SpeedPID_S_I
+	const_Segway_P3_SegwayController_stm_ref2_maxIntegral = const_SpeedPID_S_maxIntegral
+	const_Segway_P3_SegwayController_stm_ref0_maxAngle = const_BalanceSTM_P2_maxAngle
+	const_Segway_P3_SegwayController_stm_ref0_loopTime = const_BalanceSTM_P2_loopTime
+	const_Segway_P3_SegwayController_stm_ref0_startupDelay = const_BalanceSTM_P2_startupDelay
+	const_Segway_P3_SegwayController_stm_ref0_speedUpdate = const_BalanceSTM_P2_speedUpdate
+	const_Segway_P3_SegwayController_stm_ref0_rotationUpdate = const_BalanceSTM_P2_rotationUpdate
+	const_Segway_P3_SegwayController_stm_ref0_motorBudget = const_BalanceSTM_P2_motorBudget
+	const_Segway_P3_SegwayController_stm_ref0_angleBudget = const_BalanceSTM_P2_angleBudget
+	const_Segway_P3_SegwayController_stm_ref0_speedBudget = const_BalanceSTM_P2_speedBudget
+	const_Segway_P3_SegwayController_stm_ref0_rotationBudget = const_BalanceSTM_P2_rotationBudget
+	const_Segway_P3_SegwayController_stm_ref3_D = const_RotationPID_S_D
+		
+	
+within
+	Segway_P3::O__(id__,
+			    const_Segway_P3_SegwayController_stm_ref0_maxAngle,
+			    const_Segway_P3_SegwayController_stm_ref0_loopTime,
+			    const_Segway_P3_SegwayController_stm_ref0_startupDelay,
+			    const_Segway_P3_SegwayController_stm_ref0_speedUpdate,
+			    const_Segway_P3_SegwayController_stm_ref0_rotationUpdate,
+			    const_Segway_P3_SegwayController_stm_ref0_motorBudget,
+			    const_Segway_P3_SegwayController_stm_ref0_angleBudget,
+			    const_Segway_P3_SegwayController_stm_ref0_speedBudget,
+			    const_Segway_P3_SegwayController_stm_ref0_rotationBudget,
+			    const_Segway_P3_SegwayController_stm_ref2_P,
+			    const_Segway_P3_SegwayController_stm_ref2_I,
+			    const_Segway_P3_SegwayController_stm_ref2_maxIntegral,
+			    const_Segway_P3_SegwayController_stm_ref3_D,
+			    const_Segway_P3_AnglePID_C_stm_ref0_P,
+			    const_Segway_P3_AnglePID_C_stm_ref0_D)
+
+assert P_Segway_P3 :[deadlock-free] --FAILS, does it fail on segway too? 
+ 
 --Renamed accordance with 
 --Simplified versions of both. 
 --Start with sequential. 
@@ -221,12 +292,31 @@ P_Segway_P2_Renamed = P_Segway_P2[[
   Segway_P2::enableInterruptsCall <- Segway::enableInterruptsCall,
   Segway_P2::disableInterruptsCall <- Segway::disableInterruptsCall
   ]]
+  
+P_Segway_P3_Renamed = P_Segway_P3[[
+  Segway_P3::leftMotorVelocity <- Segway::leftMotorVelocity,
+  Segway_P3::rightMotorVelocity <- Segway::rightMotorVelocity,
+  Segway_P3::angle <- Segway::angle,
+  Segway_P3::gyroX <- Segway::gyroX,
+  Segway_P3::gyroY <- Segway::gyroY,
+  Segway_P3::gyroZ <- Segway::gyroZ,
+  Segway_P3::setLeftMotorSpeedCall <- Segway::setLeftMotorSpeedCall,
+  Segway_P3::setRightMotorSpeedCall <- Segway::setRightMotorSpeedCall,
+  Segway_P3::enableInterruptsCall <- Segway::enableInterruptsCall,
+  Segway_P3::disableInterruptsCall <- Segway::disableInterruptsCall
+  ]]
  
---P2 and Segway assertions.
+--P2 and Segway assertions. There is still a deadlock in P2 also? 
 --This should hold. HOLDS. Passes, 20/08/23
 assert P_Segway_P2_Renamed [T= P_Segway
 --This should hold. HOLDS. Passes, 20/08/23
 assert P_Segway [T= P_Segway_P2_Renamed
+
+--This should also hold. P3 is NO LONGER ASYNC CONNECTIONS BETWEEN CONTOLLERS. 
+--This is an outdated version, we need to redo this with the proper semantics, but it should still be fine. 
+--None of these are with the run
+assert P_Segway_P3_Renamed [T= P_Segway  --PASSED 20/08/23
+assert P_Segway [T= P_Segway_P3_Renamed --PASSED 20/08/23
 
 --ANN component. 
 P_ANN = ANNSimp::Full
@@ -264,3 +354,7 @@ assert Simp_P_Segway [T= P_Segway
 assert Simp_P_Segway [T= P_Segway_P1
 --This is false. 
 assert P_Segway [T= Simp_P_Segway
+
+--This should be false, we want to find where it deadlocks. 
+--This passes? So, need to check P2 for deadlocking, that might be where the problem lies. 
+assert Simp_P_Segway [T= P_Segway_P3_Renamed

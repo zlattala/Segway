@@ -1,21 +1,9 @@
-
---
--- RoboChart generator version 3.0.0.202306261132
--- Automatically generated on 20-08-2023 18:58:29
---
--- Iterated compression status: true
--- Assertions compression status: false
---
-
 include "BalanceSTM_P2.csp"
-include "core_timed_defs.csp"
 include "core_defs.csp"
+include "timed_definitions.csp"
 include "file_BalanceSTM_P2_defs.csp"
-include "state_timed_defs.csp"
 include "robochart_defs.csp"
 include "../instantiations.csp"
-
-transparent wbisim
 channel r__
 -- generate BalanceSTM_P2
 P_BalanceSTM_P2 = let
@@ -40,8 +28,3 @@ assert P_BalanceSTM_P2 :[deadlock-free]
 assert P_BalanceSTM_P2;RUN({r__}) :[deadlock-free]
 assert P_BalanceSTM_P2 :[deterministic]
 assert P_BalanceSTM_P2 :[divergence-free]
--- timed deadlock free
-assert prioritise(P_BalanceSTM_P2[[tock<-tock,tock<-tock']],<diff(Events,{tock',tock}),{tock}>)\{tock} :[divergence free [FD]]
-
--- timelock free
-assert RUN({tock}) ||| CHAOS(diff(Events,{|tock|})) [F= P_BalanceSTM_P2

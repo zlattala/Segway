@@ -1,12 +1,3 @@
-
---
--- RoboChart generator version 3.0.0.202306261132
--- Automatically generated on 20-08-2023 18:58:33
---
--- Iterated compression status: true
--- Assertions compression status: false
---
-
 include "file_SpeedPID_S.csp"
 
 -- generate SpeedPID_S
@@ -26,11 +17,6 @@ assert P_SpeedPID_S :[deadlock-free]
 assert P_SpeedPID_S;RUN({r__}) :[deadlock-free]
 assert P_SpeedPID_S :[deterministic]
 assert P_SpeedPID_S :[divergence-free]
--- timed deadlock free
-assert prioritise(P_SpeedPID_S[[tock<-tock,tock<-tock']],<diff(Events,{tock',tock}),{tock}>)\{tock} :[divergence free [FD]]
-
--- timelock free
-assert RUN({tock}) ||| CHAOS(diff(Events,{|tock|})) [F= P_SpeedPID_S
 
 
 
