@@ -27,5 +27,5 @@ Segway::setRightMotorSpeedCall.0 -> Simp_Segway
 --This will not be 0 and all pids will matter. 
 
 --To check, we want to check that they refine, first let's just use P1, if P1 and S refine when all three components actually matter. 
-P_Segway [T= P_Segway_P1
-P_Segway_P1 [T= P_Segway
+assert P_Segway [T= P_Segway_P1
+assert P_Segway_P1 [T= P_Segway
