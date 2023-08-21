@@ -1,0 +1,35 @@
+--This is used for checking the values we produce, we want to check what the setLeftMotorSpeedCall and setRightMotorSpeedCall is doing. 
+
+include "Constant_Setting.csp"
+
+Simp_Segway = Segway::disableInterruptsCall -> Segway::enableInterruptsCall -> 
+Segway::angle.in?x -> Segway::gyroX.in?x1 -> Segway::leftMotorVelocity.in?x2 ->
+Segway::rightMotorVelocity.in?x3 -> Segway::gyroZ.in?x4 -> Segway::setLeftMotorSpeedCall.0 -> 
+Segway::setRightMotorSpeedCall.0 -> Simp_Segway
+
+--assert Simp_Segway [T= P_Segway 
+--assert P_Segway [T= Simp_Segway
+
+--When all balanceSTM constants are 0, what PID constants make a difference: 
+--AnglePID_D matters. 
+--AnglePID_P does not matter (because of MaxAngle). 
+--RotationPID_D matters. 
+
+--SpeedPID_P does matter. because it operates on newError, which is currLeft and rightmotorvelocity added. 
+
+--because that could be anything, 
+
+--Ideal constants setup, to make all PIDs matter when everything else is 0 is: 
+
+--SpeedPID_P = 1
+--RotationPID_D = 1
+--AnglePID_D = 1
+--This will not be 0 and all pids will matter. 
+
+--To check, we want to check that they refine, first let's just use P1, if P1 and S refine when all three components actually matter. 
+P_Segway [T= P_Segway_P1
+P_Segway_P1 [T= P_Segway
+
+
+
+ 

@@ -1,0 +1,40 @@
+P_Segway [T= P_Segway_P1_Renamed:
+    Log:
+            Found 1 processes including 1 names
+        Found 1 processes including 1 names
+        Visited 1 processes and discovered 0 recursive names
+        Visited 0 processes and discovered 0 recursive names
+        Visited 1 processes generating 1 machines
+        Constructed 1 of 1 machines
+        Visited 0 processes generating 2 machines
+        Constructed 0 states
+        Constructed 2 of 4 machines
+        Normalised to 9 states
+        Constructed 3 of 4 machines
+        Reduced 9 states to 9 equivalence classes
+        Constructed 4 of 4 machines
+        Parallel BTree Explorer using 128 workers, 28 to 28 bytes per state
+        Next level storage overhead is 4.02934 bytes per state (402.934 MB per 100 million states)
+        Using BTree blocks of size 8 KiB and next-level blocks of size 8 KiB
+        On ply 1
+        On ply 2 - visited 1 state pairs and 2 transitions in 0 seconds at inf state pairs and inf transitions per second using 2.15GB total storage.
+        On ply 3 - visited 2 state pairs and 3 transitions in 0.006 seconds at 333.333 state pairs and 500 transitions per second using 2.15GB total storage.
+        Finished
+        Reconstructing counterexamples
+    Result: Failed
+        Visited States: 3
+        Visited Transitions: 3
+        Visited Plys: 2
+        Estimated Total Storage: 0B
+        Counterexample (Trace Counterexample)
+            Specification Debug:
+                Trace: <Segway::disableInterruptsCall,
+                Segway::enableInterruptsCall>
+                Available Events: {|Segway::angle.in|}
+            Implementation Debug:
+                P_Segway_P1_Renamed (Trace Behaviour):
+                    Trace: <Segway::disableInterruptsCall,
+                    Segway::enableInterruptsCall>
+                    Error Event: Segway::leftMotorVelocity.in.-2
+					
+					

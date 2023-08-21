@@ -1,0 +1,31 @@
+P_Segway [T= P_Segway_P2_Renamed:
+    Log:
+            Found 1 processes including 1 names
+        Found 1 processes including 1 names
+        Visited 1 processes and discovered 0 recursive names
+        Visited 0 processes and discovered 0 recursive names
+        Visited 1 processes generating 0 machines
+        Constructed 1 of 1 machines
+        Visited 0 processes generating 1 machines
+        Constructed 2 of 3 machines
+        Constructed 3 of 3 machines
+        Parallel BTree Explorer using 128 workers, 28 to 28 bytes per state
+        Next level storage overhead is 4.02934 bytes per state (402.934 MB per 100 million states)
+        Using BTree blocks of size 8 KiB and next-level blocks of size 8 KiB
+        On ply 1
+        On ply 2 - visited 1 state pairs and 2 transitions in 0.001 seconds at 1000 state pairs and 2000 transitions per second using 2.15GB total storage.
+        On ply 3 - visited 2 state pairs and 3 transitions in 0.006 seconds at 333.333 state pairs and 500 transitions per second using 2.15GB total storage.
+        On ply 4 - visited 3 state pairs and 8 transitions in 0.013 seconds at 230.769 state pairs and 615.385 transitions per second using 2.15GB total storage.
+        On ply 5 - visited 4 state pairs and 13 transitions in 0.02 seconds at 200 state pairs and 650 transitions per second using 2.15GB total storage.
+        On ply 6 - visited 5 state pairs and 18 transitions in 0.026 seconds at 192.308 state pairs and 692.308 transitions per second using 2.15GB total storage.
+        On ply 7 - visited 6 state pairs and 23 transitions in 0.032 seconds at 187.5 state pairs and 718.75 transitions per second using 2.15GB total storage.
+        On ply 8 - visited 7 state pairs and 28 transitions in 0.041 seconds at 170.732 state pairs and 682.927 transitions per second using 2.15GB total storage.
+        On ply 9 - visited 8 state pairs and 29 transitions in 0.051 seconds at 156.863 state pairs and 568.627 transitions per second using 2.15GB total storage.
+        On ply 10 - visited 9 state pairs and 30 transitions in 0.062 seconds at 145.161 state pairs and 483.871 transitions per second using 2.15GB total storage.
+        Finished
+        Reconstructing counterexamples
+    Result: Passed
+        Visited States: 9
+        Visited Transitions: 30
+        Visited Plys: 9
+        Estimated Total Storage: 0B

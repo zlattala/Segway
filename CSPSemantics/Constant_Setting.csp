@@ -1,0 +1,109 @@
+--This file allows the setting of all constants, in an easier way, a simpler way of setting constnats. 
+
+--Also this sets the constants for all of the models at once, the sequential, and all parallel versions. 
+
+include "imports.csp"
+
+--Constant Definitions
+
+--All models have exactly 15 constants. 
+
+--These are: 
+--BalanceSTM constants: 
+BalanceSTM_maxAngle = 0
+BalanceSTM_loopTime = 0
+BalanceSTM_startupDelay = 0
+BalanceSTM_speedUpdate = 0
+BalanceSTM_rotationUpdate = 0
+BalanceSTM_angleBudget = 0
+BalanceSTM_speedBudget = 0
+BalanceSTM_rotationBudget = 0
+BalanceSTM_motorBudget = 0
+
+--SpeedPID constants:
+SpeedPID_P = 1
+SpeedPID_I = 0
+SpeedPID_maxIntegral = 0
+
+--RotationPID 
+RotationPID_D = 1
+
+--AnglePID
+AnglePID_P = 0
+AnglePID_D = 1
+
+P_Segway = let
+	id__ = 0
+	const_Segway_SegwayController_stm_ref0_maxAngle = BalanceSTM_maxAngle
+	const_Segway_SegwayController_stm_ref0_loopTime = BalanceSTM_loopTime
+	const_Segway_SegwayController_stm_ref0_startupDelay = BalanceSTM_startupDelay
+	const_Segway_SegwayController_stm_ref0_speedUpdate = BalanceSTM_speedUpdate
+	const_Segway_SegwayController_stm_ref0_rotationUpdate = BalanceSTM_rotationUpdate
+	const_Segway_SegwayController_stm_ref0_angleBudget = BalanceSTM_angleBudget
+	const_Segway_SegwayController_stm_ref0_speedBudget = BalanceSTM_speedBudget
+	const_Segway_SegwayController_stm_ref0_rotationBudget = BalanceSTM_rotationBudget
+	const_Segway_SegwayController_stm_ref0_motorBudget = BalanceSTM_motorBudget
+		
+	const_Segway_SegwayController_op_ref1_P = SpeedPID_P
+	const_Segway_SegwayController_op_ref1_I = SpeedPID_I
+	const_Segway_SegwayController_op_ref1_maxIntegral = SpeedPID_maxIntegral
+	const_Segway_SegwayController_op_ref2_D = RotationPID_D
+	const_Segway_SegwayController_op_ref0_P = AnglePID_P
+	const_Segway_SegwayController_op_ref0_D = AnglePID_D
+	
+within
+	Segway::O__(id__,
+			    const_Segway_SegwayController_stm_ref0_maxAngle,
+			    const_Segway_SegwayController_stm_ref0_loopTime,
+			    const_Segway_SegwayController_stm_ref0_startupDelay,
+			    const_Segway_SegwayController_stm_ref0_speedUpdate,
+			    const_Segway_SegwayController_stm_ref0_rotationUpdate,
+			    const_Segway_SegwayController_stm_ref0_angleBudget,
+			    const_Segway_SegwayController_stm_ref0_speedBudget,
+			    const_Segway_SegwayController_stm_ref0_rotationBudget,
+			    const_Segway_SegwayController_stm_ref0_motorBudget,
+			   	const_Segway_SegwayController_op_ref0_P,
+			   	const_Segway_SegwayController_op_ref0_D,
+			   	const_Segway_SegwayController_op_ref1_P,
+			   	const_Segway_SegwayController_op_ref1_I,
+			   	const_Segway_SegwayController_op_ref1_maxIntegral,
+			   	const_Segway_SegwayController_op_ref2_D)
+				
+
+-- generate Segway_P1, which is the Parallel Segway module semantics, version 1. 
+P_Segway_P1 = let
+	id__ = 0
+	const_Segway_P1_SegwayController_stm_ref1_P = AnglePID_P
+	const_Segway_P1_SegwayController_stm_ref1_D = AnglePID_D
+	const_Segway_P1_SegwayController_stm_ref2_P = SpeedPID_P
+	const_Segway_P1_SegwayController_stm_ref2_I = SpeedPID_I
+	const_Segway_P1_SegwayController_stm_ref2_maxIntegral = SpeedPID_maxIntegral
+	const_Segway_P1_SegwayController_stm_ref0_maxAngle = BalanceSTM_maxAngle
+	const_Segway_P1_SegwayController_stm_ref0_loopTime = BalanceSTM_loopTime
+	const_Segway_P1_SegwayController_stm_ref0_startupDelay = BalanceSTM_startupDelay
+	const_Segway_P1_SegwayController_stm_ref0_speedUpdate = BalanceSTM_speedUpdate
+	const_Segway_P1_SegwayController_stm_ref0_rotationUpdate = BalanceSTM_rotationUpdate
+	const_Segway_P1_SegwayController_stm_ref0_motorBudget = BalanceSTM_motorBudget
+	const_Segway_P1_SegwayController_stm_ref0_angleBudget = BalanceSTM_angleBudget
+	const_Segway_P1_SegwayController_stm_ref0_speedBudget = BalanceSTM_speedBudget
+	const_Segway_P1_SegwayController_stm_ref0_rotationBudget = BalanceSTM_rotationBudget
+	const_Segway_P1_SegwayController_stm_ref3_D = RotationPID_D
+		
+	
+within
+	Segway_P1::O__(id__,
+			    const_Segway_P1_SegwayController_stm_ref0_maxAngle,
+			    const_Segway_P1_SegwayController_stm_ref0_loopTime,
+			    const_Segway_P1_SegwayController_stm_ref0_startupDelay,
+			    const_Segway_P1_SegwayController_stm_ref0_speedUpdate,
+			    const_Segway_P1_SegwayController_stm_ref0_rotationUpdate,
+			    const_Segway_P1_SegwayController_stm_ref0_motorBudget,
+			    const_Segway_P1_SegwayController_stm_ref0_angleBudget,
+			    const_Segway_P1_SegwayController_stm_ref0_speedBudget,
+			    const_Segway_P1_SegwayController_stm_ref0_rotationBudget,
+			    const_Segway_P1_SegwayController_stm_ref1_P,
+			    const_Segway_P1_SegwayController_stm_ref1_D,
+			    const_Segway_P1_SegwayController_stm_ref2_P,
+			    const_Segway_P1_SegwayController_stm_ref2_I,
+			    const_Segway_P1_SegwayController_stm_ref2_maxIntegral,
+			    const_Segway_P1_SegwayController_stm_ref3_D)
