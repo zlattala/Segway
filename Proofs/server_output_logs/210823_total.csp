@@ -1,0 +1,48 @@
+P_Segway :[deadlock free]:
+    Log:
+        Result: Passed
+        Visited States: 9
+        Visited Transitions: 30
+        Visited Plys: 9
+        Estimated Total Storage: 0B
+P_Segway_P1 :[deadlock free]:
+    Log:
+        Result: Passed
+        Visited States: 19
+        Visited Transitions: 105
+        Visited Plys: 9
+        Estimated Total Storage: 0B
+P_Segway_P2 :[deadlock free]:
+    Log:
+        Result: Passed
+        Visited States: 9
+        Visited Transitions: 30
+        Visited Plys: 9
+        Estimated Total Storage: 0B
+P_Segway_P3 :[deadlock free]:
+    Log:
+        Result: Passed
+        Visited States: 9
+        Visited Transitions: 30
+        Visited Plys: 9
+        Estimated Total Storage: 0B
+P_Segway_P1_Renamed [T= P_Segway:
+    Log:
+        Result: Passed
+        Visited States: 9
+        Visited Transitions: 30
+        Visited Plys: 9
+        Estimated Total Storage: 0B
+P_Segway [T= P_Segway_P1_Renamed:
+    Log:
+        Result: Failed
+        Visited States: 3
+        Visited Transitions: 3
+        Visited Plys: 2
+        Estimated Total Storage: 0B
+        Counterexample (Trace Counterexample)
+            Specification Debug:
+                Trace: <Segway::disableInterruptsCall,
+                Segway::enableInterruptsCall>
+                Available Events: {|Segway::angle.in|}
+            Implementation Debug:

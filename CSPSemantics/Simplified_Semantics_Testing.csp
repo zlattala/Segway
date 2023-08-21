@@ -29,7 +29,3 @@ Segway::setRightMotorSpeedCall.0 -> Simp_Segway
 --To check, we want to check that they refine, first let's just use P1, if P1 and S refine when all three components actually matter. 
 P_Segway [T= P_Segway_P1
 P_Segway_P1 [T= P_Segway
-
-
-
- 
