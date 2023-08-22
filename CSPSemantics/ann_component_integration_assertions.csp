@@ -191,21 +191,24 @@ assert P_Segway_P3_AnglePID_C_ANN [T= Simplified_APID
 
 
 --Set input events: 
-Input_Events = {| Segway_P3_AnglePID_C::anewError.in, Segway_P3_AnglePID_C::adiff.in |} 
-Output_Events = {| Segway_P3_AnglePID_C::angleOutputE.out |} 
+Input_Events = { {| Segway_P3_AnglePID_C::anewError.in |} , {| Segway_P3_AnglePID_C::adiff.in |} } 
+Output_Events = { {| Segway_P3_AnglePID_C::angleOutputE.out |} } 
 
-Do(e) = e -> SKIP
-Cycle = ||| e: Input_Events @ Do(e) ; ||| e : Output_Events @ Do(e) ; Cycle
+Do(e) = e -> SKIP 
+Choose(Ev_Set) = ||| E : Ev_Set @ |~| e : E @ Do(e)
+Cycle = Choose(Input_Events) ; Choose(Output_Events) ; Cycle
 
 assert Cycle :[deadlock-free]	
 assert Cycle;RUN({r__}) :[deadlock-free]
-assert Cycle :[deterministic]
+assert Cycle :[deterministic] --non-deterministic, of course. 
 assert Cycle :[divergence-free]
 
 assert Cycle [T= P_Segway_P3_AnglePID_C_ANN
 assert Cycle [T= P_Segway_P3_AnglePID_C_ORIGINAL
 
 --Check, overall 
+assert P_Segway_P3 [T= P_Segway
+assert P_Segway [T= P_Segway_P3
 
 
 				
