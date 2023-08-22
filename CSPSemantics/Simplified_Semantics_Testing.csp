@@ -57,3 +57,5 @@ P_Segway_P2_Renamed = P_Segway_P2[[
 --FAILS.  
 assert P_Segway [T= P_Segway_P2_Renamed
 assert P_Segway_P2_Renamed [T= P_Segway
+
+assert P_Segway_P2_Renamed :[deadlock-free]
