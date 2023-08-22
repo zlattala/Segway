@@ -107,3 +107,44 @@ within
 			    const_Segway_P1_SegwayController_stm_ref2_I,
 			    const_Segway_P1_SegwayController_stm_ref2_maxIntegral,
 			    const_Segway_P1_SegwayController_stm_ref3_D)
+				
+
+-- generate Segway_P1, which is the Parallel Segway module semantics, version 1. 
+P_Segway_P2 = let
+	id__ = 0
+	const_Segway_P2_SegwayController_stm_ref1_P = AnglePID_P
+	const_Segway_P2_SegwayController_stm_ref1_D = AnglePID_D
+	const_Segway_P2_SegwayController_stm_ref2_P = SpeedPID_P
+	const_Segway_P2_SegwayController_stm_ref2_I = SpeedPID_I
+	const_Segway_P2_SegwayController_stm_ref2_maxIntegral = SpeedPID_maxIntegral
+	const_Segway_P2_SegwayController_stm_ref0_maxAngle = BalanceSTM_maxAngle
+	const_Segway_P2_SegwayController_stm_ref0_loopTime = BalanceSTM_loopTime
+	const_Segway_P2_SegwayController_stm_ref0_startupDelay = BalanceSTM_startupDelay
+	const_Segway_P2_SegwayController_stm_ref0_speedUpdate = BalanceSTM_speedUpdate
+	const_Segway_P2_SegwayController_stm_ref0_rotationUpdate = BalanceSTM_rotationUpdate
+	const_Segway_P2_SegwayController_stm_ref0_motorBudget = BalanceSTM_motorBudget
+	const_Segway_P2_SegwayController_stm_ref0_angleBudget = BalanceSTM_angleBudget
+	const_Segway_P2_SegwayController_stm_ref0_speedBudget = BalanceSTM_speedBudget
+	const_Segway_P2_SegwayController_stm_ref0_rotationBudget = BalanceSTM_rotationBudget
+	const_Segway_P2_SegwayController_stm_ref3_D = RotationPID_D
+		
+	
+within
+	Segway_P2::O__(id__,
+			    const_Segway_P2_SegwayController_stm_ref0_maxAngle,
+			    const_Segway_P2_SegwayController_stm_ref0_loopTime,
+			    const_Segway_P2_SegwayController_stm_ref0_startupDelay,
+			    const_Segway_P2_SegwayController_stm_ref0_speedUpdate,
+			    const_Segway_P2_SegwayController_stm_ref0_rotationUpdate,
+			    const_Segway_P2_SegwayController_stm_ref0_motorBudget,
+			    const_Segway_P2_SegwayController_stm_ref0_angleBudget,
+			    const_Segway_P2_SegwayController_stm_ref0_speedBudget,
+			    const_Segway_P2_SegwayController_stm_ref0_rotationBudget,
+			    const_Segway_P2_SegwayController_stm_ref1_P,
+			    const_Segway_P2_SegwayController_stm_ref1_D,
+			    const_Segway_P2_SegwayController_stm_ref2_P,
+			    const_Segway_P2_SegwayController_stm_ref2_I,
+			    const_Segway_P2_SegwayController_stm_ref2_maxIntegral,
+			    const_Segway_P2_SegwayController_stm_ref3_D)
+				
+
