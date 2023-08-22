@@ -26,6 +26,19 @@ Segway::setRightMotorSpeedCall.0 -> Simp_Segway
 --AnglePID_D = 1
 --This will not be 0 and all pids will matter. 
 
+P_Segway_P1_Renamed = P_Segway_P1[[
+  Segway_P1::leftMotorVelocity <- Segway::leftMotorVelocity,
+  Segway_P1::rightMotorVelocity <- Segway::rightMotorVelocity,
+  Segway_P1::angle <- Segway::angle,
+  Segway_P1::gyroX <- Segway::gyroX,
+  Segway_P1::gyroY <- Segway::gyroY,
+  Segway_P1::gyroZ <- Segway::gyroZ,
+  Segway_P1::setLeftMotorSpeedCall <- Segway::setLeftMotorSpeedCall,
+  Segway_P1::setRightMotorSpeedCall <- Segway::setRightMotorSpeedCall,
+  Segway_P1::enableInterruptsCall <- Segway::enableInterruptsCall,
+  Segway_P1::disableInterruptsCall <- Segway::disableInterruptsCall
+  ]]
+  
 --To check, we want to check that they refine, first let's just use P1, if P1 and S refine when all three components actually matter. 
-assert P_Segway [T= P_Segway_P1
-assert P_Segway_P1 [T= P_Segway
+assert P_Segway [T= P_Segway_P1_Renamed
+assert P_Segway_P1_Renamed [T= P_Segway
