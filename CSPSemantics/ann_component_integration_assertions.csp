@@ -138,6 +138,22 @@ within
 			    const_Segway_P3_AnglePID_C_stm_ref0_P,
 			    const_Segway_P3_AnglePID_C_stm_ref0_D)
 				
+				
+
+-- generate Segway_P3
+
+P_Segway_P3_Renamed = P_Segway_P3[[
+  Segway_P3::leftMotorVelocity <- Segway::leftMotorVelocity,
+  Segway_P3::rightMotorVelocity <- Segway::rightMotorVelocity,
+  Segway_P3::angle <- Segway::angle,
+  Segway_P3::gyroX <- Segway::gyroX,
+  Segway_P3::gyroY <- Segway::gyroY,
+  Segway_P3::gyroZ <- Segway::gyroZ,
+  Segway_P3::setLeftMotorSpeedCall <- Segway::setLeftMotorSpeedCall,
+  Segway_P3::setRightMotorSpeedCall <- Segway::setRightMotorSpeedCall,
+  Segway_P3::enableInterruptsCall <- Segway::enableInterruptsCall,
+  Segway_P3::disableInterruptsCall <- Segway::disableInterruptsCall
+  ]]
 	
 --Build the NORMAL AnglePID_C controller, now uses ::ORIGINAL process name, O__ is the ANN. 
 --Set this to 1 and 0,
@@ -207,8 +223,8 @@ assert Cycle [T= P_Segway_P3_AnglePID_C_ANN
 assert Cycle [T= P_Segway_P3_AnglePID_C_ORIGINAL
 
 --Check, overall 
-assert P_Segway_P3 [T= P_Segway
-assert P_Segway [T= P_Segway_P3
+assert P_Segway_P3_Renamed [T= P_Segway
+assert P_Segway [T= P_Segway_P3_Renamed
 
 
 				
