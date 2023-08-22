@@ -1,0 +1,211 @@
+--We want to laod the original segway. 
+--We only use the semantics_anglepidc_is_ann directory here, we compare not to P3, but to the original segway. 
+--Then by compositionality of refinement, we get that 
+--We want to use constants. P = 1 because that's what the ANN is setup to be. 
+--Imports for Parallel version P1. 
+include "semantics_anglepidc_is_ann/defs/file_AnglePID_defs.csp"
+include "semantics_anglepidc_is_ann/defs/file_BalanceSTM_P1_defs.csp"
+include "semantics_anglepidc_is_ann/defs/file_RotationPID_S_defs.csp"
+include "semantics_anglepidc_is_ann/defs/file_Segway_P1.csp"
+include "semantics_anglepidc_is_ann/defs/file_SpeedPID_defs.csp"
+include "semantics_anglepidc_is_ann/defs/file_Segway_P1_defs.csp"
+include "semantics_anglepidc_is_ann/defs/file_SpeedPID_S_defs.csp"
+include "semantics_anglepidc_is_ann/defs/file_BalanceSTM_defs.csp"
+include "semantics_anglepidc_is_ann/defs/file_RotationPID_defs.csp"
+include "semantics_anglepidc_is_ann/defs/file_AnglePID_S_defs.csp"
+include "semantics_anglepidc_is_ann/defs/file_Segway_defs.csp"
+include "semantics_anglepidc_is_ann/defs/file_SegwayRP_defs.csp"
+
+--Imports for Sequential version. 
+include "semantics_anglepidc_is_ann/defs/file_Segway.csp"
+
+--Imports for P2 parallel version. 
+include "semantics_anglepidc_is_ann/defs/file_BalanceSTM_P2_defs.csp"
+include "semantics_anglepidc_is_ann/defs/file_Segway_P2_defs.csp"
+include "semantics_anglepidc_is_ann/defs/file_Segway_P2.csp"
+
+--Imports for P3 parallel version 
+include "semantics_anglepidc_is_ann/defs/file_Segway_P3_defs.csp"
+include "semantics_anglepidc_is_ann/defs/file_Segway_P3.csp"
+
+--For the AnglePID_C controller
+include "semantics_anglepidc_is_ann/defs/file_Segway_P3_defs.csp"
+include "semantics_anglepidc_is_ann/defs/Segway_P3_AnglePID_C.csp"
+
+--Universal Imports
+include "semantics_anglepidc_is_ann/defs/state_defs.csp"
+include "semantics_anglepidc_is_ann/defs/core_defs.csp"
+include "semantics_anglepidc_is_ann/defs/robochart_defs.csp"
+include "semantics_anglepidc_is_ann/instantiations.csp"
+channel r__
+
+--CONSTANTS --
+BalanceSTM_maxAngle = 0
+BalanceSTM_loopTime = 0
+BalanceSTM_startupDelay = 0
+BalanceSTM_speedUpdate = 0
+BalanceSTM_rotationUpdate = 0
+BalanceSTM_angleBudget = 0
+BalanceSTM_speedBudget = 0
+BalanceSTM_rotationBudget = 0
+BalanceSTM_motorBudget = 0
+
+--SpeedPID constants:
+SpeedPID_P = 1
+SpeedPID_I = 0
+SpeedPID_maxIntegral = 0
+
+--RotationPID 
+RotationPID_D = 1
+
+--AnglePID
+AnglePID_P = 1
+AnglePID_D = 0
+
+P_Segway = let
+	id__ = 0
+	const_Segway_SegwayController_stm_ref0_maxAngle = BalanceSTM_maxAngle
+	const_Segway_SegwayController_stm_ref0_loopTime = BalanceSTM_loopTime
+	const_Segway_SegwayController_stm_ref0_startupDelay = BalanceSTM_startupDelay
+	const_Segway_SegwayController_stm_ref0_speedUpdate = BalanceSTM_speedUpdate
+	const_Segway_SegwayController_stm_ref0_rotationUpdate = BalanceSTM_rotationUpdate
+	const_Segway_SegwayController_stm_ref0_angleBudget = BalanceSTM_angleBudget
+	const_Segway_SegwayController_stm_ref0_speedBudget = BalanceSTM_speedBudget
+	const_Segway_SegwayController_stm_ref0_rotationBudget = BalanceSTM_rotationBudget
+	const_Segway_SegwayController_stm_ref0_motorBudget = BalanceSTM_motorBudget
+		
+	const_Segway_SegwayController_op_ref1_P = SpeedPID_P
+	const_Segway_SegwayController_op_ref1_I = SpeedPID_I
+	const_Segway_SegwayController_op_ref1_maxIntegral = SpeedPID_maxIntegral
+	const_Segway_SegwayController_op_ref2_D = RotationPID_D
+	const_Segway_SegwayController_op_ref0_P = AnglePID_P
+	const_Segway_SegwayController_op_ref0_D = AnglePID_D
+	
+within
+	Segway::O__(id__,
+			    const_Segway_SegwayController_stm_ref0_maxAngle,
+			    const_Segway_SegwayController_stm_ref0_loopTime,
+			    const_Segway_SegwayController_stm_ref0_startupDelay,
+			    const_Segway_SegwayController_stm_ref0_speedUpdate,
+			    const_Segway_SegwayController_stm_ref0_rotationUpdate,
+			    const_Segway_SegwayController_stm_ref0_angleBudget,
+			    const_Segway_SegwayController_stm_ref0_speedBudget,
+			    const_Segway_SegwayController_stm_ref0_rotationBudget,
+			    const_Segway_SegwayController_stm_ref0_motorBudget,
+			   	const_Segway_SegwayController_op_ref0_P,
+			   	const_Segway_SegwayController_op_ref0_D,
+			   	const_Segway_SegwayController_op_ref1_P,
+			   	const_Segway_SegwayController_op_ref1_I,
+			   	const_Segway_SegwayController_op_ref1_maxIntegral,
+			   	const_Segway_SegwayController_op_ref2_D)
+				
+--BUILDING P3, this will have the ANN component in it: 
+
+P_Segway_P3 = let
+	id__ = 0
+	const_Segway_P3_AnglePID_C_stm_ref0_P = AnglePID_P
+	const_Segway_P3_AnglePID_C_stm_ref0_D = AnglePID_D
+	const_Segway_P3_SegwayController_stm_ref2_P = SpeedPID_P
+	const_Segway_P3_SegwayController_stm_ref2_I = SpeedPID_I
+	const_Segway_P3_SegwayController_stm_ref2_maxIntegral = SpeedPID_maxIntegral
+	const_Segway_P3_SegwayController_stm_ref0_maxAngle = BalanceSTM_maxAngle
+	const_Segway_P3_SegwayController_stm_ref0_loopTime = BalanceSTM_loopTime
+	const_Segway_P3_SegwayController_stm_ref0_startupDelay = BalanceSTM_startupDelay
+	const_Segway_P3_SegwayController_stm_ref0_speedUpdate = BalanceSTM_speedUpdate
+	const_Segway_P3_SegwayController_stm_ref0_rotationUpdate = BalanceSTM_rotationUpdate
+	const_Segway_P3_SegwayController_stm_ref0_motorBudget = BalanceSTM_motorBudget
+	const_Segway_P3_SegwayController_stm_ref0_angleBudget = BalanceSTM_angleBudget
+	const_Segway_P3_SegwayController_stm_ref0_speedBudget = BalanceSTM_speedBudget
+	const_Segway_P3_SegwayController_stm_ref0_rotationBudget = BalanceSTM_rotationBudget
+	const_Segway_P3_SegwayController_stm_ref3_D = RotationPID_D
+		
+	
+within
+	Segway_P3::O__(id__,
+			    const_Segway_P3_SegwayController_stm_ref0_maxAngle,
+			    const_Segway_P3_SegwayController_stm_ref0_loopTime,
+			    const_Segway_P3_SegwayController_stm_ref0_startupDelay,
+			    const_Segway_P3_SegwayController_stm_ref0_speedUpdate,
+			    const_Segway_P3_SegwayController_stm_ref0_rotationUpdate,
+			    const_Segway_P3_SegwayController_stm_ref0_motorBudget,
+			    const_Segway_P3_SegwayController_stm_ref0_angleBudget,
+			    const_Segway_P3_SegwayController_stm_ref0_speedBudget,
+			    const_Segway_P3_SegwayController_stm_ref0_rotationBudget,
+			    const_Segway_P3_SegwayController_stm_ref2_P,
+			    const_Segway_P3_SegwayController_stm_ref2_I,
+			    const_Segway_P3_SegwayController_stm_ref2_maxIntegral,
+			    const_Segway_P3_SegwayController_stm_ref3_D,
+			    const_Segway_P3_AnglePID_C_stm_ref0_P,
+			    const_Segway_P3_AnglePID_C_stm_ref0_D)
+				
+	
+--Build the NORMAL AnglePID_C controller, now uses ::ORIGINAL process name, O__ is the ANN. 
+--Set this to 1 and 0,
+--Tested, it fails if not P = 1. 
+P_Segway_P3_AnglePID_C_ORIGINAL = let
+	id__ = 0
+	
+	
+	
+	const_Segway_P3_AnglePID_C_stm_ref0_P = 1
+	const_Segway_P3_AnglePID_C_stm_ref0_D = 0
+		
+within
+	Segway_P3_AnglePID_C::ORIGINAL(id__,
+			    const_Segway_P3_AnglePID_C_stm_ref0_P,
+			    const_Segway_P3_AnglePID_C_stm_ref0_D)
+
+--Build ANN, doesn't matter what the constants are here: 
+
+P_Segway_P3_AnglePID_C_ANN = let
+	id__ = 0
+	const_Segway_P3_AnglePID_C_stm_ref0_P = 0
+	const_Segway_P3_AnglePID_C_stm_ref0_D = 0
+		
+within
+	Segway_P3_AnglePID_C::O__(id__,
+			    const_Segway_P3_AnglePID_C_stm_ref0_P,
+			    const_Segway_P3_AnglePID_C_stm_ref0_D)
+		
+--Check that this is a refinement of The O__ version, the ANN. 
+
+assert P_Segway_P3_AnglePID_C_ORIGINAL [T= P_Segway_P3_AnglePID_C_ANN
+assert P_Segway_P3_AnglePID_C_ANN [T= P_Segway_P3_AnglePID_C_ORIGINAL
+
+--Basic checks on ANN component: 
+assert P_Segway_P3_AnglePID_C_ANN :[deadlock-free]	
+assert P_Segway_P3_AnglePID_C_ANN;RUN({r__}) :[deadlock-free]
+assert P_Segway_P3_AnglePID_C_ANN :[deterministic]
+assert P_Segway_P3_AnglePID_C_ANN :[divergence-free]
+
+--Cyclicity checks is next. Then it's just the overall system, and we're done. 
+
+Simplified_APID = Segway_P3_AnglePID_C::anewError.in?x -> Segway_P3_AnglePID_C::adiff.in?y -> Segway_P3_AnglePID_C::angleOutputE.out!x -> Simplified_APID
+
+--What both is equal to. 
+assert P_Segway_P3_AnglePID_C_ORIGINAL [T= Simplified_APID
+assert Simplified_APID [T= P_Segway_P3_AnglePID_C_ORIGINAL
+
+assert Simplified_APID [T= P_Segway_P3_AnglePID_C_ANN
+assert P_Segway_P3_AnglePID_C_ANN [T= Simplified_APID 
+
+
+--Set input events: 
+Input_Events = {| Segway_P3_AnglePID_C::anewError.in, Segway_P3_AnglePID_C::adiff.in |} 
+Output_Events = {| Segway_P3_AnglePID_C::angleOutputE.out |} 
+
+Do(e) = e -> SKIP
+Cycle = ||| e: Input_Events @ Do(e) ; ||| e : Output_Events @ Do(e) ; Cycle
+
+assert Cycle :[deadlock-free]	
+assert Cycle;RUN({r__}) :[deadlock-free]
+assert Cycle :[deterministic]
+assert Cycle :[divergence-free]
+
+assert Cycle [T= P_Segway_P3_AnglePID_C_ANN
+assert Cycle [T= P_Segway_P3_AnglePID_C_ORIGINAL
+
+--Check, overall 
+
+
+				

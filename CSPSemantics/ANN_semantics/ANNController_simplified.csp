@@ -14,8 +14,8 @@ exports
 	channel layerRes:{0..layerNo}.{1..maxSize}.Value
 	channel nodeOut:{1..layerNo}.{1..maxSize}.{1..maxSize}.Value
     
-	--Termination Channel (not used)--
-	channel end
+	--Termination Channel --
+	channel terminate
 	
 	--SEMANTIC CONSTANTS--
 
@@ -84,7 +84,7 @@ exports
 
 	--ANN PROCESS DEFINITIONS --
 	
-	ANNHiddenEvts = diff(Events, {| layerRes.0, layerRes.2, end |})
+	ANNHiddenEvts = diff(Events, {| layerRes.0, layerRes.2, terminate |})
 
 	HiddenLayers = || i : {1..(layerNo-1)} @ [ {| layerRes.(i-1), layerRes.i |} ] HiddenLayer(i, layerSize(i), layerSize(i-1))  
 	
@@ -109,7 +109,7 @@ exports
 	OutputLayer = [| {| layerRes.(layerNo-1) |} |] i: {1..layerSize(layerNo)} @ Node(layerNo, i, layerSize(layerNo-1))
 
     --This is complete semantic function. Recursive call cannot be on this layer, must be on the higher up layer. 
-	ANN = (( (HiddenLayers [| {| layerRes.1 |} |] OutputLayer) \ ANNHiddenEvts ) [|{|end|}|>SKIP)  
+	ANN = (( (HiddenLayers [| {| layerRes.1 |} |] OutputLayer) \ ANNHiddenEvts ) [|{|terminate|}|>SKIP)  
 	
     --This is required to translate types from core_real to binary and to link to the rest of the system, and hide layerRes events. . 
 	Full = ( ( (InputProcess [| {| layerRes.0 |} |] ANN) [| {| layerRes.2 |} |] OutputProcess ) \ {| layerRes |} ) ; Full
