@@ -147,8 +147,8 @@ P_Segway_P3_AnglePID_C_ORIGINAL = let
 	
 	
 	
-	const_Segway_P3_AnglePID_C_stm_ref0_P = 1
-	const_Segway_P3_AnglePID_C_stm_ref0_D = 0
+	const_Segway_P3_AnglePID_C_stm_ref0_P = AnglePID_P
+	const_Segway_P3_AnglePID_C_stm_ref0_D = AnglePID_D
 		
 within
 	Segway_P3_AnglePID_C::ORIGINAL(id__,
@@ -159,8 +159,8 @@ within
 
 P_Segway_P3_AnglePID_C_ANN = let
 	id__ = 0
-	const_Segway_P3_AnglePID_C_stm_ref0_P = 0
-	const_Segway_P3_AnglePID_C_stm_ref0_D = 0
+	const_Segway_P3_AnglePID_C_stm_ref0_P = 0 --NOT USED BY ANN
+	const_Segway_P3_AnglePID_C_stm_ref0_D = 0 --NOT USED BY ANN
 		
 within
 	Segway_P3_AnglePID_C::O__(id__,
