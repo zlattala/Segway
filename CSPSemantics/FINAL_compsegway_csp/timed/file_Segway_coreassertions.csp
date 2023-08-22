@@ -1,7 +1,7 @@
 
 --
 -- RoboChart generator version 3.0.0.202306261132
--- Automatically generated on 21-08-2023 13:01:45
+-- Automatically generated on 22-08-2023 01:53:01
 --
 -- Iterated compression status: true
 -- Assertions compression status: false
@@ -122,10 +122,10 @@ within
 		const_BalanceSTM_motorBudget,
 		const_AnglePID_P,
 		const_AnglePID_D,
-		const_RotationPID_D,
 		const_SpeedPID_P,
 		const_SpeedPID_I,
-		const_SpeedPID_maxIntegral
+		const_SpeedPID_maxIntegral,
+		const_RotationPID_D
 	)
 assert P_Segway_SegwayController_stm_ref0 :[deadlock-free]	
 assert P_Segway_SegwayController_stm_ref0;RUN({r__}) :[deadlock-free]

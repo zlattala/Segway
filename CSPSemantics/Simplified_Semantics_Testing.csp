@@ -53,6 +53,7 @@ P_Segway_P2_Renamed = P_Segway_P2[[
   Segway_P2::disableInterruptsCall <- Segway::disableInterruptsCall
   ]]
   
---To check, we want to check that they refine, first let's just use P1, if P1 and S refine when all three components actually matter. 
+--To check, we want to check that they refine, first let's just use P1, if P1 and S refine when all three components actually matter.
+--FAILS.  
 assert P_Segway [T= P_Segway_P2_Renamed
 assert P_Segway_P2_Renamed [T= P_Segway
