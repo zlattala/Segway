@@ -1,7 +1,7 @@
 
 --
 -- RoboChart generator version 3.0.0.202306261132
--- Automatically generated on 21-08-2023 15:10:30
+-- Automatically generated on 22-08-2023 01:53:02
 --
 -- Iterated compression status: true
 -- Assertions compression status: false
@@ -23,9 +23,6 @@ P_Segway_P3 = let
 	const_Segway_P3_SegwayController_stm_ref2_P = const_SpeedPID_S_P
 	const_Segway_P3_SegwayController_stm_ref2_I = const_SpeedPID_S_I
 	const_Segway_P3_SegwayController_stm_ref2_maxIntegral = const_SpeedPID_S_maxIntegral
-	const_Segway_P3_SegwayController_stm_ref3_D = const_RotationPID_S_D
-	const_Segway_P3_AnglePID_C_stm_ref0_P = const_AnglePID_S_P
-	const_Segway_P3_AnglePID_C_stm_ref0_D = const_AnglePID_S_D
 	const_Segway_P3_SegwayController_stm_ref0_maxAngle = const_BalanceSTM_P2_maxAngle
 	const_Segway_P3_SegwayController_stm_ref0_loopTime = const_BalanceSTM_P2_loopTime
 	const_Segway_P3_SegwayController_stm_ref0_startupDelay = const_BalanceSTM_P2_startupDelay
@@ -35,6 +32,9 @@ P_Segway_P3 = let
 	const_Segway_P3_SegwayController_stm_ref0_angleBudget = const_BalanceSTM_P2_angleBudget
 	const_Segway_P3_SegwayController_stm_ref0_speedBudget = const_BalanceSTM_P2_speedBudget
 	const_Segway_P3_SegwayController_stm_ref0_rotationBudget = const_BalanceSTM_P2_rotationBudget
+	const_Segway_P3_SegwayController_stm_ref3_D = const_RotationPID_S_D
+	const_Segway_P3_AnglePID_C_stm_ref0_P = const_AnglePID_S_P
+	const_Segway_P3_AnglePID_C_stm_ref0_D = const_AnglePID_S_D
 		
 	
 within

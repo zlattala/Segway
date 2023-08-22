@@ -26,7 +26,7 @@
         <description xmi:type="description_1:DiagramDescription" href="platform:/plugin/circus.robocalc.robochart.graphical/description/robochart.odesign#//@ownedViewpoints[name='RoboChartID']/@ownedRepresentations[name='SpecificationID']"/>
         <target xmi:type="robochart:RCPackage" href="platform:/plugin/circus.robocalc.robochart.textual/lib/robochart/core.rct#/"/>
       </ownedRepresentationDescriptors>
-      <ownedRepresentationDescriptors xmi:type="viewpoint:DRepresentationDescriptor" uid="_k2MJIJr8EeyoOYYixloELQ" name="BalanceSTM.rct" repPath="#_k0C0EJr8EeyoOYYixloELQ" changeId="0ace0023-5fc2-4e73-bf93-fa72b615e54c">
+      <ownedRepresentationDescriptors xmi:type="viewpoint:DRepresentationDescriptor" uid="_k2MJIJr8EeyoOYYixloELQ" name="BalanceSTM.rct" repPath="#_k0C0EJr8EeyoOYYixloELQ" changeId="5891c30b-c3d6-4f67-9770-0cdbabcfe0cd">
         <description xmi:type="description_1:DiagramDescription" href="platform:/plugin/circus.robocalc.robochart.graphical/description/robochart.odesign#//@ownedViewpoints[name='RoboChartID']/@ownedRepresentations[name='SpecificationID']"/>
         <target xmi:type="robochart:RCPackage" href="BalanceSTM.rct#/"/>
       </ownedRepresentationDescriptors>
@@ -2272,7 +2272,7 @@
       </ownedStyle>
       <actualMapping xmi:type="description_1:ContainerMapping" href="platform:/plugin/circus.robocalc.robochart.graphical/description/robochart.odesign#//@ownedViewpoints[name='RoboChartID']/@ownedRepresentations[name='SpecificationID']/@defaultLayer/@containerMappings[name='ImportsID']"/>
     </ownedDiagramElements>
-    <ownedDiagramElements xmi:type="diagram:DEdge" uid="_k1lsMJr8EeyoOYYixloELQ" name="[(angleReceived==true)/\((speedCount==0)\/(speedCount&lt;speedUpdate))/\((rotationCount==0)\/(rotationCount&lt;rotationUpdate))]" sourceNode="_k0sUUpr8EeyoOYYixloELQ" targetNode="_k1ciQJr8EeyoOYYixloELQ">
+    <ownedDiagramElements xmi:type="diagram:DEdge" uid="_k1lsMJr8EeyoOYYixloELQ" name="[(angleReceived==true)/\(speedSent==false)/\(rotationSent==false)/\((speedCount==0)\/(speedCount&lt;speedUpdate))/\((rotationCount==0)\/(rotationCount&lt;rotationUpdate))]" sourceNode="_k0sUUpr8EeyoOYYixloELQ" targetNode="_k1ciQJr8EeyoOYYixloELQ">
       <target xmi:type="robochart:Transition" href="BalanceSTM.rct#//@machines.0/@transitions.0"/>
       <semanticElements xmi:type="robochart:Transition" href="BalanceSTM.rct#//@machines.0/@transitions.0"/>
       <ownedStyle xmi:type="diagram:EdgeStyle" uid="_k1lsMZr8EeyoOYYixloELQ" size="2" routingStyle="manhattan">

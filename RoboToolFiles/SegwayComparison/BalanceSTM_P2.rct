@@ -42,7 +42,7 @@ stm BalanceSTM_P2 {
 	transition t6 { 
 		from ReceiveInput
 		to j2
-		condition ( angleReceived == true ) /\ ( ( speedCount == 0 ) \/ ( speedCount < speedUpdate ) ) /\ ( ( rotationCount == 0 ) \/ ( rotationCount < rotationUpdate ) )
+		condition ( angleReceived == true ) /\ ( speedSent == false ) /\ ( rotationSent == false ) /\ ( ( speedCount == 0 ) \/ ( speedCount < speedUpdate ) ) /\ ( ( rotationCount == 0 ) \/ ( rotationCount < rotationUpdate ) )
 		}
 	
 	transition t5 {

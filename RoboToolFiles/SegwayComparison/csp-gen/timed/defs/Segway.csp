@@ -1,7 +1,7 @@
 
 --
 -- RoboChart generator version 3.0.0.202306261132
--- Automatically generated on 21-08-2023 13:01:45
+-- Automatically generated on 22-08-2023 01:53:01
 --
 -- Iterated compression status: true
 -- Assertions compression status: false
@@ -70,10 +70,10 @@ module Segway
 			
 			
 			-- declaring call and ret events for undefined operations
-			channel disableInterruptsCall
-			channel setRightMotorSpeedCall: core_real
 			channel setLeftMotorSpeedCall: core_real
 			channel enableInterruptsCall
+			channel setRightMotorSpeedCall: core_real
+			channel disableInterruptsCall
 			
 			-- declaring controller termination channel
 			channel terminate
@@ -87,10 +87,10 @@ module Segway
 				gyroX,
 				gyroY,
 				gyroZ
-			,	disableInterruptsCall,
+			,	setLeftMotorSpeedCall,
+				enableInterruptsCall,
 				setRightMotorSpeedCall,
-				setLeftMotorSpeedCall,
-				enableInterruptsCall
+				disableInterruptsCall
 			|}
 			
 			-- set of visible memory events
@@ -856,12 +856,12 @@ module Segway
 				localClockResets = {||}
 				
 				
-				channel get_CLID_UpdateOutput : core_clock_type 
-				channel get_CLID_UpdateIntegral : core_clock_type 
 				channel get_CLID_f0 : core_clock_type 
+				channel get_CLID_UpdateIntegral : core_clock_type 
+				channel get_CLID_UpdateOutput : core_clock_type 
 				--channel increment__
 				
-				CLID_UpdateOutput_clock_type(id__,
+				CLID_f0_clock_type(id__,
 						          const_SpeedPID_P,
 						          const_SpeedPID_I,
 						          const_SpeedPID_maxIntegral) = 
@@ -883,7 +883,7 @@ module Segway
 				within
 					if member(max,core_clock_type) then ctype else error("core_clock_type is not wide enough")
 				
-				CLID_f0_clock_type(id__,
+				CLID_UpdateOutput_clock_type(id__,
 						          const_SpeedPID_P,
 						          const_SpeedPID_I,
 						          const_SpeedPID_maxIntegral) = 
@@ -1306,7 +1306,7 @@ module Segway
 							    const_SpeedPID_I,
 							    const_SpeedPID_maxIntegral) = 
 						dbisim((let
-							stateClockSync = {|get_CLID_UpdateOutput,UpdateOutput::entered,get_CLID_UpdateIntegral,UpdateIntegral::entered|}
+							stateClockSync = {|get_CLID_UpdateIntegral,UpdateIntegral::entered,get_CLID_UpdateOutput,UpdateOutput::entered|}
 						 within
 							(MachineBody(id__,
 										param_newError,
@@ -1443,7 +1443,7 @@ module Segway
 							    const_SpeedPID_I,
 							    const_SpeedPID_maxIntegral) = 
 						dbisim((let
-							stateClockSync = {|get_CLID_UpdateOutput,UpdateOutput::entered,get_CLID_UpdateIntegral,UpdateIntegral::entered|}
+							stateClockSync = {|get_CLID_UpdateIntegral,UpdateIntegral::entered,get_CLID_UpdateOutput,UpdateOutput::entered|}
 						 within
 							(MachineBody_VS_O(id__,
 										param_newError,
@@ -1582,28 +1582,6 @@ module Segway
 					
 					clockSync = {||}
 					
-					Clock_CLID_UpdateOutput(id__,x__,
-							          const_SpeedPID_P,
-							          const_SpeedPID_I,
-							          const_SpeedPID_maxIntegral) = 
-						TimeOut_1(
-							UpdateOutput::entered -> Clock_CLID_UpdateOutput(id__,0,
-									          const_SpeedPID_P,
-									          const_SpeedPID_I,
-									          const_SpeedPID_maxIntegral)
-							[]
-							get_CLID_UpdateOutput!x__ -> Clock_CLID_UpdateOutput(id__,x__,
-									          const_SpeedPID_P,
-									          const_SpeedPID_I,
-									          const_SpeedPID_maxIntegral)
-							[]
-							terminate -> SKIP,Clock_CLID_UpdateOutput(id__,clock_type_plus(x__,1,CLID_UpdateOutput_clock_type(id__,
-									          const_SpeedPID_P,
-									          const_SpeedPID_I,
-									          const_SpeedPID_maxIntegral)),
-									          const_SpeedPID_P,
-									          const_SpeedPID_I,
-									          const_SpeedPID_maxIntegral))
 					Clock_CLID_UpdateIntegral(id__,x__,
 							          const_SpeedPID_P,
 							          const_SpeedPID_I,
@@ -1626,22 +1604,44 @@ module Segway
 									          const_SpeedPID_P,
 									          const_SpeedPID_I,
 									          const_SpeedPID_maxIntegral))
+					Clock_CLID_UpdateOutput(id__,x__,
+							          const_SpeedPID_P,
+							          const_SpeedPID_I,
+							          const_SpeedPID_maxIntegral) = 
+						TimeOut_1(
+							UpdateOutput::entered -> Clock_CLID_UpdateOutput(id__,0,
+									          const_SpeedPID_P,
+									          const_SpeedPID_I,
+									          const_SpeedPID_maxIntegral)
+							[]
+							get_CLID_UpdateOutput!x__ -> Clock_CLID_UpdateOutput(id__,x__,
+									          const_SpeedPID_P,
+									          const_SpeedPID_I,
+									          const_SpeedPID_maxIntegral)
+							[]
+							terminate -> SKIP,Clock_CLID_UpdateOutput(id__,clock_type_plus(x__,1,CLID_UpdateOutput_clock_type(id__,
+									          const_SpeedPID_P,
+									          const_SpeedPID_I,
+									          const_SpeedPID_maxIntegral)),
+									          const_SpeedPID_P,
+									          const_SpeedPID_I,
+									          const_SpeedPID_maxIntegral))
 					
 					StateClocks(id__,
 							          const_SpeedPID_P,
 							          const_SpeedPID_I,
-							          const_SpeedPID_maxIntegral) = dbisim(Clock_CLID_UpdateOutput(id__,0,
+							          const_SpeedPID_maxIntegral) = dbisim(Clock_CLID_UpdateIntegral(id__,0,
 							          const_SpeedPID_P,
 							          const_SpeedPID_I,
 							          const_SpeedPID_maxIntegral))
 					[| { terminate } |] (
-					dbisim(Clock_CLID_UpdateIntegral(id__,0,
+					dbisim(Clock_CLID_UpdateOutput(id__,0,
 							          const_SpeedPID_P,
 							          const_SpeedPID_I,
 							          const_SpeedPID_maxIntegral))
 					)
 					
-					stateClockSync = {|get_CLID_UpdateOutput,UpdateOutput::entered,get_CLID_UpdateIntegral,UpdateIntegral::entered|}
+					stateClockSync = {|get_CLID_UpdateIntegral,UpdateIntegral::entered,get_CLID_UpdateOutput,UpdateOutput::entered|}
 					}
 						endmodule
 			-- compileOperationDef
@@ -2158,10 +2158,10 @@ module Segway
 				channel gyroZ: InOut.core_real
 				
 				-- Declaring call and ret events for undefined operations
-				channel disableInterruptsCall
-				channel setRightMotorSpeedCall: core_real
 				channel setLeftMotorSpeedCall: core_real
 				channel enableInterruptsCall
+				channel setRightMotorSpeedCall: core_real
+				channel disableInterruptsCall
 				
 				enterSS = {|
 				i0::enter,
@@ -2202,10 +2202,10 @@ module Segway
 					gyroX,
 					gyroY,
 					gyroZ
-				,	disableInterruptsCall,
+				,	setLeftMotorSpeedCall,
+					enableInterruptsCall,
 					setRightMotorSpeedCall,
-					setLeftMotorSpeedCall,
-					enableInterruptsCall
+					disableInterruptsCall
 					|}
 				datatype ClockSet = 
 					CLID_loopTimer
@@ -2215,17 +2215,17 @@ module Segway
 				localClockResets = {|clockReset.CLID_loopTimer|}
 				
 				
-				channel get_CLID_StopMotors : core_clock_type 
+				channel get_CLID_CalculateAngle : core_clock_type 
+				channel get_CLID_CalculateSpeed : core_clock_type 
+				channel get_CLID_SetMotors : core_clock_type 
+				channel get_CLID_CalculateRotation : core_clock_type 
 				channel get_CLID_WaitForNextIteration : core_clock_type 
 				channel get_CLID_loopTimer : core_clock_type 
 				channel get_CLID_Initialisation : core_clock_type 
-				channel get_CLID_SetMotors : core_clock_type 
-				channel get_CLID_CalculateRotation : core_clock_type 
-				channel get_CLID_CalculateSpeed : core_clock_type 
-				channel get_CLID_CalculateAngle : core_clock_type 
+				channel get_CLID_StopMotors : core_clock_type 
 				--channel increment__
 				
-				CLID_StopMotors_clock_type(id__,
+				CLID_CalculateAngle_clock_type(id__,
 						          const_BalanceSTM_maxAngle,
 						          const_BalanceSTM_loopTime,
 						          const_BalanceSTM_startupDelay,
@@ -2237,10 +2237,82 @@ module Segway
 						          const_BalanceSTM_motorBudget,
 						          const_AnglePID_P,
 						          const_AnglePID_D,
-						          const_RotationPID_D,
 						          const_SpeedPID_P,
 						          const_SpeedPID_I,
-						          const_SpeedPID_maxIntegral) = 
+						          const_SpeedPID_maxIntegral,
+						          const_RotationPID_D) = 
+					let
+						max = (clock_type_max(Union({
+				{}
+				}))+1)
+					ctype = {0..max}
+				within
+					if member(max,core_clock_type) then ctype else error("core_clock_type is not wide enough")
+				
+				CLID_CalculateSpeed_clock_type(id__,
+						          const_BalanceSTM_maxAngle,
+						          const_BalanceSTM_loopTime,
+						          const_BalanceSTM_startupDelay,
+						          const_BalanceSTM_speedUpdate,
+						          const_BalanceSTM_rotationUpdate,
+						          const_BalanceSTM_angleBudget,
+						          const_BalanceSTM_speedBudget,
+						          const_BalanceSTM_rotationBudget,
+						          const_BalanceSTM_motorBudget,
+						          const_AnglePID_P,
+						          const_AnglePID_D,
+						          const_SpeedPID_P,
+						          const_SpeedPID_I,
+						          const_SpeedPID_maxIntegral,
+						          const_RotationPID_D) = 
+					let
+						max = (clock_type_max(Union({
+				{}
+				}))+1)
+					ctype = {0..max}
+				within
+					if member(max,core_clock_type) then ctype else error("core_clock_type is not wide enough")
+				
+				CLID_SetMotors_clock_type(id__,
+						          const_BalanceSTM_maxAngle,
+						          const_BalanceSTM_loopTime,
+						          const_BalanceSTM_startupDelay,
+						          const_BalanceSTM_speedUpdate,
+						          const_BalanceSTM_rotationUpdate,
+						          const_BalanceSTM_angleBudget,
+						          const_BalanceSTM_speedBudget,
+						          const_BalanceSTM_rotationBudget,
+						          const_BalanceSTM_motorBudget,
+						          const_AnglePID_P,
+						          const_AnglePID_D,
+						          const_SpeedPID_P,
+						          const_SpeedPID_I,
+						          const_SpeedPID_maxIntegral,
+						          const_RotationPID_D) = 
+					let
+						max = (clock_type_max(Union({
+				{}
+				}))+1)
+					ctype = {0..max}
+				within
+					if member(max,core_clock_type) then ctype else error("core_clock_type is not wide enough")
+				
+				CLID_CalculateRotation_clock_type(id__,
+						          const_BalanceSTM_maxAngle,
+						          const_BalanceSTM_loopTime,
+						          const_BalanceSTM_startupDelay,
+						          const_BalanceSTM_speedUpdate,
+						          const_BalanceSTM_rotationUpdate,
+						          const_BalanceSTM_angleBudget,
+						          const_BalanceSTM_speedBudget,
+						          const_BalanceSTM_rotationBudget,
+						          const_BalanceSTM_motorBudget,
+						          const_AnglePID_P,
+						          const_AnglePID_D,
+						          const_SpeedPID_P,
+						          const_SpeedPID_I,
+						          const_SpeedPID_maxIntegral,
+						          const_RotationPID_D) = 
 					let
 						max = (clock_type_max(Union({
 				{}
@@ -2261,10 +2333,10 @@ module Segway
 						          const_BalanceSTM_motorBudget,
 						          const_AnglePID_P,
 						          const_AnglePID_D,
-						          const_RotationPID_D,
 						          const_SpeedPID_P,
 						          const_SpeedPID_I,
-						          const_SpeedPID_maxIntegral) = 
+						          const_SpeedPID_maxIntegral,
+						          const_RotationPID_D) = 
 					let
 						max = (clock_type_max(Union({
 				{}
@@ -2285,10 +2357,10 @@ module Segway
 						          const_BalanceSTM_motorBudget,
 						          const_AnglePID_P,
 						          const_AnglePID_D,
-						          const_RotationPID_D,
 						          const_SpeedPID_P,
 						          const_SpeedPID_I,
-						          const_SpeedPID_maxIntegral) = 
+						          const_SpeedPID_maxIntegral,
+						          const_RotationPID_D) = 
 					let
 						max = (clock_type_max(Union({
 				{},
@@ -2310,10 +2382,10 @@ module Segway
 						          const_BalanceSTM_motorBudget,
 						          const_AnglePID_P,
 						          const_AnglePID_D,
-						          const_RotationPID_D,
 						          const_SpeedPID_P,
 						          const_SpeedPID_I,
-						          const_SpeedPID_maxIntegral) = 
+						          const_SpeedPID_maxIntegral,
+						          const_RotationPID_D) = 
 					let
 						max = (clock_type_max(Union({
 				{}
@@ -2322,7 +2394,7 @@ module Segway
 				within
 					if member(max,core_clock_type) then ctype else error("core_clock_type is not wide enough")
 				
-				CLID_SetMotors_clock_type(id__,
+				CLID_StopMotors_clock_type(id__,
 						          const_BalanceSTM_maxAngle,
 						          const_BalanceSTM_loopTime,
 						          const_BalanceSTM_startupDelay,
@@ -2334,82 +2406,10 @@ module Segway
 						          const_BalanceSTM_motorBudget,
 						          const_AnglePID_P,
 						          const_AnglePID_D,
-						          const_RotationPID_D,
 						          const_SpeedPID_P,
 						          const_SpeedPID_I,
-						          const_SpeedPID_maxIntegral) = 
-					let
-						max = (clock_type_max(Union({
-				{}
-				}))+1)
-					ctype = {0..max}
-				within
-					if member(max,core_clock_type) then ctype else error("core_clock_type is not wide enough")
-				
-				CLID_CalculateRotation_clock_type(id__,
-						          const_BalanceSTM_maxAngle,
-						          const_BalanceSTM_loopTime,
-						          const_BalanceSTM_startupDelay,
-						          const_BalanceSTM_speedUpdate,
-						          const_BalanceSTM_rotationUpdate,
-						          const_BalanceSTM_angleBudget,
-						          const_BalanceSTM_speedBudget,
-						          const_BalanceSTM_rotationBudget,
-						          const_BalanceSTM_motorBudget,
-						          const_AnglePID_P,
-						          const_AnglePID_D,
-						          const_RotationPID_D,
-						          const_SpeedPID_P,
-						          const_SpeedPID_I,
-						          const_SpeedPID_maxIntegral) = 
-					let
-						max = (clock_type_max(Union({
-				{}
-				}))+1)
-					ctype = {0..max}
-				within
-					if member(max,core_clock_type) then ctype else error("core_clock_type is not wide enough")
-				
-				CLID_CalculateSpeed_clock_type(id__,
-						          const_BalanceSTM_maxAngle,
-						          const_BalanceSTM_loopTime,
-						          const_BalanceSTM_startupDelay,
-						          const_BalanceSTM_speedUpdate,
-						          const_BalanceSTM_rotationUpdate,
-						          const_BalanceSTM_angleBudget,
-						          const_BalanceSTM_speedBudget,
-						          const_BalanceSTM_rotationBudget,
-						          const_BalanceSTM_motorBudget,
-						          const_AnglePID_P,
-						          const_AnglePID_D,
-						          const_RotationPID_D,
-						          const_SpeedPID_P,
-						          const_SpeedPID_I,
-						          const_SpeedPID_maxIntegral) = 
-					let
-						max = (clock_type_max(Union({
-				{}
-				}))+1)
-					ctype = {0..max}
-				within
-					if member(max,core_clock_type) then ctype else error("core_clock_type is not wide enough")
-				
-				CLID_CalculateAngle_clock_type(id__,
-						          const_BalanceSTM_maxAngle,
-						          const_BalanceSTM_loopTime,
-						          const_BalanceSTM_startupDelay,
-						          const_BalanceSTM_speedUpdate,
-						          const_BalanceSTM_rotationUpdate,
-						          const_BalanceSTM_angleBudget,
-						          const_BalanceSTM_speedBudget,
-						          const_BalanceSTM_rotationBudget,
-						          const_BalanceSTM_motorBudget,
-						          const_AnglePID_P,
-						          const_AnglePID_D,
-						          const_RotationPID_D,
-						          const_SpeedPID_P,
-						          const_SpeedPID_I,
-						          const_SpeedPID_maxIntegral) = 
+						          const_SpeedPID_maxIntegral,
+						          const_RotationPID_D) = 
 					let
 						max = (clock_type_max(Union({
 				{}
@@ -2443,10 +2443,10 @@ module Segway
 									    const_BalanceSTM_motorBudget,
 									    const_AnglePID_P,
 									    const_AnglePID_D,
-									    const_RotationPID_D,
 									    const_SpeedPID_P,
 									    const_SpeedPID_I,
-									    const_SpeedPID_maxIntegral) = 
+									    const_SpeedPID_maxIntegral,
+									    const_RotationPID_D) = 
 								dbisim(let
 									Inactive 	= share__choice(enter -> SKIP [] terminate -> SKIP) ; Active
 									
@@ -2468,10 +2468,10 @@ module Segway
 									    const_BalanceSTM_motorBudget,
 									    const_AnglePID_P,
 									    const_AnglePID_D,
-									    const_RotationPID_D,
 									    const_SpeedPID_P,
 									    const_SpeedPID_I,
-									    const_SpeedPID_maxIntegral) = D__(id__,
+									    const_SpeedPID_maxIntegral,
+									    const_RotationPID_D) = D__(id__,
 									    const_BalanceSTM_maxAngle,
 									    const_BalanceSTM_loopTime,
 									    const_BalanceSTM_startupDelay,
@@ -2483,10 +2483,10 @@ module Segway
 									    const_BalanceSTM_motorBudget,
 									    const_AnglePID_P,
 									    const_AnglePID_D,
-									    const_RotationPID_D,
 									    const_SpeedPID_P,
 									    const_SpeedPID_I,
-									    const_SpeedPID_maxIntegral)
+									    const_SpeedPID_maxIntegral,
+									    const_RotationPID_D)
 						}
 					
 					endmodule
@@ -2533,10 +2533,10 @@ module Segway
 									    const_BalanceSTM_motorBudget,
 									    const_AnglePID_P,
 									    const_AnglePID_D,
-									    const_RotationPID_D,
 									    const_SpeedPID_P,
 									    const_SpeedPID_I,
-									    const_SpeedPID_maxIntegral) = 
+									    const_SpeedPID_maxIntegral,
+									    const_RotationPID_D) = 
 							dbisim(let
 								-- IMPLEMENTATION NOTE: 
 								-- The following should be defined as: Inactive = share__choice(Activation [] Termination),
@@ -2560,11 +2560,11 @@ module Segway
 										    const_BalanceSTM_motorBudget,
 											const_AnglePID_P,
 											const_AnglePID_D,
-											const_RotationPID_D,
 											const_SpeedPID_P,
 											const_SpeedPID_I,
-											const_SpeedPID_maxIntegral
-										);Deadline(true&(share__choice(angle.in?currAngle -> (SStop /\ set_currAngle!currAngle -> SKIP))),0);Deadline(true&(share__choice(gyroX.in?currGyroX -> (SStop /\ set_currGyroX!currGyroX -> SKIP))),0);share__choice(get_currAngle?currAngle -> share__choice(get_currGyroX?currGyroX -> true&CALL__AnglePID(
+											const_SpeedPID_maxIntegral,
+											const_RotationPID_D
+										);Deadline(true&(share__choice(angle.in?currAngle -> (SStop /\ set_currAngle!currAngle -> SKIP))),0);Deadline(true&(share__choice(gyroX.in?currGyroX -> (SStop /\ set_currGyroX!currGyroX -> SKIP))),0);share__choice(get_currGyroX?currGyroX -> share__choice(get_currAngle?currAngle -> true&CALL__AnglePID(
 											id__,
 										    const_BalanceSTM_maxAngle,
 										    const_BalanceSTM_loopTime,
@@ -2579,10 +2579,10 @@ module Segway
 											currGyroX, 
 											const_AnglePID_P, 
 											const_AnglePID_D,
-											const_RotationPID_D,
 											const_SpeedPID_P,
 											const_SpeedPID_I,
-											const_SpeedPID_maxIntegral
+											const_SpeedPID_maxIntegral,
+											const_RotationPID_D
 										)));SHARE_WAIT_INTERVAL({ x | x <- { 0..const_BalanceSTM_angleBudget}, 0<= x, x <=const_BalanceSTM_angleBudget}) ; 
 										 	  Behaviour ; 
 										 	  share__choice(exit -> SKIP) ; SKIP ; 
@@ -2605,10 +2605,10 @@ module Segway
 									    const_BalanceSTM_motorBudget,
 									    const_AnglePID_P,
 									    const_AnglePID_D,
-									    const_RotationPID_D,
 									    const_SpeedPID_P,
 									    const_SpeedPID_I,
-									    const_SpeedPID_maxIntegral) = 
+									    const_SpeedPID_maxIntegral,
+									    const_RotationPID_D) = 
 							dbisim(let
 								Inactive 	= share__choice(enter -> SKIP [] terminate -> SKIP) ; Active
 								
@@ -2627,11 +2627,11 @@ module Segway
 										    const_BalanceSTM_motorBudget,
 											const_AnglePID_P,
 											const_AnglePID_D,
-											const_RotationPID_D,
 											const_SpeedPID_P,
 											const_SpeedPID_I,
-											const_SpeedPID_maxIntegral
-										);Deadline(true&(share__choice(angle.in?currAngle -> (SStop /\ set_currAngle!currAngle -> SKIP))),0);Deadline(true&(share__choice(gyroX.in?currGyroX -> (SStop /\ set_currGyroX!currGyroX -> SKIP))),0);share__choice(get_currAngle?currAngle -> share__choice(get_currGyroX?currGyroX -> true&CALL__AnglePID(
+											const_SpeedPID_maxIntegral,
+											const_RotationPID_D
+										);Deadline(true&(share__choice(angle.in?currAngle -> (SStop /\ set_currAngle!currAngle -> SKIP))),0);Deadline(true&(share__choice(gyroX.in?currGyroX -> (SStop /\ set_currGyroX!currGyroX -> SKIP))),0);share__choice(get_currGyroX?currGyroX -> share__choice(get_currAngle?currAngle -> true&CALL__AnglePID(
 											id__,
 										    const_BalanceSTM_maxAngle,
 										    const_BalanceSTM_loopTime,
@@ -2646,10 +2646,10 @@ module Segway
 											currGyroX, 
 											const_AnglePID_P, 
 											const_AnglePID_D,
-											const_RotationPID_D,
 											const_SpeedPID_P,
 											const_SpeedPID_I,
-											const_SpeedPID_maxIntegral
+											const_SpeedPID_maxIntegral,
+											const_RotationPID_D
 										)));SHARE_WAIT_INTERVAL({ x | x <- { 0..const_BalanceSTM_angleBudget}, 0<= x, x <=const_BalanceSTM_angleBudget}) ; 
 										 	  Behaviour ; 
 										 	  share__choice(exit -> SKIP) ; SKIP ; 
@@ -2675,10 +2675,10 @@ module Segway
 									          const_BalanceSTM_motorBudget,
 									          const_AnglePID_P,
 									          const_AnglePID_D,
-									          const_RotationPID_D,
 									          const_SpeedPID_P,
 									          const_SpeedPID_I,
-									          const_SpeedPID_maxIntegral) = terminate -> SKIP
+									          const_SpeedPID_maxIntegral,
+									          const_RotationPID_D) = terminate -> SKIP
 							
 							stateClockSync = {||}
 						}
@@ -2727,10 +2727,10 @@ module Segway
 									    const_BalanceSTM_motorBudget,
 									    const_AnglePID_P,
 									    const_AnglePID_D,
-									    const_RotationPID_D,
 									    const_SpeedPID_P,
 									    const_SpeedPID_I,
-									    const_SpeedPID_maxIntegral) = 
+									    const_SpeedPID_maxIntegral,
+									    const_RotationPID_D) = 
 							dbisim(let
 								-- IMPLEMENTATION NOTE: 
 								-- The following should be defined as: Inactive = share__choice(Activation [] Termination),
@@ -2741,7 +2741,7 @@ module Segway
 								
 								Termination = terminate -> SKIP
 								
-								Active 		= Deadline(true&(share__choice(leftMotorVelocity.in?currLeftVel -> (SStop /\ set_currLeftVel!currLeftVel -> SKIP))),0);Deadline(true&(share__choice(rightMotorVelocity.in?currRightVel -> (SStop /\ set_currRightVel!currRightVel -> SKIP))),0);share__choice(get_currLeftVel?currLeftVel -> share__choice(get_currRightVel?currRightVel -> true&CALL__SpeedPID(
+								Active 		= Deadline(true&(share__choice(leftMotorVelocity.in?currLeftVel -> (SStop /\ set_currLeftVel!currLeftVel -> SKIP))),0);Deadline(true&(share__choice(rightMotorVelocity.in?currRightVel -> (SStop /\ set_currRightVel!currRightVel -> SKIP))),0);share__choice(get_currRightVel?currRightVel -> share__choice(get_currLeftVel?currLeftVel -> true&CALL__SpeedPID(
 											id__,
 										    const_BalanceSTM_maxAngle,
 										    const_BalanceSTM_loopTime,
@@ -2781,16 +2781,16 @@ module Segway
 									    const_BalanceSTM_motorBudget,
 									    const_AnglePID_P,
 									    const_AnglePID_D,
-									    const_RotationPID_D,
 									    const_SpeedPID_P,
 									    const_SpeedPID_I,
-									    const_SpeedPID_maxIntegral) = 
+									    const_SpeedPID_maxIntegral,
+									    const_RotationPID_D) = 
 							dbisim(let
 								Inactive 	= share__choice(enter -> SKIP [] terminate -> SKIP) ; Active
 								
 								Termination = terminate -> SKIP
 								
-								Active 		= Deadline(true&(share__choice(leftMotorVelocity.in?currLeftVel -> (SStop /\ set_currLeftVel!currLeftVel -> SKIP))),0);Deadline(true&(share__choice(rightMotorVelocity.in?currRightVel -> (SStop /\ set_currRightVel!currRightVel -> SKIP))),0);share__choice(get_currLeftVel?currLeftVel -> share__choice(get_currRightVel?currRightVel -> true&CALL__SpeedPID(
+								Active 		= Deadline(true&(share__choice(leftMotorVelocity.in?currLeftVel -> (SStop /\ set_currLeftVel!currLeftVel -> SKIP))),0);Deadline(true&(share__choice(rightMotorVelocity.in?currRightVel -> (SStop /\ set_currRightVel!currRightVel -> SKIP))),0);share__choice(get_currRightVel?currRightVel -> share__choice(get_currLeftVel?currLeftVel -> true&CALL__SpeedPID(
 											id__,
 										    const_BalanceSTM_maxAngle,
 										    const_BalanceSTM_loopTime,
@@ -2833,10 +2833,10 @@ module Segway
 									          const_BalanceSTM_motorBudget,
 									          const_AnglePID_P,
 									          const_AnglePID_D,
-									          const_RotationPID_D,
 									          const_SpeedPID_P,
 									          const_SpeedPID_I,
-									          const_SpeedPID_maxIntegral) = terminate -> SKIP
+									          const_SpeedPID_maxIntegral,
+									          const_RotationPID_D) = terminate -> SKIP
 							
 							stateClockSync = {||}
 						}
@@ -2885,10 +2885,10 @@ module Segway
 									    const_BalanceSTM_motorBudget,
 									    const_AnglePID_P,
 									    const_AnglePID_D,
-									    const_RotationPID_D,
 									    const_SpeedPID_P,
 									    const_SpeedPID_I,
-									    const_SpeedPID_maxIntegral) = 
+									    const_SpeedPID_maxIntegral,
+									    const_RotationPID_D) = 
 							dbisim(let
 								-- IMPLEMENTATION NOTE: 
 								-- The following should be defined as: Inactive = share__choice(Activation [] Termination),
@@ -2939,10 +2939,10 @@ module Segway
 									    const_BalanceSTM_motorBudget,
 									    const_AnglePID_P,
 									    const_AnglePID_D,
-									    const_RotationPID_D,
 									    const_SpeedPID_P,
 									    const_SpeedPID_I,
-									    const_SpeedPID_maxIntegral) = 
+									    const_SpeedPID_maxIntegral,
+									    const_RotationPID_D) = 
 							dbisim(let
 								Inactive 	= share__choice(enter -> SKIP [] terminate -> SKIP) ; Active
 								
@@ -2991,10 +2991,10 @@ module Segway
 									          const_BalanceSTM_motorBudget,
 									          const_AnglePID_P,
 									          const_AnglePID_D,
-									          const_RotationPID_D,
 									          const_SpeedPID_P,
 									          const_SpeedPID_I,
-									          const_SpeedPID_maxIntegral) = terminate -> SKIP
+									          const_SpeedPID_maxIntegral,
+									          const_RotationPID_D) = terminate -> SKIP
 							
 							stateClockSync = {||}
 						}
@@ -3043,10 +3043,10 @@ module Segway
 									    const_BalanceSTM_motorBudget,
 									    const_AnglePID_P,
 									    const_AnglePID_D,
-									    const_RotationPID_D,
 									    const_SpeedPID_P,
 									    const_SpeedPID_I,
-									    const_SpeedPID_maxIntegral) = 
+									    const_SpeedPID_maxIntegral,
+									    const_RotationPID_D) = 
 							dbisim(let
 								-- IMPLEMENTATION NOTE: 
 								-- The following should be defined as: Inactive = share__choice(Activation [] Termination),
@@ -3057,7 +3057,7 @@ module Segway
 								
 								Termination = terminate -> SKIP
 								
-								Active 		= share__choice(get_angleOutput?angleOutput -> share__choice(get_speedOutput?speedOutput -> share__choice(get_rotationOutput?rotationOutput -> true&CALL__setLeftMotorSpeed(
+								Active 		= share__choice(get_speedOutput?speedOutput -> share__choice(get_rotationOutput?rotationOutput -> share__choice(get_angleOutput?angleOutput -> true&CALL__setLeftMotorSpeed(
 											id__,
 										    const_BalanceSTM_maxAngle,
 										    const_BalanceSTM_loopTime,
@@ -3071,11 +3071,11 @@ module Segway
 											Minus(Plus(angleOutput, speedOutput, core_real), rotationOutput, core_real),
 											const_AnglePID_P,
 											const_AnglePID_D,
-											const_RotationPID_D,
 											const_SpeedPID_P,
 											const_SpeedPID_I,
-											const_SpeedPID_maxIntegral
-										))));share__choice(get_angleOutput?angleOutput -> share__choice(get_speedOutput?speedOutput -> share__choice(get_rotationOutput?rotationOutput -> true&CALL__setRightMotorSpeed(
+											const_SpeedPID_maxIntegral,
+											const_RotationPID_D
+										))));share__choice(get_speedOutput?speedOutput -> share__choice(get_rotationOutput?rotationOutput -> share__choice(get_angleOutput?angleOutput -> true&CALL__setRightMotorSpeed(
 											id__,
 										    const_BalanceSTM_maxAngle,
 										    const_BalanceSTM_loopTime,
@@ -3089,10 +3089,10 @@ module Segway
 											Plus(Plus(angleOutput, speedOutput, core_real), rotationOutput, core_real),
 											const_AnglePID_P,
 											const_AnglePID_D,
-											const_RotationPID_D,
 											const_SpeedPID_P,
 											const_SpeedPID_I,
-											const_SpeedPID_maxIntegral
+											const_SpeedPID_maxIntegral,
+											const_RotationPID_D
 										))));SHARE_WAIT_INTERVAL({ x | x <- { 0..const_BalanceSTM_motorBudget}, 0<= x, x <=const_BalanceSTM_motorBudget}) ; 
 										 	  Behaviour ; 
 										 	  share__choice(exit -> SKIP) ; SKIP ; 
@@ -3115,16 +3115,16 @@ module Segway
 									    const_BalanceSTM_motorBudget,
 									    const_AnglePID_P,
 									    const_AnglePID_D,
-									    const_RotationPID_D,
 									    const_SpeedPID_P,
 									    const_SpeedPID_I,
-									    const_SpeedPID_maxIntegral) = 
+									    const_SpeedPID_maxIntegral,
+									    const_RotationPID_D) = 
 							dbisim(let
 								Inactive 	= share__choice(enter -> SKIP [] terminate -> SKIP) ; Active
 								
 								Termination = terminate -> SKIP
 								
-								Active 		= share__choice(get_angleOutput?angleOutput -> share__choice(get_speedOutput?speedOutput -> share__choice(get_rotationOutput?rotationOutput -> true&CALL__setLeftMotorSpeed(
+								Active 		= share__choice(get_speedOutput?speedOutput -> share__choice(get_rotationOutput?rotationOutput -> share__choice(get_angleOutput?angleOutput -> true&CALL__setLeftMotorSpeed(
 											id__,
 										    const_BalanceSTM_maxAngle,
 										    const_BalanceSTM_loopTime,
@@ -3138,11 +3138,11 @@ module Segway
 											Minus(Plus(angleOutput, speedOutput, core_real), rotationOutput, core_real),
 											const_AnglePID_P,
 											const_AnglePID_D,
-											const_RotationPID_D,
 											const_SpeedPID_P,
 											const_SpeedPID_I,
-											const_SpeedPID_maxIntegral
-										))));share__choice(get_angleOutput?angleOutput -> share__choice(get_speedOutput?speedOutput -> share__choice(get_rotationOutput?rotationOutput -> true&CALL__setRightMotorSpeed(
+											const_SpeedPID_maxIntegral,
+											const_RotationPID_D
+										))));share__choice(get_speedOutput?speedOutput -> share__choice(get_rotationOutput?rotationOutput -> share__choice(get_angleOutput?angleOutput -> true&CALL__setRightMotorSpeed(
 											id__,
 										    const_BalanceSTM_maxAngle,
 										    const_BalanceSTM_loopTime,
@@ -3156,10 +3156,10 @@ module Segway
 											Plus(Plus(angleOutput, speedOutput, core_real), rotationOutput, core_real),
 											const_AnglePID_P,
 											const_AnglePID_D,
-											const_RotationPID_D,
 											const_SpeedPID_P,
 											const_SpeedPID_I,
-											const_SpeedPID_maxIntegral
+											const_SpeedPID_maxIntegral,
+											const_RotationPID_D
 										))));SHARE_WAIT_INTERVAL({ x | x <- { 0..const_BalanceSTM_motorBudget}, 0<= x, x <=const_BalanceSTM_motorBudget}) ; 
 										 	  Behaviour ; 
 										 	  share__choice(exit -> SKIP) ; SKIP ; 
@@ -3185,10 +3185,10 @@ module Segway
 									          const_BalanceSTM_motorBudget,
 									          const_AnglePID_P,
 									          const_AnglePID_D,
-									          const_RotationPID_D,
 									          const_SpeedPID_P,
 									          const_SpeedPID_I,
-									          const_SpeedPID_maxIntegral) = terminate -> SKIP
+									          const_SpeedPID_maxIntegral,
+									          const_RotationPID_D) = terminate -> SKIP
 							
 							stateClockSync = {||}
 						}
@@ -3217,10 +3217,10 @@ module Segway
 									    const_BalanceSTM_motorBudget,
 									    const_AnglePID_P,
 									    const_AnglePID_D,
-									    const_RotationPID_D,
 									    const_SpeedPID_P,
 									    const_SpeedPID_I,
-									    const_SpeedPID_maxIntegral) = 
+									    const_SpeedPID_maxIntegral,
+									    const_RotationPID_D) = 
 								dbisim(let
 									Inactive 	= share__choice(enter -> SKIP [] terminate -> SKIP) ; Active
 									
@@ -3240,10 +3240,10 @@ module Segway
 									    const_BalanceSTM_motorBudget,
 									    const_AnglePID_P,
 									    const_AnglePID_D,
-									    const_RotationPID_D,
 									    const_SpeedPID_P,
 									    const_SpeedPID_I,
-									    const_SpeedPID_maxIntegral) = D__(id__,
+									    const_SpeedPID_maxIntegral,
+									    const_RotationPID_D) = D__(id__,
 									    const_BalanceSTM_maxAngle,
 									    const_BalanceSTM_loopTime,
 									    const_BalanceSTM_startupDelay,
@@ -3255,10 +3255,10 @@ module Segway
 									    const_BalanceSTM_motorBudget,
 									    const_AnglePID_P,
 									    const_AnglePID_D,
-									    const_RotationPID_D,
 									    const_SpeedPID_P,
 									    const_SpeedPID_I,
-									    const_SpeedPID_maxIntegral)
+									    const_SpeedPID_maxIntegral,
+									    const_RotationPID_D)
 						}
 					
 					endmodule
@@ -3285,10 +3285,10 @@ module Segway
 									    const_BalanceSTM_motorBudget,
 									    const_AnglePID_P,
 									    const_AnglePID_D,
-									    const_RotationPID_D,
 									    const_SpeedPID_P,
 									    const_SpeedPID_I,
-									    const_SpeedPID_maxIntegral) = 
+									    const_SpeedPID_maxIntegral,
+									    const_RotationPID_D) = 
 								dbisim(let
 									Inactive 	= share__choice(enter -> SKIP [] terminate -> SKIP) ; Active
 									
@@ -3308,10 +3308,10 @@ module Segway
 									    const_BalanceSTM_motorBudget,
 									    const_AnglePID_P,
 									    const_AnglePID_D,
-									    const_RotationPID_D,
 									    const_SpeedPID_P,
 									    const_SpeedPID_I,
-									    const_SpeedPID_maxIntegral) = D__(id__,
+									    const_SpeedPID_maxIntegral,
+									    const_RotationPID_D) = D__(id__,
 									    const_BalanceSTM_maxAngle,
 									    const_BalanceSTM_loopTime,
 									    const_BalanceSTM_startupDelay,
@@ -3323,10 +3323,10 @@ module Segway
 									    const_BalanceSTM_motorBudget,
 									    const_AnglePID_P,
 									    const_AnglePID_D,
-									    const_RotationPID_D,
 									    const_SpeedPID_P,
 									    const_SpeedPID_I,
-									    const_SpeedPID_maxIntegral)
+									    const_SpeedPID_maxIntegral,
+									    const_RotationPID_D)
 						}
 					
 					endmodule
@@ -3353,10 +3353,10 @@ module Segway
 									    const_BalanceSTM_motorBudget,
 									    const_AnglePID_P,
 									    const_AnglePID_D,
-									    const_RotationPID_D,
 									    const_SpeedPID_P,
 									    const_SpeedPID_I,
-									    const_SpeedPID_maxIntegral) = 
+									    const_SpeedPID_maxIntegral,
+									    const_RotationPID_D) = 
 								dbisim(let
 									Inactive 	= share__choice(enter -> SKIP [] terminate -> SKIP) ; Active
 									
@@ -3376,10 +3376,10 @@ module Segway
 									    const_BalanceSTM_motorBudget,
 									    const_AnglePID_P,
 									    const_AnglePID_D,
-									    const_RotationPID_D,
 									    const_SpeedPID_P,
 									    const_SpeedPID_I,
-									    const_SpeedPID_maxIntegral) = D__(id__,
+									    const_SpeedPID_maxIntegral,
+									    const_RotationPID_D) = D__(id__,
 									    const_BalanceSTM_maxAngle,
 									    const_BalanceSTM_loopTime,
 									    const_BalanceSTM_startupDelay,
@@ -3391,10 +3391,10 @@ module Segway
 									    const_BalanceSTM_motorBudget,
 									    const_AnglePID_P,
 									    const_AnglePID_D,
-									    const_RotationPID_D,
 									    const_SpeedPID_P,
 									    const_SpeedPID_I,
-									    const_SpeedPID_maxIntegral)
+									    const_SpeedPID_maxIntegral,
+									    const_RotationPID_D)
 						}
 					
 					endmodule
@@ -3441,10 +3441,10 @@ module Segway
 									    const_BalanceSTM_motorBudget,
 									    const_AnglePID_P,
 									    const_AnglePID_D,
-									    const_RotationPID_D,
 									    const_SpeedPID_P,
 									    const_SpeedPID_I,
-									    const_SpeedPID_maxIntegral) = 
+									    const_SpeedPID_maxIntegral,
+									    const_RotationPID_D) = 
 							dbisim(let
 								-- IMPLEMENTATION NOTE: 
 								-- The following should be defined as: Inactive = share__choice(Activation [] Termination),
@@ -3469,10 +3469,10 @@ module Segway
 											0,
 											const_AnglePID_P,
 											const_AnglePID_D,
-											const_RotationPID_D,
 											const_SpeedPID_P,
 											const_SpeedPID_I,
-											const_SpeedPID_maxIntegral
+											const_SpeedPID_maxIntegral,
+											const_RotationPID_D
 										);true&CALL__setRightMotorSpeed(
 											id__,
 										    const_BalanceSTM_maxAngle,
@@ -3487,10 +3487,10 @@ module Segway
 											0,
 											const_AnglePID_P,
 											const_AnglePID_D,
-											const_RotationPID_D,
 											const_SpeedPID_P,
 											const_SpeedPID_I,
-											const_SpeedPID_maxIntegral
+											const_SpeedPID_maxIntegral,
+											const_RotationPID_D
 										);SHARE_WAIT_INTERVAL({ x | x <- { 0..const_BalanceSTM_motorBudget}, 0<= x, x <=const_BalanceSTM_motorBudget}) ; 
 										 	  Behaviour ; 
 										 	  share__choice(exit -> SKIP) ; SKIP ; 
@@ -3513,10 +3513,10 @@ module Segway
 									    const_BalanceSTM_motorBudget,
 									    const_AnglePID_P,
 									    const_AnglePID_D,
-									    const_RotationPID_D,
 									    const_SpeedPID_P,
 									    const_SpeedPID_I,
-									    const_SpeedPID_maxIntegral) = 
+									    const_SpeedPID_maxIntegral,
+									    const_RotationPID_D) = 
 							dbisim(let
 								Inactive 	= share__choice(enter -> SKIP [] terminate -> SKIP) ; Active
 								
@@ -3536,10 +3536,10 @@ module Segway
 											0,
 											const_AnglePID_P,
 											const_AnglePID_D,
-											const_RotationPID_D,
 											const_SpeedPID_P,
 											const_SpeedPID_I,
-											const_SpeedPID_maxIntegral
+											const_SpeedPID_maxIntegral,
+											const_RotationPID_D
 										);true&CALL__setRightMotorSpeed(
 											id__,
 										    const_BalanceSTM_maxAngle,
@@ -3554,10 +3554,10 @@ module Segway
 											0,
 											const_AnglePID_P,
 											const_AnglePID_D,
-											const_RotationPID_D,
 											const_SpeedPID_P,
 											const_SpeedPID_I,
-											const_SpeedPID_maxIntegral
+											const_SpeedPID_maxIntegral,
+											const_RotationPID_D
 										);SHARE_WAIT_INTERVAL({ x | x <- { 0..const_BalanceSTM_motorBudget}, 0<= x, x <=const_BalanceSTM_motorBudget}) ; 
 										 	  Behaviour ; 
 										 	  share__choice(exit -> SKIP) ; SKIP ; 
@@ -3583,10 +3583,10 @@ module Segway
 									          const_BalanceSTM_motorBudget,
 									          const_AnglePID_P,
 									          const_AnglePID_D,
-									          const_RotationPID_D,
 									          const_SpeedPID_P,
 									          const_SpeedPID_I,
-									          const_SpeedPID_maxIntegral) = terminate -> SKIP
+									          const_SpeedPID_maxIntegral,
+									          const_RotationPID_D) = terminate -> SKIP
 							
 							stateClockSync = {||}
 						}
@@ -3635,10 +3635,10 @@ module Segway
 									    const_BalanceSTM_motorBudget,
 									    const_AnglePID_P,
 									    const_AnglePID_D,
-									    const_RotationPID_D,
 									    const_SpeedPID_P,
 									    const_SpeedPID_I,
-									    const_SpeedPID_maxIntegral) = 
+									    const_SpeedPID_maxIntegral,
+									    const_RotationPID_D) = 
 							dbisim(let
 								-- IMPLEMENTATION NOTE: 
 								-- The following should be defined as: Inactive = share__choice(Activation [] Termination),
@@ -3671,10 +3671,10 @@ module Segway
 									    const_BalanceSTM_motorBudget,
 									    const_AnglePID_P,
 									    const_AnglePID_D,
-									    const_RotationPID_D,
 									    const_SpeedPID_P,
 									    const_SpeedPID_I,
-									    const_SpeedPID_maxIntegral) = 
+									    const_SpeedPID_maxIntegral,
+									    const_RotationPID_D) = 
 							dbisim(let
 								Inactive 	= share__choice(enter -> SKIP [] terminate -> SKIP) ; Active
 								
@@ -3705,10 +3705,10 @@ module Segway
 									          const_BalanceSTM_motorBudget,
 									          const_AnglePID_P,
 									          const_AnglePID_D,
-									          const_RotationPID_D,
 									          const_SpeedPID_P,
 									          const_SpeedPID_I,
-									          const_SpeedPID_maxIntegral) = terminate -> SKIP
+									          const_SpeedPID_maxIntegral,
+									          const_RotationPID_D) = terminate -> SKIP
 							
 							stateClockSync = {||}
 						}
@@ -3757,10 +3757,10 @@ module Segway
 									    const_BalanceSTM_motorBudget,
 									    const_AnglePID_P,
 									    const_AnglePID_D,
-									    const_RotationPID_D,
 									    const_SpeedPID_P,
 									    const_SpeedPID_I,
-									    const_SpeedPID_maxIntegral) = 
+									    const_SpeedPID_maxIntegral,
+									    const_RotationPID_D) = 
 							dbisim(let
 								-- IMPLEMENTATION NOTE: 
 								-- The following should be defined as: Inactive = share__choice(Activation [] Termination),
@@ -3793,10 +3793,10 @@ module Segway
 									    const_BalanceSTM_motorBudget,
 									    const_AnglePID_P,
 									    const_AnglePID_D,
-									    const_RotationPID_D,
 									    const_SpeedPID_P,
 									    const_SpeedPID_I,
-									    const_SpeedPID_maxIntegral) = 
+									    const_SpeedPID_maxIntegral,
+									    const_RotationPID_D) = 
 							dbisim(let
 								Inactive 	= share__choice(enter -> SKIP [] terminate -> SKIP) ; Active
 								
@@ -3827,10 +3827,10 @@ module Segway
 									          const_BalanceSTM_motorBudget,
 									          const_AnglePID_P,
 									          const_AnglePID_D,
-									          const_RotationPID_D,
 									          const_SpeedPID_P,
 									          const_SpeedPID_I,
-									          const_SpeedPID_maxIntegral) = terminate -> SKIP
+									          const_SpeedPID_maxIntegral,
+									          const_RotationPID_D) = terminate -> SKIP
 							
 							stateClockSync = {||}
 						}
@@ -3859,10 +3859,10 @@ module Segway
 									    const_BalanceSTM_motorBudget,
 									    const_AnglePID_P,
 									    const_AnglePID_D,
-									    const_RotationPID_D,
 									    const_SpeedPID_P,
 									    const_SpeedPID_I,
-									    const_SpeedPID_maxIntegral) = 
+									    const_SpeedPID_maxIntegral,
+									    const_RotationPID_D) = 
 								dbisim(let
 									Inactive 	= share__choice(enter -> SKIP [] terminate -> SKIP) ; Active
 									
@@ -3882,10 +3882,10 @@ module Segway
 									    const_BalanceSTM_motorBudget,
 									    const_AnglePID_P,
 									    const_AnglePID_D,
-									    const_RotationPID_D,
 									    const_SpeedPID_P,
 									    const_SpeedPID_I,
-									    const_SpeedPID_maxIntegral) = D__(id__,
+									    const_SpeedPID_maxIntegral,
+									    const_RotationPID_D) = D__(id__,
 									    const_BalanceSTM_maxAngle,
 									    const_BalanceSTM_loopTime,
 									    const_BalanceSTM_startupDelay,
@@ -3897,10 +3897,10 @@ module Segway
 									    const_BalanceSTM_motorBudget,
 									    const_AnglePID_P,
 									    const_AnglePID_D,
-									    const_RotationPID_D,
 									    const_SpeedPID_P,
 									    const_SpeedPID_I,
-									    const_SpeedPID_maxIntegral)
+									    const_SpeedPID_maxIntegral,
+									    const_RotationPID_D)
 						}
 					
 					endmodule
@@ -3915,39 +3915,6 @@ module Segway
 					-- If it is in the context of a controller, the required operations not provided by the
 					-- controller will be declared here, and the defined operations will be defined in the
 					-- context of the Controller module, and therefore within scope of the state machine module.
-					CALL__disableInterrupts(id__,
-							    const_BalanceSTM_maxAngle,
-							    const_BalanceSTM_loopTime,
-							    const_BalanceSTM_startupDelay,
-							    const_BalanceSTM_speedUpdate,
-							    const_BalanceSTM_rotationUpdate,
-							    const_BalanceSTM_angleBudget,
-							    const_BalanceSTM_speedBudget,
-							    const_BalanceSTM_rotationBudget,
-							    const_BalanceSTM_motorBudget,
-							    const_AnglePID_P,
-							    const_AnglePID_D,
-							    const_RotationPID_D,
-							    const_SpeedPID_P,
-							    const_SpeedPID_I,
-							    const_SpeedPID_maxIntegral) = EDeadline(disableInterruptsCall,0)
-					CALL__setRightMotorSpeed(id__,
-							    const_BalanceSTM_maxAngle,
-							    const_BalanceSTM_loopTime,
-							    const_BalanceSTM_startupDelay,
-							    const_BalanceSTM_speedUpdate,
-							    const_BalanceSTM_rotationUpdate,
-							    const_BalanceSTM_angleBudget,
-							    const_BalanceSTM_speedBudget,
-							    const_BalanceSTM_rotationBudget,
-							    const_BalanceSTM_motorBudget,
-								param_speed,
-							    const_AnglePID_P,
-							    const_AnglePID_D,
-							    const_RotationPID_D,
-							    const_SpeedPID_P,
-							    const_SpeedPID_I,
-							    const_SpeedPID_maxIntegral) = EDeadline(setRightMotorSpeedCall.param_speed,0)
 					CALL__setLeftMotorSpeed(id__,
 							    const_BalanceSTM_maxAngle,
 							    const_BalanceSTM_loopTime,
@@ -3961,10 +3928,10 @@ module Segway
 								param_speed,
 							    const_AnglePID_P,
 							    const_AnglePID_D,
-							    const_RotationPID_D,
 							    const_SpeedPID_P,
 							    const_SpeedPID_I,
-							    const_SpeedPID_maxIntegral) = EDeadline(setLeftMotorSpeedCall.param_speed,0)
+							    const_SpeedPID_maxIntegral,
+							    const_RotationPID_D) = EDeadline(setLeftMotorSpeedCall.param_speed,0)
 					CALL__enableInterrupts(id__,
 							    const_BalanceSTM_maxAngle,
 							    const_BalanceSTM_loopTime,
@@ -3977,10 +3944,43 @@ module Segway
 							    const_BalanceSTM_motorBudget,
 							    const_AnglePID_P,
 							    const_AnglePID_D,
-							    const_RotationPID_D,
 							    const_SpeedPID_P,
 							    const_SpeedPID_I,
-							    const_SpeedPID_maxIntegral) = EDeadline(enableInterruptsCall,0)
+							    const_SpeedPID_maxIntegral,
+							    const_RotationPID_D) = EDeadline(enableInterruptsCall,0)
+					CALL__setRightMotorSpeed(id__,
+							    const_BalanceSTM_maxAngle,
+							    const_BalanceSTM_loopTime,
+							    const_BalanceSTM_startupDelay,
+							    const_BalanceSTM_speedUpdate,
+							    const_BalanceSTM_rotationUpdate,
+							    const_BalanceSTM_angleBudget,
+							    const_BalanceSTM_speedBudget,
+							    const_BalanceSTM_rotationBudget,
+							    const_BalanceSTM_motorBudget,
+								param_speed,
+							    const_AnglePID_P,
+							    const_AnglePID_D,
+							    const_SpeedPID_P,
+							    const_SpeedPID_I,
+							    const_SpeedPID_maxIntegral,
+							    const_RotationPID_D) = EDeadline(setRightMotorSpeedCall.param_speed,0)
+					CALL__disableInterrupts(id__,
+							    const_BalanceSTM_maxAngle,
+							    const_BalanceSTM_loopTime,
+							    const_BalanceSTM_startupDelay,
+							    const_BalanceSTM_speedUpdate,
+							    const_BalanceSTM_rotationUpdate,
+							    const_BalanceSTM_angleBudget,
+							    const_BalanceSTM_speedBudget,
+							    const_BalanceSTM_rotationBudget,
+							    const_BalanceSTM_motorBudget,
+							    const_AnglePID_P,
+							    const_AnglePID_D,
+							    const_SpeedPID_P,
+							    const_SpeedPID_I,
+							    const_SpeedPID_maxIntegral,
+							    const_RotationPID_D) = EDeadline(disableInterruptsCall,0)
 					
 					CALL__AnglePID(id__,
 							    const_BalanceSTM_maxAngle,
@@ -3996,10 +3996,10 @@ module Segway
 								param_diff,
 							    const_AnglePID_P,
 							    const_AnglePID_D,
-							    const_RotationPID_D,
 							    const_SpeedPID_P,
 							    const_SpeedPID_I,
-							    const_SpeedPID_maxIntegral) = (OP_AnglePID::O__(id__,
+							    const_SpeedPID_maxIntegral,
+							    const_RotationPID_D) = (OP_AnglePID::O__(id__,
 								param_newError,
 								param_diff,
 							    const_AnglePID_P,
@@ -4007,29 +4007,6 @@ module Segway
 					[[
 						OP_AnglePID::get_angleOutput <- get_angleOutput,
 						OP_AnglePID::set_angleOutput <- set_angleOutput
-					]]
-					CALL__RotationPID(id__,
-							    const_BalanceSTM_maxAngle,
-							    const_BalanceSTM_loopTime,
-							    const_BalanceSTM_startupDelay,
-							    const_BalanceSTM_speedUpdate,
-							    const_BalanceSTM_rotationUpdate,
-							    const_BalanceSTM_angleBudget,
-							    const_BalanceSTM_speedBudget,
-							    const_BalanceSTM_rotationBudget,
-							    const_BalanceSTM_motorBudget,
-								param_diff,
-							    const_RotationPID_D,
-							    const_AnglePID_P,
-							    const_AnglePID_D,
-							    const_SpeedPID_P,
-							    const_SpeedPID_I,
-							    const_SpeedPID_maxIntegral) = (OP_RotationPID::O__(id__,
-								param_diff,
-							    const_RotationPID_D))
-					[[
-						OP_RotationPID::get_rotationOutput <- get_rotationOutput,
-						OP_RotationPID::set_rotationOutput <- set_rotationOutput
 					]]
 					CALL__SpeedPID(id__,
 							    const_BalanceSTM_maxAngle,
@@ -4058,6 +4035,29 @@ module Segway
 						OP_SpeedPID::get_speedOutput <- get_speedOutput,
 						OP_SpeedPID::set_speedOutput <- set_speedOutput
 					]]
+					CALL__RotationPID(id__,
+							    const_BalanceSTM_maxAngle,
+							    const_BalanceSTM_loopTime,
+							    const_BalanceSTM_startupDelay,
+							    const_BalanceSTM_speedUpdate,
+							    const_BalanceSTM_rotationUpdate,
+							    const_BalanceSTM_angleBudget,
+							    const_BalanceSTM_speedBudget,
+							    const_BalanceSTM_rotationBudget,
+							    const_BalanceSTM_motorBudget,
+								param_diff,
+							    const_RotationPID_D,
+							    const_AnglePID_P,
+							    const_AnglePID_D,
+							    const_SpeedPID_P,
+							    const_SpeedPID_I,
+							    const_SpeedPID_maxIntegral) = (OP_RotationPID::O__(id__,
+								param_diff,
+							    const_RotationPID_D))
+					[[
+						OP_RotationPID::get_rotationOutput <- get_rotationOutput,
+						OP_RotationPID::set_rotationOutput <- set_rotationOutput
+					]]
 					-- END of Operation calls --
 				
 					-- STM processes
@@ -4073,10 +4073,10 @@ module Segway
 							    const_BalanceSTM_motorBudget,
 							    const_AnglePID_P,
 							    const_AnglePID_D,
-							    const_RotationPID_D,
 							    const_SpeedPID_P,
 							    const_SpeedPID_I,
-							    const_SpeedPID_maxIntegral) = prioritise(-- RULE: [[stm:StateMachineDef]]_STM^nops : CSPProcess
+							    const_SpeedPID_maxIntegral,
+							    const_RotationPID_D) = prioritise(-- RULE: [[stm:StateMachineDef]]_STM^nops : CSPProcess
 					( 
 						(
 							(
@@ -4092,10 +4092,10 @@ module Segway
 										    const_BalanceSTM_motorBudget,
 										    const_AnglePID_P,
 										    const_AnglePID_D,
-										    const_RotationPID_D,
 										    const_SpeedPID_P,
 										    const_SpeedPID_I,
-										    const_SpeedPID_maxIntegral) \ {terminate} ; share__choice(terminate -> SKIP))
+										    const_SpeedPID_maxIntegral,
+										    const_RotationPID_D) \ {terminate} ; share__choice(terminate -> SKIP))
 							 	[[ share__ <- x__ | x__ <- {||} ]]
 							)
 						[| {share__} |]
@@ -4114,10 +4114,10 @@ module Segway
 								    const_BalanceSTM_motorBudget,
 								    const_AnglePID_P,
 								    const_AnglePID_D,
-								    const_RotationPID_D,
 								    const_SpeedPID_P,
 								    const_SpeedPID_I,
-								    const_SpeedPID_maxIntegral))
+								    const_SpeedPID_maxIntegral,
+								    const_RotationPID_D))
 					)\sharedVarHide
 					,<{terminate},{tock}>)
 					
@@ -4133,10 +4133,10 @@ module Segway
 							    const_BalanceSTM_motorBudget,
 							    const_AnglePID_P,
 							    const_AnglePID_D,
-							    const_RotationPID_D,
 							    const_SpeedPID_P,
 							    const_SpeedPID_I,
-							    const_SpeedPID_maxIntegral) = prioritise(-- RULE: [[stm:StateMachineDef]]_STM^nops : CSPProcess
+							    const_SpeedPID_maxIntegral,
+							    const_RotationPID_D) = prioritise(-- RULE: [[stm:StateMachineDef]]_STM^nops : CSPProcess
 					( 
 						(
 							(
@@ -4152,10 +4152,10 @@ module Segway
 										    const_BalanceSTM_motorBudget,
 										    const_AnglePID_P,
 										    const_AnglePID_D,
-										    const_RotationPID_D,
 										    const_SpeedPID_P,
 										    const_SpeedPID_I,
-										    const_SpeedPID_maxIntegral) \ {terminate} ; share__choice(terminate -> SKIP))
+										    const_SpeedPID_maxIntegral,
+										    const_RotationPID_D) \ {terminate} ; share__choice(terminate -> SKIP))
 							 	[[ share__ <- x__ | x__ <- {||} ]]
 							)
 						[| {share__} |]
@@ -4174,10 +4174,10 @@ module Segway
 								    const_BalanceSTM_motorBudget,
 								    const_AnglePID_P,
 								    const_AnglePID_D,
-								    const_RotationPID_D,
 								    const_SpeedPID_P,
 								    const_SpeedPID_I,
-								    const_SpeedPID_maxIntegral))
+								    const_SpeedPID_maxIntegral,
+								    const_RotationPID_D))
 					)\sharedVarHide
 					,<{terminate},{tock}>)
 					
@@ -4194,11 +4194,11 @@ module Segway
 							    const_BalanceSTM_motorBudget,
 							    const_AnglePID_P,
 							    const_AnglePID_D,
-							    const_RotationPID_D,
 							    const_SpeedPID_P,
 							    const_SpeedPID_I,
-							    const_SpeedPID_maxIntegral) = ((let
-						Trans = share__choice(get_currAngle?currAngle -> get_CLID_loopTimer?loopTimer:CLID_loopTimer_clock_type(id__,
+							    const_SpeedPID_maxIntegral,
+							    const_RotationPID_D) = ((let
+						Trans = share__choice(get_speedCount?speedCount -> get_rotationCount?rotationCount -> get_CLID_loopTimer?loopTimer:CLID_loopTimer_clock_type(id__,
 								          const_BalanceSTM_maxAngle,
 								          const_BalanceSTM_loopTime,
 								          const_BalanceSTM_startupDelay,
@@ -4210,10 +4210,10 @@ module Segway
 								          const_BalanceSTM_motorBudget,
 								          const_AnglePID_P,
 								          const_AnglePID_D,
-								          const_RotationPID_D,
 								          const_SpeedPID_P,
 								          const_SpeedPID_I,
-								          const_SpeedPID_maxIntegral) -> get_speedCount?speedCount -> get_rotationCount?rotationCount -> TimeOut_1(
+								          const_SpeedPID_maxIntegral,
+								          const_RotationPID_D) -> get_currAngle?currAngle -> TimeOut_1(
 							 (share__ -> SKIP
 							 [] dbisim(((speedCount>=const_BalanceSTM_speedUpdate))&(internal__!NID_j0 -> SKIP ;  ((SKIP ; CalculateSpeed::enter -> SKIP))))
 							 [] dbisim((true)&(internal__!NID_CalculateSpeed -> SKIP ;  share__choice(exit -> SKIP) ; (share__choice(exited -> SKIP) ; SKIP ; j1::enter -> SKIP)))
@@ -4236,10 +4236,10 @@ module Segway
 							 		    const_BalanceSTM_motorBudget,
 							 			const_AnglePID_P,
 							 			const_AnglePID_D,
-							 			const_RotationPID_D,
 							 			const_SpeedPID_P,
 							 			const_SpeedPID_I,
-							 			const_SpeedPID_maxIntegral
+							 			const_SpeedPID_maxIntegral,
+							 			const_RotationPID_D
 							 		) ; CalculateAngle::enter -> SKIP)))
 							 [] dbisim((true)&(internal__!NID_StopMotors -> SKIP ;  share__choice(exit -> SKIP) ; (share__choice(exited -> SKIP) ; SKIP ; WaitForNextIteration::enter -> SKIP)))
 							 [] dbisim((true)&(internal__!NID_SetMotors -> SKIP ;  share__choice(exit -> SKIP) ; (share__choice(exited -> SKIP) ; SKIP ; WaitForNextIteration::enter -> SKIP)))
@@ -4276,10 +4276,10 @@ module Segway
 							    const_BalanceSTM_motorBudget,
 							    const_AnglePID_P,
 							    const_AnglePID_D,
-							    const_RotationPID_D,
 							    const_SpeedPID_P,
 							    const_SpeedPID_I,
-							    const_SpeedPID_maxIntegral) = 
+							    const_SpeedPID_maxIntegral,
+							    const_RotationPID_D) = 
 						dbisim((
 						let
 							finalNodesEntered = {||}
@@ -4324,10 +4324,10 @@ module Segway
 									   		    const_BalanceSTM_motorBudget,
 									   		    const_AnglePID_P,
 									   		    const_AnglePID_D,
-									   		    const_RotationPID_D,
 									   		    const_SpeedPID_P,
 									   		    const_SpeedPID_I,
-									   		    const_SpeedPID_maxIntegral)
+									   		    const_SpeedPID_maxIntegral,
+									   		    const_RotationPID_D)
 									   [| { share__, terminate } |] (
 									   CalculateAngle::D__(id__,
 									   		    const_BalanceSTM_maxAngle,
@@ -4341,10 +4341,10 @@ module Segway
 									   		    const_BalanceSTM_motorBudget,
 									   		    const_AnglePID_P,
 									   		    const_AnglePID_D,
-									   		    const_RotationPID_D,
 									   		    const_SpeedPID_P,
 									   		    const_SpeedPID_I,
-									   		    const_SpeedPID_maxIntegral)
+									   		    const_SpeedPID_maxIntegral,
+									   		    const_RotationPID_D)
 									   [| { share__, terminate } |] (
 									   CalculateSpeed::D__(id__,
 									   		    const_BalanceSTM_maxAngle,
@@ -4358,10 +4358,10 @@ module Segway
 									   		    const_BalanceSTM_motorBudget,
 									   		    const_AnglePID_P,
 									   		    const_AnglePID_D,
-									   		    const_RotationPID_D,
 									   		    const_SpeedPID_P,
 									   		    const_SpeedPID_I,
-									   		    const_SpeedPID_maxIntegral)
+									   		    const_SpeedPID_maxIntegral,
+									   		    const_RotationPID_D)
 									   [| { share__, terminate } |] (
 									   CalculateRotation::D__(id__,
 									   		    const_BalanceSTM_maxAngle,
@@ -4375,10 +4375,10 @@ module Segway
 									   		    const_BalanceSTM_motorBudget,
 									   		    const_AnglePID_P,
 									   		    const_AnglePID_D,
-									   		    const_RotationPID_D,
 									   		    const_SpeedPID_P,
 									   		    const_SpeedPID_I,
-									   		    const_SpeedPID_maxIntegral)
+									   		    const_SpeedPID_maxIntegral,
+									   		    const_RotationPID_D)
 									   [| { share__, terminate } |] (
 									   SetMotors::D__(id__,
 									   		    const_BalanceSTM_maxAngle,
@@ -4392,10 +4392,10 @@ module Segway
 									   		    const_BalanceSTM_motorBudget,
 									   		    const_AnglePID_P,
 									   		    const_AnglePID_D,
-									   		    const_RotationPID_D,
 									   		    const_SpeedPID_P,
 									   		    const_SpeedPID_I,
-									   		    const_SpeedPID_maxIntegral)
+									   		    const_SpeedPID_maxIntegral,
+									   		    const_RotationPID_D)
 									   [| { share__, terminate } |] (
 									   j0::D__(id__,
 									   		    const_BalanceSTM_maxAngle,
@@ -4409,10 +4409,10 @@ module Segway
 									   		    const_BalanceSTM_motorBudget,
 									   		    const_AnglePID_P,
 									   		    const_AnglePID_D,
-									   		    const_RotationPID_D,
 									   		    const_SpeedPID_P,
 									   		    const_SpeedPID_I,
-									   		    const_SpeedPID_maxIntegral)
+									   		    const_SpeedPID_maxIntegral,
+									   		    const_RotationPID_D)
 									   [| { share__, terminate } |] (
 									   j1::D__(id__,
 									   		    const_BalanceSTM_maxAngle,
@@ -4426,10 +4426,10 @@ module Segway
 									   		    const_BalanceSTM_motorBudget,
 									   		    const_AnglePID_P,
 									   		    const_AnglePID_D,
-									   		    const_RotationPID_D,
 									   		    const_SpeedPID_P,
 									   		    const_SpeedPID_I,
-									   		    const_SpeedPID_maxIntegral)
+									   		    const_SpeedPID_maxIntegral,
+									   		    const_RotationPID_D)
 									   [| { share__, terminate } |] (
 									   j2::D__(id__,
 									   		    const_BalanceSTM_maxAngle,
@@ -4443,10 +4443,10 @@ module Segway
 									   		    const_BalanceSTM_motorBudget,
 									   		    const_AnglePID_P,
 									   		    const_AnglePID_D,
-									   		    const_RotationPID_D,
 									   		    const_SpeedPID_P,
 									   		    const_SpeedPID_I,
-									   		    const_SpeedPID_maxIntegral)
+									   		    const_SpeedPID_maxIntegral,
+									   		    const_RotationPID_D)
 									   [| { share__, terminate } |] (
 									   StopMotors::D__(id__,
 									   		    const_BalanceSTM_maxAngle,
@@ -4460,10 +4460,10 @@ module Segway
 									   		    const_BalanceSTM_motorBudget,
 									   		    const_AnglePID_P,
 									   		    const_AnglePID_D,
-									   		    const_RotationPID_D,
 									   		    const_SpeedPID_P,
 									   		    const_SpeedPID_I,
-									   		    const_SpeedPID_maxIntegral)
+									   		    const_SpeedPID_maxIntegral,
+									   		    const_RotationPID_D)
 									   [| { share__, terminate } |] (
 									   WaitForNextIteration::D__(id__,
 									   		    const_BalanceSTM_maxAngle,
@@ -4477,10 +4477,10 @@ module Segway
 									   		    const_BalanceSTM_motorBudget,
 									   		    const_AnglePID_P,
 									   		    const_AnglePID_D,
-									   		    const_RotationPID_D,
 									   		    const_SpeedPID_P,
 									   		    const_SpeedPID_I,
-									   		    const_SpeedPID_maxIntegral)
+									   		    const_SpeedPID_maxIntegral,
+									   		    const_RotationPID_D)
 									   [| { share__, terminate } |] (
 									   Initialisation::D__(id__,
 									   		    const_BalanceSTM_maxAngle,
@@ -4494,10 +4494,10 @@ module Segway
 									   		    const_BalanceSTM_motorBudget,
 									   		    const_AnglePID_P,
 									   		    const_AnglePID_D,
-									   		    const_RotationPID_D,
 									   		    const_SpeedPID_P,
 									   		    const_SpeedPID_I,
-									   		    const_SpeedPID_maxIntegral)
+									   		    const_SpeedPID_maxIntegral,
+									   		    const_RotationPID_D)
 									   [| { share__, terminate } |] (
 									   j3::D__(id__,
 									   		    const_BalanceSTM_maxAngle,
@@ -4511,10 +4511,10 @@ module Segway
 									   		    const_BalanceSTM_motorBudget,
 									   		    const_AnglePID_P,
 									   		    const_AnglePID_D,
-									   		    const_RotationPID_D,
 									   		    const_SpeedPID_P,
 									   		    const_SpeedPID_I,
-									   		    const_SpeedPID_maxIntegral)
+									   		    const_SpeedPID_maxIntegral,
+									   		    const_RotationPID_D)
 									   )
 									   )
 									   )
@@ -4541,13 +4541,13 @@ module Segway
 									 [[j3::interrupt <- x__ | x__ <- {|internal__.NID_j3,internal__.NID_j3|}]]
 									 )
 									  [[ share__ <- x__ | x__ <- {| share__ |} ]] 
-									  [[set_currAngle <- setL_currAngle,clockReset.CLID_loopTimer <- clockResetL.CLID_loopTimer,set_speedCount <- setL_speedCount,set_rotationCount <- setL_rotationCount]]
+									  [[set_speedCount <- setL_speedCount,set_rotationCount <- setL_rotationCount,clockReset.CLID_loopTimer <- clockResetL.CLID_loopTimer,set_currAngle <- setL_currAngle]]
 									 )
 									 [| union(union(union(flowevts,transSync),{terminate}),{|share__
-									 			,setL_currAngle
-									 			,clockResetL.CLID_loopTimer
 									 			,setL_speedCount
 									 			,setL_rotationCount
+									 			,clockResetL.CLID_loopTimer
+									 			,setL_currAngle
 									|}) |]
 									 ((i0::enter -> Transitions(id__,
 									 		    const_BalanceSTM_maxAngle,
@@ -4561,13 +4561,13 @@ module Segway
 									 		    const_BalanceSTM_motorBudget,
 									 		    const_AnglePID_P,
 									 		    const_AnglePID_D,
-									 		    const_RotationPID_D,
 									 		    const_SpeedPID_P,
 									 		    const_SpeedPID_I,
-									 		    const_SpeedPID_maxIntegral))
-									  [[ share__ <- x__ | x__ <- {| share__,setL_currAngle,clockResetL.CLID_loopTimer,setL_speedCount,setL_rotationCount |} ]]
+									 		    const_SpeedPID_maxIntegral,
+									 		    const_RotationPID_D))
+									  [[ share__ <- x__ | x__ <- {| share__,setL_speedCount,setL_rotationCount,clockResetL.CLID_loopTimer,setL_currAngle |} ]]
 									 )
-									)[[setL_currAngle <- set_currAngle,clockResetL.CLID_loopTimer <- clockReset.CLID_loopTimer,setL_speedCount <- set_speedCount,setL_rotationCount <- set_rotationCount]]
+									)[[setL_speedCount <- set_speedCount,setL_rotationCount <- set_rotationCount,clockResetL.CLID_loopTimer <- clockReset.CLID_loopTimer,setL_currAngle <- set_currAngle]]
 									)
 								)
 								 \ hideSet)
@@ -4595,10 +4595,10 @@ module Segway
 							 		          const_BalanceSTM_motorBudget,
 							 		          const_AnglePID_P,
 							 		          const_AnglePID_D,
-							 		          const_RotationPID_D,
 							 		          const_SpeedPID_P,
 							 		          const_SpeedPID_I,
-							 		          const_SpeedPID_maxIntegral)
+							 		          const_SpeedPID_maxIntegral,
+							 		          const_RotationPID_D)
 							)\diff(stateClockSync,enteredSS))
 							 [| {| interrupt |} |] SKIP)
 						)
@@ -4616,12 +4616,12 @@ module Segway
 							    const_BalanceSTM_motorBudget,
 							    const_AnglePID_P,
 							    const_AnglePID_D,
-							    const_RotationPID_D,
 							    const_SpeedPID_P,
 							    const_SpeedPID_I,
-							    const_SpeedPID_maxIntegral) = 
+							    const_SpeedPID_maxIntegral,
+							    const_RotationPID_D) = 
 						dbisim((let
-							stateClockSync = {|get_CLID_StopMotors,StopMotors::entered,get_CLID_WaitForNextIteration,WaitForNextIteration::entered,get_CLID_Initialisation,Initialisation::entered,get_CLID_SetMotors,SetMotors::entered,get_CLID_CalculateRotation,CalculateRotation::entered,get_CLID_CalculateSpeed,CalculateSpeed::entered,get_CLID_CalculateAngle,CalculateAngle::entered|}
+							stateClockSync = {|get_CLID_CalculateAngle,CalculateAngle::entered,get_CLID_CalculateSpeed,CalculateSpeed::entered,get_CLID_SetMotors,SetMotors::entered,get_CLID_CalculateRotation,CalculateRotation::entered,get_CLID_WaitForNextIteration,WaitForNextIteration::entered,get_CLID_Initialisation,Initialisation::entered,get_CLID_StopMotors,StopMotors::entered|}
 						 within
 							(MachineBody(id__,
 									    const_BalanceSTM_maxAngle,
@@ -4635,10 +4635,10 @@ module Segway
 									    const_BalanceSTM_motorBudget,
 									    const_AnglePID_P,
 									    const_AnglePID_D,
-									    const_RotationPID_D,
 									    const_SpeedPID_P,
 									    const_SpeedPID_I,
-									    const_SpeedPID_maxIntegral) [| union(stateClockSync,{terminate}) |] StateClocks(id__,
+									    const_SpeedPID_maxIntegral,
+									    const_RotationPID_D) [| union(stateClockSync,{terminate}) |] StateClocks(id__,
 									          const_BalanceSTM_maxAngle,
 									          const_BalanceSTM_loopTime,
 									          const_BalanceSTM_startupDelay,
@@ -4650,10 +4650,10 @@ module Segway
 									          const_BalanceSTM_motorBudget,
 									          const_AnglePID_P,
 									          const_AnglePID_D,
-									          const_RotationPID_D,
 									          const_SpeedPID_P,
 									          const_SpeedPID_I,
-									          const_SpeedPID_maxIntegral)) \ union(stateClockSync,enteredSS)
+									          const_SpeedPID_maxIntegral,
+									          const_RotationPID_D)) \ union(stateClockSync,enteredSS)
 						)
 						)
 					
@@ -4669,12 +4669,12 @@ module Segway
 							    const_BalanceSTM_motorBudget,
 							    const_AnglePID_P,
 							    const_AnglePID_D,
-							    const_RotationPID_D,
 							    const_SpeedPID_P,
 							    const_SpeedPID_I,
-							    const_SpeedPID_maxIntegral) = 
+							    const_SpeedPID_maxIntegral,
+							    const_RotationPID_D) = 
 						dbisim((let
-							stateClockSync = {|get_CLID_StopMotors,StopMotors::entered,get_CLID_WaitForNextIteration,WaitForNextIteration::entered,get_CLID_Initialisation,Initialisation::entered,get_CLID_SetMotors,SetMotors::entered,get_CLID_CalculateRotation,CalculateRotation::entered,get_CLID_CalculateSpeed,CalculateSpeed::entered,get_CLID_CalculateAngle,CalculateAngle::entered|}
+							stateClockSync = {|get_CLID_CalculateAngle,CalculateAngle::entered,get_CLID_CalculateSpeed,CalculateSpeed::entered,get_CLID_SetMotors,SetMotors::entered,get_CLID_CalculateRotation,CalculateRotation::entered,get_CLID_WaitForNextIteration,WaitForNextIteration::entered,get_CLID_Initialisation,Initialisation::entered,get_CLID_StopMotors,StopMotors::entered|}
 						 within
 							(dbisim(
 								sbisim(
@@ -4702,12 +4702,12 @@ module Segway
 																							    const_BalanceSTM_motorBudget,
 																							    const_AnglePID_P,
 																							    const_AnglePID_D,
-																							    const_RotationPID_D,
 																							    const_SpeedPID_P,
 																							    const_SpeedPID_I,
-																							    const_SpeedPID_maxIntegral)
-																					[| {|get_CLID_CalculateAngle,CalculateAngle::entered,terminate|} |]
-																					dbisim(Clock_CLID_CalculateAngle(id__,0,
+																							    const_SpeedPID_maxIntegral,
+																							    const_RotationPID_D)
+																					[| {|get_CLID_StopMotors,StopMotors::entered,terminate|} |]
+																					dbisim(Clock_CLID_StopMotors(id__,0,
 																							          const_BalanceSTM_maxAngle,
 																							          const_BalanceSTM_loopTime,
 																							          const_BalanceSTM_startupDelay,
@@ -4719,14 +4719,14 @@ module Segway
 																							          const_BalanceSTM_motorBudget,
 																							          const_AnglePID_P,
 																							          const_AnglePID_D,
-																							          const_RotationPID_D,
 																							          const_SpeedPID_P,
 																							          const_SpeedPID_I,
-																							          const_SpeedPID_maxIntegral))
-																				)\{|get_CLID_CalculateAngle|}
+																							          const_SpeedPID_maxIntegral,
+																							          const_RotationPID_D))
+																				)\{|get_CLID_StopMotors|}
 																			)
-																			[| {|get_CLID_CalculateSpeed,CalculateSpeed::entered,terminate|} |]
-																			dbisim(Clock_CLID_CalculateSpeed(id__,0,
+																			[| {|get_CLID_Initialisation,Initialisation::entered,terminate|} |]
+																			dbisim(Clock_CLID_Initialisation(id__,0,
 																					          const_BalanceSTM_maxAngle,
 																					          const_BalanceSTM_loopTime,
 																					          const_BalanceSTM_startupDelay,
@@ -4738,14 +4738,14 @@ module Segway
 																					          const_BalanceSTM_motorBudget,
 																					          const_AnglePID_P,
 																					          const_AnglePID_D,
-																					          const_RotationPID_D,
 																					          const_SpeedPID_P,
 																					          const_SpeedPID_I,
-																					          const_SpeedPID_maxIntegral))
-																		)\{|get_CLID_CalculateSpeed|}
+																					          const_SpeedPID_maxIntegral,
+																					          const_RotationPID_D))
+																		)\{|get_CLID_Initialisation|}
 																	)
-																	[| {|get_CLID_CalculateRotation,CalculateRotation::entered,terminate|} |]
-																	dbisim(Clock_CLID_CalculateRotation(id__,0,
+																	[| {|get_CLID_WaitForNextIteration,WaitForNextIteration::entered,terminate|} |]
+																	dbisim(Clock_CLID_WaitForNextIteration(id__,0,
 																			          const_BalanceSTM_maxAngle,
 																			          const_BalanceSTM_loopTime,
 																			          const_BalanceSTM_startupDelay,
@@ -4757,14 +4757,14 @@ module Segway
 																			          const_BalanceSTM_motorBudget,
 																			          const_AnglePID_P,
 																			          const_AnglePID_D,
-																			          const_RotationPID_D,
 																			          const_SpeedPID_P,
 																			          const_SpeedPID_I,
-																			          const_SpeedPID_maxIntegral))
-																)\{|get_CLID_CalculateRotation|}
+																			          const_SpeedPID_maxIntegral,
+																			          const_RotationPID_D))
+																)\{|get_CLID_WaitForNextIteration|}
 															)
-															[| {|get_CLID_SetMotors,SetMotors::entered,terminate|} |]
-															dbisim(Clock_CLID_SetMotors(id__,0,
+															[| {|get_CLID_CalculateRotation,CalculateRotation::entered,terminate|} |]
+															dbisim(Clock_CLID_CalculateRotation(id__,0,
 																	          const_BalanceSTM_maxAngle,
 																	          const_BalanceSTM_loopTime,
 																	          const_BalanceSTM_startupDelay,
@@ -4776,14 +4776,14 @@ module Segway
 																	          const_BalanceSTM_motorBudget,
 																	          const_AnglePID_P,
 																	          const_AnglePID_D,
-																	          const_RotationPID_D,
 																	          const_SpeedPID_P,
 																	          const_SpeedPID_I,
-																	          const_SpeedPID_maxIntegral))
-														)\{|get_CLID_SetMotors|}
+																	          const_SpeedPID_maxIntegral,
+																	          const_RotationPID_D))
+														)\{|get_CLID_CalculateRotation|}
 													)
-													[| {|get_CLID_Initialisation,Initialisation::entered,terminate|} |]
-													dbisim(Clock_CLID_Initialisation(id__,0,
+													[| {|get_CLID_SetMotors,SetMotors::entered,terminate|} |]
+													dbisim(Clock_CLID_SetMotors(id__,0,
 															          const_BalanceSTM_maxAngle,
 															          const_BalanceSTM_loopTime,
 															          const_BalanceSTM_startupDelay,
@@ -4795,14 +4795,14 @@ module Segway
 															          const_BalanceSTM_motorBudget,
 															          const_AnglePID_P,
 															          const_AnglePID_D,
-															          const_RotationPID_D,
 															          const_SpeedPID_P,
 															          const_SpeedPID_I,
-															          const_SpeedPID_maxIntegral))
-												)\{|get_CLID_Initialisation|}
+															          const_SpeedPID_maxIntegral,
+															          const_RotationPID_D))
+												)\{|get_CLID_SetMotors|}
 											)
-											[| {|get_CLID_WaitForNextIteration,WaitForNextIteration::entered,terminate|} |]
-											dbisim(Clock_CLID_WaitForNextIteration(id__,0,
+											[| {|get_CLID_CalculateSpeed,CalculateSpeed::entered,terminate|} |]
+											dbisim(Clock_CLID_CalculateSpeed(id__,0,
 													          const_BalanceSTM_maxAngle,
 													          const_BalanceSTM_loopTime,
 													          const_BalanceSTM_startupDelay,
@@ -4814,14 +4814,14 @@ module Segway
 													          const_BalanceSTM_motorBudget,
 													          const_AnglePID_P,
 													          const_AnglePID_D,
-													          const_RotationPID_D,
 													          const_SpeedPID_P,
 													          const_SpeedPID_I,
-													          const_SpeedPID_maxIntegral))
-										)\{|get_CLID_WaitForNextIteration|}
+													          const_SpeedPID_maxIntegral,
+													          const_RotationPID_D))
+										)\{|get_CLID_CalculateSpeed|}
 									)
-									[| {|get_CLID_StopMotors,StopMotors::entered,terminate|} |]
-									dbisim(Clock_CLID_StopMotors(id__,0,
+									[| {|get_CLID_CalculateAngle,CalculateAngle::entered,terminate|} |]
+									dbisim(Clock_CLID_CalculateAngle(id__,0,
 											          const_BalanceSTM_maxAngle,
 											          const_BalanceSTM_loopTime,
 											          const_BalanceSTM_startupDelay,
@@ -4833,11 +4833,11 @@ module Segway
 											          const_BalanceSTM_motorBudget,
 											          const_AnglePID_P,
 											          const_AnglePID_D,
-											          const_RotationPID_D,
 											          const_SpeedPID_P,
 											          const_SpeedPID_I,
-											          const_SpeedPID_maxIntegral))
-								)\{|get_CLID_StopMotors|}
+											          const_SpeedPID_maxIntegral,
+											          const_RotationPID_D))
+								)\{|get_CLID_CalculateAngle|}
 							)
 							) \ union(stateClockSync,enteredSS)
 						)
@@ -4855,10 +4855,10 @@ module Segway
 							    const_BalanceSTM_motorBudget,
 							    const_AnglePID_P,
 							    const_AnglePID_D,
-							    const_RotationPID_D,
 							    const_SpeedPID_P,
 							    const_SpeedPID_I,
-							    const_SpeedPID_maxIntegral) = 
+							    const_SpeedPID_maxIntegral,
+							    const_RotationPID_D) = 
 						((let
 							getsetLocalChannels = {|get_currAngle,set_currAngle,
 							get_currGyroX,set_currGyroX,
@@ -4886,10 +4886,10 @@ module Segway
 									    const_BalanceSTM_motorBudget,
 									    const_AnglePID_P,
 									    const_AnglePID_D,
-									    const_RotationPID_D,
 									    const_SpeedPID_P,
 									    const_SpeedPID_I,
-									    const_SpeedPID_maxIntegral) 
+									    const_SpeedPID_maxIntegral,
+									    const_RotationPID_D) 
 							 [| union(union(getsetLocalChannels,clockSync),{terminate}) |] 
 							 (varMemory(id__,
 							 		    const_BalanceSTM_maxAngle,
@@ -4903,10 +4903,10 @@ module Segway
 							 		    const_BalanceSTM_motorBudget,
 							 		    const_AnglePID_P,
 							 		    const_AnglePID_D,
-							 		    const_RotationPID_D,
 							 		    const_SpeedPID_P,
 							 		    const_SpeedPID_I,
-							 		    const_SpeedPID_maxIntegral) [| {terminate} |] Clocks(id__,
+							 		    const_SpeedPID_maxIntegral,
+							 		    const_RotationPID_D) [| {terminate} |] Clocks(id__,
 							 		          const_BalanceSTM_maxAngle,
 							 		          const_BalanceSTM_loopTime,
 							 		          const_BalanceSTM_startupDelay,
@@ -4918,10 +4918,10 @@ module Segway
 							 		          const_BalanceSTM_motorBudget,
 							 		          const_AnglePID_P,
 							 		          const_AnglePID_D,
-							 		          const_RotationPID_D,
 							 		          const_SpeedPID_P,
 							 		          const_SpeedPID_I,
-							 		          const_SpeedPID_maxIntegral))
+							 		          const_SpeedPID_maxIntegral,
+							 		          const_RotationPID_D))
 						 	)\union(getsetLocalChannels,clockSync)
 						)
 						)
@@ -4938,10 +4938,10 @@ module Segway
 							    const_BalanceSTM_motorBudget,
 							    const_AnglePID_P,
 							    const_AnglePID_D,
-							    const_RotationPID_D,
 							    const_SpeedPID_P,
 							    const_SpeedPID_I,
-							    const_SpeedPID_maxIntegral) =
+							    const_SpeedPID_maxIntegral,
+							    const_RotationPID_D) =
 						(dbisim(
 							sbisim(
 								dbisim(
@@ -4980,10 +4980,10 @@ module Segway
 																																		    const_BalanceSTM_motorBudget,
 																																		    const_AnglePID_P,
 																																		    const_AnglePID_D,
-																																		    const_RotationPID_D,
 																																		    const_SpeedPID_P,
 																																		    const_SpeedPID_I,
-																																		    const_SpeedPID_maxIntegral)
+																																		    const_SpeedPID_maxIntegral,
+																																		    const_RotationPID_D)
 																																[| {|get_CLID_loopTimer,clockReset.CLID_loopTimer,terminate|} |]
 																																dbisim(Clock_CLID_loopTimer(id__,0,
 																																		          const_BalanceSTM_maxAngle,
@@ -4997,10 +4997,10 @@ module Segway
 																																		          const_BalanceSTM_motorBudget,
 																																		          const_AnglePID_P,
 																																		          const_AnglePID_D,
-																																		          const_RotationPID_D,
 																																		          const_SpeedPID_P,
 																																		          const_SpeedPID_I,
-																																		          const_SpeedPID_maxIntegral))
+																																		          const_SpeedPID_maxIntegral,
+																																		          const_RotationPID_D))
 																															)\{|get_CLID_loopTimer,clockReset.CLID_loopTimer|}
 																														)
 																														[| {|get_rotationOutput,set_rotationOutput,terminate|} |]
@@ -5066,10 +5066,10 @@ module Segway
 							    const_BalanceSTM_motorBudget,
 							    const_AnglePID_P,
 							    const_AnglePID_D,
-							    const_RotationPID_D,
 							    const_SpeedPID_P,
 							    const_SpeedPID_I,
-							    const_SpeedPID_maxIntegral) = 
+							    const_SpeedPID_maxIntegral,
+							    const_RotationPID_D) = 
 						dbisim((
 						let
 							finalNodesEntered = {||}
@@ -5114,10 +5114,10 @@ module Segway
 									   		    const_BalanceSTM_motorBudget,
 									   		    const_AnglePID_P,
 									   		    const_AnglePID_D,
-									   		    const_RotationPID_D,
 									   		    const_SpeedPID_P,
 									   		    const_SpeedPID_I,
-									   		    const_SpeedPID_maxIntegral)
+									   		    const_SpeedPID_maxIntegral,
+									   		    const_RotationPID_D)
 									   [| { share__, terminate } |] (
 									   CalculateAngle::VS_O__(id__,
 									   		    const_BalanceSTM_maxAngle,
@@ -5131,10 +5131,10 @@ module Segway
 									   		    const_BalanceSTM_motorBudget,
 									   		    const_AnglePID_P,
 									   		    const_AnglePID_D,
-									   		    const_RotationPID_D,
 									   		    const_SpeedPID_P,
 									   		    const_SpeedPID_I,
-									   		    const_SpeedPID_maxIntegral)
+									   		    const_SpeedPID_maxIntegral,
+									   		    const_RotationPID_D)
 									   [| { share__, terminate } |] (
 									   CalculateSpeed::VS_O__(id__,
 									   		    const_BalanceSTM_maxAngle,
@@ -5148,10 +5148,10 @@ module Segway
 									   		    const_BalanceSTM_motorBudget,
 									   		    const_AnglePID_P,
 									   		    const_AnglePID_D,
-									   		    const_RotationPID_D,
 									   		    const_SpeedPID_P,
 									   		    const_SpeedPID_I,
-									   		    const_SpeedPID_maxIntegral)
+									   		    const_SpeedPID_maxIntegral,
+									   		    const_RotationPID_D)
 									   [| { share__, terminate } |] (
 									   CalculateRotation::VS_O__(id__,
 									   		    const_BalanceSTM_maxAngle,
@@ -5165,10 +5165,10 @@ module Segway
 									   		    const_BalanceSTM_motorBudget,
 									   		    const_AnglePID_P,
 									   		    const_AnglePID_D,
-									   		    const_RotationPID_D,
 									   		    const_SpeedPID_P,
 									   		    const_SpeedPID_I,
-									   		    const_SpeedPID_maxIntegral)
+									   		    const_SpeedPID_maxIntegral,
+									   		    const_RotationPID_D)
 									   [| { share__, terminate } |] (
 									   SetMotors::VS_O__(id__,
 									   		    const_BalanceSTM_maxAngle,
@@ -5182,10 +5182,10 @@ module Segway
 									   		    const_BalanceSTM_motorBudget,
 									   		    const_AnglePID_P,
 									   		    const_AnglePID_D,
-									   		    const_RotationPID_D,
 									   		    const_SpeedPID_P,
 									   		    const_SpeedPID_I,
-									   		    const_SpeedPID_maxIntegral)
+									   		    const_SpeedPID_maxIntegral,
+									   		    const_RotationPID_D)
 									   [| { share__, terminate } |] (
 									   j0::VS_O__(id__,
 									   		    const_BalanceSTM_maxAngle,
@@ -5199,10 +5199,10 @@ module Segway
 									   		    const_BalanceSTM_motorBudget,
 									   		    const_AnglePID_P,
 									   		    const_AnglePID_D,
-									   		    const_RotationPID_D,
 									   		    const_SpeedPID_P,
 									   		    const_SpeedPID_I,
-									   		    const_SpeedPID_maxIntegral)
+									   		    const_SpeedPID_maxIntegral,
+									   		    const_RotationPID_D)
 									   [| { share__, terminate } |] (
 									   j1::VS_O__(id__,
 									   		    const_BalanceSTM_maxAngle,
@@ -5216,10 +5216,10 @@ module Segway
 									   		    const_BalanceSTM_motorBudget,
 									   		    const_AnglePID_P,
 									   		    const_AnglePID_D,
-									   		    const_RotationPID_D,
 									   		    const_SpeedPID_P,
 									   		    const_SpeedPID_I,
-									   		    const_SpeedPID_maxIntegral)
+									   		    const_SpeedPID_maxIntegral,
+									   		    const_RotationPID_D)
 									   [| { share__, terminate } |] (
 									   j2::VS_O__(id__,
 									   		    const_BalanceSTM_maxAngle,
@@ -5233,10 +5233,10 @@ module Segway
 									   		    const_BalanceSTM_motorBudget,
 									   		    const_AnglePID_P,
 									   		    const_AnglePID_D,
-									   		    const_RotationPID_D,
 									   		    const_SpeedPID_P,
 									   		    const_SpeedPID_I,
-									   		    const_SpeedPID_maxIntegral)
+									   		    const_SpeedPID_maxIntegral,
+									   		    const_RotationPID_D)
 									   [| { share__, terminate } |] (
 									   StopMotors::VS_O__(id__,
 									   		    const_BalanceSTM_maxAngle,
@@ -5250,10 +5250,10 @@ module Segway
 									   		    const_BalanceSTM_motorBudget,
 									   		    const_AnglePID_P,
 									   		    const_AnglePID_D,
-									   		    const_RotationPID_D,
 									   		    const_SpeedPID_P,
 									   		    const_SpeedPID_I,
-									   		    const_SpeedPID_maxIntegral)
+									   		    const_SpeedPID_maxIntegral,
+									   		    const_RotationPID_D)
 									   [| { share__, terminate } |] (
 									   WaitForNextIteration::VS_O__(id__,
 									   		    const_BalanceSTM_maxAngle,
@@ -5267,10 +5267,10 @@ module Segway
 									   		    const_BalanceSTM_motorBudget,
 									   		    const_AnglePID_P,
 									   		    const_AnglePID_D,
-									   		    const_RotationPID_D,
 									   		    const_SpeedPID_P,
 									   		    const_SpeedPID_I,
-									   		    const_SpeedPID_maxIntegral)
+									   		    const_SpeedPID_maxIntegral,
+									   		    const_RotationPID_D)
 									   [| { share__, terminate } |] (
 									   Initialisation::VS_O__(id__,
 									   		    const_BalanceSTM_maxAngle,
@@ -5284,10 +5284,10 @@ module Segway
 									   		    const_BalanceSTM_motorBudget,
 									   		    const_AnglePID_P,
 									   		    const_AnglePID_D,
-									   		    const_RotationPID_D,
 									   		    const_SpeedPID_P,
 									   		    const_SpeedPID_I,
-									   		    const_SpeedPID_maxIntegral)
+									   		    const_SpeedPID_maxIntegral,
+									   		    const_RotationPID_D)
 									   [| { share__, terminate } |] (
 									   j3::VS_O__(id__,
 									   		    const_BalanceSTM_maxAngle,
@@ -5301,10 +5301,10 @@ module Segway
 									   		    const_BalanceSTM_motorBudget,
 									   		    const_AnglePID_P,
 									   		    const_AnglePID_D,
-									   		    const_RotationPID_D,
 									   		    const_SpeedPID_P,
 									   		    const_SpeedPID_I,
-									   		    const_SpeedPID_maxIntegral)
+									   		    const_SpeedPID_maxIntegral,
+									   		    const_RotationPID_D)
 									   )
 									   )
 									   )
@@ -5331,13 +5331,13 @@ module Segway
 									 [[j3::interrupt <- x__ | x__ <- {|internal__.NID_j3,internal__.NID_j3|}]]
 									 )
 									  [[ share__ <- x__ | x__ <- {| share__ |} ]] 
-									  [[set_currAngle <- setL_currAngle,clockReset.CLID_loopTimer <- clockResetL.CLID_loopTimer,set_speedCount <- setL_speedCount,set_rotationCount <- setL_rotationCount]]
+									  [[set_speedCount <- setL_speedCount,set_rotationCount <- setL_rotationCount,clockReset.CLID_loopTimer <- clockResetL.CLID_loopTimer,set_currAngle <- setL_currAngle]]
 									 )
 									 [| union(union(union(flowevts,transSync),{terminate}),{|share__
-									 			,setL_currAngle
-									 			,clockResetL.CLID_loopTimer
 									 			,setL_speedCount
 									 			,setL_rotationCount
+									 			,clockResetL.CLID_loopTimer
+									 			,setL_currAngle
 									|}) |]
 									 ((i0::enter -> Transitions(id__,
 									 		    const_BalanceSTM_maxAngle,
@@ -5351,13 +5351,13 @@ module Segway
 									 		    const_BalanceSTM_motorBudget,
 									 		    const_AnglePID_P,
 									 		    const_AnglePID_D,
-									 		    const_RotationPID_D,
 									 		    const_SpeedPID_P,
 									 		    const_SpeedPID_I,
-									 		    const_SpeedPID_maxIntegral))
-									  [[ share__ <- x__ | x__ <- {| share__,setL_currAngle,clockResetL.CLID_loopTimer,setL_speedCount,setL_rotationCount |} ]]
+									 		    const_SpeedPID_maxIntegral,
+									 		    const_RotationPID_D))
+									  [[ share__ <- x__ | x__ <- {| share__,setL_speedCount,setL_rotationCount,clockResetL.CLID_loopTimer,setL_currAngle |} ]]
 									 )
-									)[[setL_currAngle <- set_currAngle,clockResetL.CLID_loopTimer <- clockReset.CLID_loopTimer,setL_speedCount <- set_speedCount,setL_rotationCount <- set_rotationCount]]
+									)[[setL_speedCount <- set_speedCount,setL_rotationCount <- set_rotationCount,clockResetL.CLID_loopTimer <- clockReset.CLID_loopTimer,setL_currAngle <- set_currAngle]]
 									)
 								)
 								 \ hideSet)
@@ -5385,10 +5385,10 @@ module Segway
 							 		          const_BalanceSTM_motorBudget,
 							 		          const_AnglePID_P,
 							 		          const_AnglePID_D,
-							 		          const_RotationPID_D,
 							 		          const_SpeedPID_P,
 							 		          const_SpeedPID_I,
-							 		          const_SpeedPID_maxIntegral)
+							 		          const_SpeedPID_maxIntegral,
+							 		          const_RotationPID_D)
 							)\diff(stateClockSync,enteredSS))
 							 [| {| interrupt |} |] SKIP)
 						)
@@ -5406,12 +5406,12 @@ module Segway
 							    const_BalanceSTM_motorBudget,
 							    const_AnglePID_P,
 							    const_AnglePID_D,
-							    const_RotationPID_D,
 							    const_SpeedPID_P,
 							    const_SpeedPID_I,
-							    const_SpeedPID_maxIntegral) = 
+							    const_SpeedPID_maxIntegral,
+							    const_RotationPID_D) = 
 						dbisim((let
-							stateClockSync = {|get_CLID_StopMotors,StopMotors::entered,get_CLID_WaitForNextIteration,WaitForNextIteration::entered,get_CLID_Initialisation,Initialisation::entered,get_CLID_SetMotors,SetMotors::entered,get_CLID_CalculateRotation,CalculateRotation::entered,get_CLID_CalculateSpeed,CalculateSpeed::entered,get_CLID_CalculateAngle,CalculateAngle::entered|}
+							stateClockSync = {|get_CLID_CalculateAngle,CalculateAngle::entered,get_CLID_CalculateSpeed,CalculateSpeed::entered,get_CLID_SetMotors,SetMotors::entered,get_CLID_CalculateRotation,CalculateRotation::entered,get_CLID_WaitForNextIteration,WaitForNextIteration::entered,get_CLID_Initialisation,Initialisation::entered,get_CLID_StopMotors,StopMotors::entered|}
 						 within
 							(MachineBody_VS_O(id__,
 									    const_BalanceSTM_maxAngle,
@@ -5425,10 +5425,10 @@ module Segway
 									    const_BalanceSTM_motorBudget,
 									    const_AnglePID_P,
 									    const_AnglePID_D,
-									    const_RotationPID_D,
 									    const_SpeedPID_P,
 									    const_SpeedPID_I,
-									    const_SpeedPID_maxIntegral) [| union(stateClockSync,{terminate}) |] StateClocks(id__,
+									    const_SpeedPID_maxIntegral,
+									    const_RotationPID_D) [| union(stateClockSync,{terminate}) |] StateClocks(id__,
 									          const_BalanceSTM_maxAngle,
 									          const_BalanceSTM_loopTime,
 									          const_BalanceSTM_startupDelay,
@@ -5440,10 +5440,10 @@ module Segway
 									          const_BalanceSTM_motorBudget,
 									          const_AnglePID_P,
 									          const_AnglePID_D,
-									          const_RotationPID_D,
 									          const_SpeedPID_P,
 									          const_SpeedPID_I,
-									          const_SpeedPID_maxIntegral)) \ diff(union(stateClockSync,enteredSS),enteredSS)
+									          const_SpeedPID_maxIntegral,
+									          const_RotationPID_D)) \ diff(union(stateClockSync,enteredSS),enteredSS)
 						)
 						)
 					
@@ -5459,12 +5459,12 @@ module Segway
 							    const_BalanceSTM_motorBudget,
 							    const_AnglePID_P,
 							    const_AnglePID_D,
-							    const_RotationPID_D,
 							    const_SpeedPID_P,
 							    const_SpeedPID_I,
-							    const_SpeedPID_maxIntegral) = 
+							    const_SpeedPID_maxIntegral,
+							    const_RotationPID_D) = 
 						dbisim((let
-							stateClockSync = {|get_CLID_StopMotors,StopMotors::entered,get_CLID_WaitForNextIteration,WaitForNextIteration::entered,get_CLID_Initialisation,Initialisation::entered,get_CLID_SetMotors,SetMotors::entered,get_CLID_CalculateRotation,CalculateRotation::entered,get_CLID_CalculateSpeed,CalculateSpeed::entered,get_CLID_CalculateAngle,CalculateAngle::entered|}
+							stateClockSync = {|get_CLID_CalculateAngle,CalculateAngle::entered,get_CLID_CalculateSpeed,CalculateSpeed::entered,get_CLID_SetMotors,SetMotors::entered,get_CLID_CalculateRotation,CalculateRotation::entered,get_CLID_WaitForNextIteration,WaitForNextIteration::entered,get_CLID_Initialisation,Initialisation::entered,get_CLID_StopMotors,StopMotors::entered|}
 						 within
 							(dbisim(
 								sbisim(
@@ -5492,12 +5492,12 @@ module Segway
 																							    const_BalanceSTM_motorBudget,
 																							    const_AnglePID_P,
 																							    const_AnglePID_D,
-																							    const_RotationPID_D,
 																							    const_SpeedPID_P,
 																							    const_SpeedPID_I,
-																							    const_SpeedPID_maxIntegral)
-																					[| {|get_CLID_CalculateAngle,CalculateAngle::entered,terminate|} |]
-																					dbisim(Clock_CLID_CalculateAngle(id__,0,
+																							    const_SpeedPID_maxIntegral,
+																							    const_RotationPID_D)
+																					[| {|get_CLID_StopMotors,StopMotors::entered,terminate|} |]
+																					dbisim(Clock_CLID_StopMotors(id__,0,
 																							          const_BalanceSTM_maxAngle,
 																							          const_BalanceSTM_loopTime,
 																							          const_BalanceSTM_startupDelay,
@@ -5509,14 +5509,14 @@ module Segway
 																							          const_BalanceSTM_motorBudget,
 																							          const_AnglePID_P,
 																							          const_AnglePID_D,
-																							          const_RotationPID_D,
 																							          const_SpeedPID_P,
 																							          const_SpeedPID_I,
-																							          const_SpeedPID_maxIntegral))
-																				)\{|get_CLID_CalculateAngle|}
+																							          const_SpeedPID_maxIntegral,
+																							          const_RotationPID_D))
+																				)\{|get_CLID_StopMotors|}
 																			)
-																			[| {|get_CLID_CalculateSpeed,CalculateSpeed::entered,terminate|} |]
-																			dbisim(Clock_CLID_CalculateSpeed(id__,0,
+																			[| {|get_CLID_Initialisation,Initialisation::entered,terminate|} |]
+																			dbisim(Clock_CLID_Initialisation(id__,0,
 																					          const_BalanceSTM_maxAngle,
 																					          const_BalanceSTM_loopTime,
 																					          const_BalanceSTM_startupDelay,
@@ -5528,14 +5528,14 @@ module Segway
 																					          const_BalanceSTM_motorBudget,
 																					          const_AnglePID_P,
 																					          const_AnglePID_D,
-																					          const_RotationPID_D,
 																					          const_SpeedPID_P,
 																					          const_SpeedPID_I,
-																					          const_SpeedPID_maxIntegral))
-																		)\{|get_CLID_CalculateSpeed|}
+																					          const_SpeedPID_maxIntegral,
+																					          const_RotationPID_D))
+																		)\{|get_CLID_Initialisation|}
 																	)
-																	[| {|get_CLID_CalculateRotation,CalculateRotation::entered,terminate|} |]
-																	dbisim(Clock_CLID_CalculateRotation(id__,0,
+																	[| {|get_CLID_WaitForNextIteration,WaitForNextIteration::entered,terminate|} |]
+																	dbisim(Clock_CLID_WaitForNextIteration(id__,0,
 																			          const_BalanceSTM_maxAngle,
 																			          const_BalanceSTM_loopTime,
 																			          const_BalanceSTM_startupDelay,
@@ -5547,14 +5547,14 @@ module Segway
 																			          const_BalanceSTM_motorBudget,
 																			          const_AnglePID_P,
 																			          const_AnglePID_D,
-																			          const_RotationPID_D,
 																			          const_SpeedPID_P,
 																			          const_SpeedPID_I,
-																			          const_SpeedPID_maxIntegral))
-																)\{|get_CLID_CalculateRotation|}
+																			          const_SpeedPID_maxIntegral,
+																			          const_RotationPID_D))
+																)\{|get_CLID_WaitForNextIteration|}
 															)
-															[| {|get_CLID_SetMotors,SetMotors::entered,terminate|} |]
-															dbisim(Clock_CLID_SetMotors(id__,0,
+															[| {|get_CLID_CalculateRotation,CalculateRotation::entered,terminate|} |]
+															dbisim(Clock_CLID_CalculateRotation(id__,0,
 																	          const_BalanceSTM_maxAngle,
 																	          const_BalanceSTM_loopTime,
 																	          const_BalanceSTM_startupDelay,
@@ -5566,14 +5566,14 @@ module Segway
 																	          const_BalanceSTM_motorBudget,
 																	          const_AnglePID_P,
 																	          const_AnglePID_D,
-																	          const_RotationPID_D,
 																	          const_SpeedPID_P,
 																	          const_SpeedPID_I,
-																	          const_SpeedPID_maxIntegral))
-														)\{|get_CLID_SetMotors|}
+																	          const_SpeedPID_maxIntegral,
+																	          const_RotationPID_D))
+														)\{|get_CLID_CalculateRotation|}
 													)
-													[| {|get_CLID_Initialisation,Initialisation::entered,terminate|} |]
-													dbisim(Clock_CLID_Initialisation(id__,0,
+													[| {|get_CLID_SetMotors,SetMotors::entered,terminate|} |]
+													dbisim(Clock_CLID_SetMotors(id__,0,
 															          const_BalanceSTM_maxAngle,
 															          const_BalanceSTM_loopTime,
 															          const_BalanceSTM_startupDelay,
@@ -5585,14 +5585,14 @@ module Segway
 															          const_BalanceSTM_motorBudget,
 															          const_AnglePID_P,
 															          const_AnglePID_D,
-															          const_RotationPID_D,
 															          const_SpeedPID_P,
 															          const_SpeedPID_I,
-															          const_SpeedPID_maxIntegral))
-												)\{|get_CLID_Initialisation|}
+															          const_SpeedPID_maxIntegral,
+															          const_RotationPID_D))
+												)\{|get_CLID_SetMotors|}
 											)
-											[| {|get_CLID_WaitForNextIteration,WaitForNextIteration::entered,terminate|} |]
-											dbisim(Clock_CLID_WaitForNextIteration(id__,0,
+											[| {|get_CLID_CalculateSpeed,CalculateSpeed::entered,terminate|} |]
+											dbisim(Clock_CLID_CalculateSpeed(id__,0,
 													          const_BalanceSTM_maxAngle,
 													          const_BalanceSTM_loopTime,
 													          const_BalanceSTM_startupDelay,
@@ -5604,14 +5604,14 @@ module Segway
 													          const_BalanceSTM_motorBudget,
 													          const_AnglePID_P,
 													          const_AnglePID_D,
-													          const_RotationPID_D,
 													          const_SpeedPID_P,
 													          const_SpeedPID_I,
-													          const_SpeedPID_maxIntegral))
-										)\{|get_CLID_WaitForNextIteration|}
+													          const_SpeedPID_maxIntegral,
+													          const_RotationPID_D))
+										)\{|get_CLID_CalculateSpeed|}
 									)
-									[| {|get_CLID_StopMotors,StopMotors::entered,terminate|} |]
-									dbisim(Clock_CLID_StopMotors(id__,0,
+									[| {|get_CLID_CalculateAngle,CalculateAngle::entered,terminate|} |]
+									dbisim(Clock_CLID_CalculateAngle(id__,0,
 											          const_BalanceSTM_maxAngle,
 											          const_BalanceSTM_loopTime,
 											          const_BalanceSTM_startupDelay,
@@ -5623,11 +5623,11 @@ module Segway
 											          const_BalanceSTM_motorBudget,
 											          const_AnglePID_P,
 											          const_AnglePID_D,
-											          const_RotationPID_D,
 											          const_SpeedPID_P,
 											          const_SpeedPID_I,
-											          const_SpeedPID_maxIntegral))
-								)\{|get_CLID_StopMotors|}
+											          const_SpeedPID_maxIntegral,
+											          const_RotationPID_D))
+								)\{|get_CLID_CalculateAngle|}
 							)
 							) \ diff(union(stateClockSync,enteredSS),enteredSS)
 						)
@@ -5645,10 +5645,10 @@ module Segway
 							    const_BalanceSTM_motorBudget,
 							    const_AnglePID_P,
 							    const_AnglePID_D,
-							    const_RotationPID_D,
 							    const_SpeedPID_P,
 							    const_SpeedPID_I,
-							    const_SpeedPID_maxIntegral) = 
+							    const_SpeedPID_maxIntegral,
+							    const_RotationPID_D) = 
 						dbisim((let
 							getsetLocalChannels = {|get_currAngle,set_currAngle,
 							get_currGyroX,set_currGyroX,
@@ -5676,10 +5676,10 @@ module Segway
 									    const_BalanceSTM_motorBudget,
 									    const_AnglePID_P,
 									    const_AnglePID_D,
-									    const_RotationPID_D,
 									    const_SpeedPID_P,
 									    const_SpeedPID_I,
-									    const_SpeedPID_maxIntegral) 
+									    const_SpeedPID_maxIntegral,
+									    const_RotationPID_D) 
 							 [| union(union(getsetLocalChannels,clockSync),{terminate}) |] 
 							 (varMemory(id__,
 							 		    const_BalanceSTM_maxAngle,
@@ -5693,10 +5693,10 @@ module Segway
 							 		    const_BalanceSTM_motorBudget,
 							 		    const_AnglePID_P,
 							 		    const_AnglePID_D,
-							 		    const_RotationPID_D,
 							 		    const_SpeedPID_P,
 							 		    const_SpeedPID_I,
-							 		    const_SpeedPID_maxIntegral) [| {terminate} |] Clocks(id__,
+							 		    const_SpeedPID_maxIntegral,
+							 		    const_RotationPID_D) [| {terminate} |] Clocks(id__,
 							 		          const_BalanceSTM_maxAngle,
 							 		          const_BalanceSTM_loopTime,
 							 		          const_BalanceSTM_startupDelay,
@@ -5708,10 +5708,10 @@ module Segway
 							 		          const_BalanceSTM_motorBudget,
 							 		          const_AnglePID_P,
 							 		          const_AnglePID_D,
-							 		          const_RotationPID_D,
 							 		          const_SpeedPID_P,
 							 		          const_SpeedPID_I,
-							 		          const_SpeedPID_maxIntegral))
+							 		          const_SpeedPID_maxIntegral,
+							 		          const_RotationPID_D))
 						 	)\union(getsetLocalChannels,clockSync)
 						)
 						)
@@ -5728,10 +5728,10 @@ module Segway
 							    const_BalanceSTM_motorBudget,
 							    const_AnglePID_P,
 							    const_AnglePID_D,
-							    const_RotationPID_D,
 							    const_SpeedPID_P,
 							    const_SpeedPID_I,
-							    const_SpeedPID_maxIntegral) =
+							    const_SpeedPID_maxIntegral,
+							    const_RotationPID_D) =
 						(dbisim(
 							sbisim(
 								dbisim(
@@ -5770,10 +5770,10 @@ module Segway
 																																		    const_BalanceSTM_motorBudget,
 																																		    const_AnglePID_P,
 																																		    const_AnglePID_D,
-																																		    const_RotationPID_D,
 																																		    const_SpeedPID_P,
 																																		    const_SpeedPID_I,
-																																		    const_SpeedPID_maxIntegral)
+																																		    const_SpeedPID_maxIntegral,
+																																		    const_RotationPID_D)
 																																[| {|get_CLID_loopTimer,clockReset.CLID_loopTimer,terminate|} |]
 																																dbisim(Clock_CLID_loopTimer(id__,0,
 																																		          const_BalanceSTM_maxAngle,
@@ -5787,10 +5787,10 @@ module Segway
 																																		          const_BalanceSTM_motorBudget,
 																																		          const_AnglePID_P,
 																																		          const_AnglePID_D,
-																																		          const_RotationPID_D,
 																																		          const_SpeedPID_P,
 																																		          const_SpeedPID_I,
-																																		          const_SpeedPID_maxIntegral))
+																																		          const_SpeedPID_maxIntegral,
+																																		          const_RotationPID_D))
 																															)\{|get_CLID_loopTimer,clockReset.CLID_loopTimer|}
 																														)
 																														[| {|get_rotationOutput,set_rotationOutput,terminate|} |]
@@ -5933,10 +5933,10 @@ module Segway
 							    const_BalanceSTM_motorBudget,
 							    const_AnglePID_P,
 							    const_AnglePID_D,
-							    const_RotationPID_D,
 							    const_SpeedPID_P,
 							    const_SpeedPID_I,
-							    const_SpeedPID_maxIntegral) = Memory_currAngle(0)
+							    const_SpeedPID_maxIntegral,
+							    const_RotationPID_D) = Memory_currAngle(0)
 					[| { terminate } |] (
 					Memory_currGyroX(0)
 					[| { terminate } |] (
@@ -5986,10 +5986,10 @@ module Segway
 							    const_BalanceSTM_motorBudget,
 							    const_AnglePID_P,
 							    const_AnglePID_D,
-							    const_RotationPID_D,
 							    const_SpeedPID_P,
 							    const_SpeedPID_I,
-							    const_SpeedPID_maxIntegral) = STM_VS_O(id__,
+							    const_SpeedPID_maxIntegral,
+							    const_RotationPID_D) = STM_VS_O(id__,
 							    const_BalanceSTM_maxAngle,
 							    const_BalanceSTM_loopTime,
 							    const_BalanceSTM_startupDelay,
@@ -6001,10 +6001,10 @@ module Segway
 							    const_BalanceSTM_motorBudget,
 							    const_AnglePID_P,
 							    const_AnglePID_D,
-							    const_RotationPID_D,
 							    const_SpeedPID_P,
 							    const_SpeedPID_I,
-							    const_SpeedPID_maxIntegral) \ localClockResets
+							    const_SpeedPID_maxIntegral,
+							    const_RotationPID_D) \ localClockResets
 					D__(id__,
 							    const_BalanceSTM_maxAngle,
 							    const_BalanceSTM_loopTime,
@@ -6017,10 +6017,10 @@ module Segway
 							    const_BalanceSTM_motorBudget,
 							    const_AnglePID_P,
 							    const_AnglePID_D,
-							    const_RotationPID_D,
 							    const_SpeedPID_P,
 							    const_SpeedPID_I,
-							    const_SpeedPID_maxIntegral) = timed_priority(STM(id__,
+							    const_SpeedPID_maxIntegral,
+							    const_RotationPID_D) = timed_priority(STM(id__,
 							    const_BalanceSTM_maxAngle,
 							    const_BalanceSTM_loopTime,
 							    const_BalanceSTM_startupDelay,
@@ -6032,10 +6032,10 @@ module Segway
 							    const_BalanceSTM_motorBudget,
 							    const_AnglePID_P,
 							    const_AnglePID_D,
-							    const_RotationPID_D,
 							    const_SpeedPID_P,
 							    const_SpeedPID_I,
-							    const_SpeedPID_maxIntegral) \ union(internal_events,localClockResets))
+							    const_SpeedPID_maxIntegral,
+							    const_RotationPID_D) \ union(internal_events,localClockResets))
 					O__(id__,
 							    const_BalanceSTM_maxAngle,
 							    const_BalanceSTM_loopTime,
@@ -6048,10 +6048,10 @@ module Segway
 							    const_BalanceSTM_motorBudget,
 							    const_AnglePID_P,
 							    const_AnglePID_D,
-							    const_RotationPID_D,
 							    const_SpeedPID_P,
 							    const_SpeedPID_I,
-							    const_SpeedPID_maxIntegral) = dbisim(D__(id__,
+							    const_SpeedPID_maxIntegral,
+							    const_RotationPID_D) = dbisim(D__(id__,
 							    const_BalanceSTM_maxAngle,
 							    const_BalanceSTM_loopTime,
 							    const_BalanceSTM_startupDelay,
@@ -6063,10 +6063,10 @@ module Segway
 							    const_BalanceSTM_motorBudget,
 							    const_AnglePID_P,
 							    const_AnglePID_D,
-							    const_RotationPID_D,
 							    const_SpeedPID_P,
 							    const_SpeedPID_I,
-							    const_SpeedPID_maxIntegral))
+							    const_SpeedPID_maxIntegral,
+							    const_RotationPID_D))
 					VS__(id__,
 							    const_BalanceSTM_maxAngle,
 							    const_BalanceSTM_loopTime,
@@ -6079,10 +6079,10 @@ module Segway
 							    const_BalanceSTM_motorBudget,
 							    const_AnglePID_P,
 							    const_AnglePID_D,
-							    const_RotationPID_D,
 							    const_SpeedPID_P,
 							    const_SpeedPID_I,
-							    const_SpeedPID_maxIntegral) = FVS__(id__,
+							    const_SpeedPID_maxIntegral,
+							    const_RotationPID_D) = FVS__(id__,
 							    const_BalanceSTM_maxAngle,
 							    const_BalanceSTM_loopTime,
 							    const_BalanceSTM_startupDelay,
@@ -6094,10 +6094,10 @@ module Segway
 							    const_BalanceSTM_motorBudget,
 							    const_AnglePID_P,
 							    const_AnglePID_D,
-							    const_RotationPID_D,
 							    const_SpeedPID_P,
 							    const_SpeedPID_I,
-							    const_SpeedPID_maxIntegral)
+							    const_SpeedPID_maxIntegral,
+							    const_RotationPID_D)
 					VS_O__(id__,
 							    const_BalanceSTM_maxAngle,
 							    const_BalanceSTM_loopTime,
@@ -6110,10 +6110,10 @@ module Segway
 							    const_BalanceSTM_motorBudget,
 							    const_AnglePID_P,
 							    const_AnglePID_D,
-							    const_RotationPID_D,
 							    const_SpeedPID_P,
 							    const_SpeedPID_I,
-							    const_SpeedPID_maxIntegral) = dbisim(FVS__(id__,
+							    const_SpeedPID_maxIntegral,
+							    const_RotationPID_D) = dbisim(FVS__(id__,
 							    const_BalanceSTM_maxAngle,
 							    const_BalanceSTM_loopTime,
 							    const_BalanceSTM_startupDelay,
@@ -6125,10 +6125,10 @@ module Segway
 							    const_BalanceSTM_motorBudget,
 							    const_AnglePID_P,
 							    const_AnglePID_D,
-							    const_RotationPID_D,
 							    const_SpeedPID_P,
 							    const_SpeedPID_I,
-							    const_SpeedPID_maxIntegral))
+							    const_SpeedPID_maxIntegral,
+							    const_RotationPID_D))
 					HEXT__(id__,
 							    const_BalanceSTM_maxAngle,
 							    const_BalanceSTM_loopTime,
@@ -6141,10 +6141,10 @@ module Segway
 							    const_BalanceSTM_motorBudget,
 							    const_AnglePID_P,
 							    const_AnglePID_D,
-							    const_RotationPID_D,
 							    const_SpeedPID_P,
 							    const_SpeedPID_I,
-							    const_SpeedPID_maxIntegral) = O__(id__,
+							    const_SpeedPID_maxIntegral,
+							    const_RotationPID_D) = O__(id__,
 							    const_BalanceSTM_maxAngle,
 							    const_BalanceSTM_loopTime,
 							    const_BalanceSTM_startupDelay,
@@ -6156,10 +6156,10 @@ module Segway
 							    const_BalanceSTM_motorBudget,
 							    const_AnglePID_P,
 							    const_AnglePID_D,
-							    const_RotationPID_D,
 							    const_SpeedPID_P,
 							    const_SpeedPID_I,
-							    const_SpeedPID_maxIntegral) [|shared_variable_events|] SKIP
+							    const_SpeedPID_maxIntegral,
+							    const_RotationPID_D) [|shared_variable_events|] SKIP
 					FVS_C__(id__,
 							    const_BalanceSTM_maxAngle,
 							    const_BalanceSTM_loopTime,
@@ -6172,10 +6172,10 @@ module Segway
 							    const_BalanceSTM_motorBudget,
 							    const_AnglePID_P,
 							    const_AnglePID_D,
-							    const_RotationPID_D,
 							    const_SpeedPID_P,
 							    const_SpeedPID_I,
-							    const_SpeedPID_maxIntegral) = dbisim(timed_priority(STM(id__,
+							    const_SpeedPID_maxIntegral,
+							    const_RotationPID_D) = dbisim(timed_priority(STM(id__,
 							    const_BalanceSTM_maxAngle,
 							    const_BalanceSTM_loopTime,
 							    const_BalanceSTM_startupDelay,
@@ -6187,10 +6187,10 @@ module Segway
 							    const_BalanceSTM_motorBudget,
 							    const_AnglePID_P,
 							    const_AnglePID_D,
-							    const_RotationPID_D,
 							    const_SpeedPID_P,
 							    const_SpeedPID_I,
-							    const_SpeedPID_maxIntegral) \ internal_events))
+							    const_SpeedPID_maxIntegral,
+							    const_RotationPID_D) \ internal_events))
 					HUP__(id__,
 							    const_BalanceSTM_maxAngle,
 							    const_BalanceSTM_loopTime,
@@ -6203,10 +6203,10 @@ module Segway
 							    const_BalanceSTM_motorBudget,
 							    const_AnglePID_P,
 							    const_AnglePID_D,
-							    const_RotationPID_D,
 							    const_SpeedPID_P,
 							    const_SpeedPID_I,
-							    const_SpeedPID_maxIntegral) = timed_priority(O__(id__,
+							    const_SpeedPID_maxIntegral,
+							    const_RotationPID_D) = timed_priority(O__(id__,
 							    const_BalanceSTM_maxAngle,
 							    const_BalanceSTM_loopTime,
 							    const_BalanceSTM_startupDelay,
@@ -6218,10 +6218,10 @@ module Segway
 							    const_BalanceSTM_motorBudget,
 							    const_AnglePID_P,
 							    const_AnglePID_D,
-							    const_RotationPID_D,
 							    const_SpeedPID_P,
 							    const_SpeedPID_I,
-							    const_SpeedPID_maxIntegral) [|{share__}|] SKIP)
+							    const_SpeedPID_maxIntegral,
+							    const_RotationPID_D) [|{share__}|] SKIP)
 					
 					-- Clocks
 					Clock_CLID_loopTimer(id__,x__,
@@ -6236,10 +6236,10 @@ module Segway
 							          const_BalanceSTM_motorBudget,
 							          const_AnglePID_P,
 							          const_AnglePID_D,
-							          const_RotationPID_D,
 							          const_SpeedPID_P,
 							          const_SpeedPID_I,
-							          const_SpeedPID_maxIntegral) = 
+							          const_SpeedPID_maxIntegral,
+							          const_RotationPID_D) = 
 						TimeOut_1(
 							clockReset.CLID_loopTimer -> Clock_CLID_loopTimer(id__,0,
 									          const_BalanceSTM_maxAngle,
@@ -6253,10 +6253,10 @@ module Segway
 									          const_BalanceSTM_motorBudget,
 									          const_AnglePID_P,
 									          const_AnglePID_D,
-									          const_RotationPID_D,
 									          const_SpeedPID_P,
 									          const_SpeedPID_I,
-									          const_SpeedPID_maxIntegral)
+									          const_SpeedPID_maxIntegral,
+									          const_RotationPID_D)
 							[]
 							get_CLID_loopTimer!x__ -> Clock_CLID_loopTimer(id__,x__,
 									          const_BalanceSTM_maxAngle,
@@ -6270,10 +6270,10 @@ module Segway
 									          const_BalanceSTM_motorBudget,
 									          const_AnglePID_P,
 									          const_AnglePID_D,
-									          const_RotationPID_D,
 									          const_SpeedPID_P,
 									          const_SpeedPID_I,
-									          const_SpeedPID_maxIntegral)
+									          const_SpeedPID_maxIntegral,
+									          const_RotationPID_D)
 							[]
 							terminate -> SKIP,Clock_CLID_loopTimer(id__,clock_type_plus(x__,1,CLID_loopTimer_clock_type(id__,
 									          const_BalanceSTM_maxAngle,
@@ -6287,10 +6287,10 @@ module Segway
 									          const_BalanceSTM_motorBudget,
 									          const_AnglePID_P,
 									          const_AnglePID_D,
-									          const_RotationPID_D,
 									          const_SpeedPID_P,
 									          const_SpeedPID_I,
-									          const_SpeedPID_maxIntegral)),
+									          const_SpeedPID_maxIntegral,
+									          const_RotationPID_D)),
 									          const_BalanceSTM_maxAngle,
 									          const_BalanceSTM_loopTime,
 									          const_BalanceSTM_startupDelay,
@@ -6302,10 +6302,10 @@ module Segway
 									          const_BalanceSTM_motorBudget,
 									          const_AnglePID_P,
 									          const_AnglePID_D,
-									          const_RotationPID_D,
 									          const_SpeedPID_P,
 									          const_SpeedPID_I,
-									          const_SpeedPID_maxIntegral))
+									          const_SpeedPID_maxIntegral,
+									          const_RotationPID_D))
 					
 					Clocks(id__,
 							          const_BalanceSTM_maxAngle,
@@ -6319,10 +6319,10 @@ module Segway
 							          const_BalanceSTM_motorBudget,
 							          const_AnglePID_P,
 							          const_AnglePID_D,
-							          const_RotationPID_D,
 							          const_SpeedPID_P,
 							          const_SpeedPID_I,
-							          const_SpeedPID_maxIntegral) = dbisim(Clock_CLID_loopTimer(id__,0,
+							          const_SpeedPID_maxIntegral,
+							          const_RotationPID_D) = dbisim(Clock_CLID_loopTimer(id__,0,
 							          const_BalanceSTM_maxAngle,
 							          const_BalanceSTM_loopTime,
 							          const_BalanceSTM_startupDelay,
@@ -6334,505 +6334,13 @@ module Segway
 							          const_BalanceSTM_motorBudget,
 							          const_AnglePID_P,
 							          const_AnglePID_D,
-							          const_RotationPID_D,
 							          const_SpeedPID_P,
 							          const_SpeedPID_I,
-							          const_SpeedPID_maxIntegral))
+							          const_SpeedPID_maxIntegral,
+							          const_RotationPID_D))
 					
 					clockSync = {|get_CLID_loopTimer,clockReset.CLID_loopTimer|}
 					
-					Clock_CLID_StopMotors(id__,x__,
-							          const_BalanceSTM_maxAngle,
-							          const_BalanceSTM_loopTime,
-							          const_BalanceSTM_startupDelay,
-							          const_BalanceSTM_speedUpdate,
-							          const_BalanceSTM_rotationUpdate,
-							          const_BalanceSTM_angleBudget,
-							          const_BalanceSTM_speedBudget,
-							          const_BalanceSTM_rotationBudget,
-							          const_BalanceSTM_motorBudget,
-							          const_AnglePID_P,
-							          const_AnglePID_D,
-							          const_RotationPID_D,
-							          const_SpeedPID_P,
-							          const_SpeedPID_I,
-							          const_SpeedPID_maxIntegral) = 
-						TimeOut_1(
-							StopMotors::entered -> Clock_CLID_StopMotors(id__,0,
-									          const_BalanceSTM_maxAngle,
-									          const_BalanceSTM_loopTime,
-									          const_BalanceSTM_startupDelay,
-									          const_BalanceSTM_speedUpdate,
-									          const_BalanceSTM_rotationUpdate,
-									          const_BalanceSTM_angleBudget,
-									          const_BalanceSTM_speedBudget,
-									          const_BalanceSTM_rotationBudget,
-									          const_BalanceSTM_motorBudget,
-									          const_AnglePID_P,
-									          const_AnglePID_D,
-									          const_RotationPID_D,
-									          const_SpeedPID_P,
-									          const_SpeedPID_I,
-									          const_SpeedPID_maxIntegral)
-							[]
-							get_CLID_StopMotors!x__ -> Clock_CLID_StopMotors(id__,x__,
-									          const_BalanceSTM_maxAngle,
-									          const_BalanceSTM_loopTime,
-									          const_BalanceSTM_startupDelay,
-									          const_BalanceSTM_speedUpdate,
-									          const_BalanceSTM_rotationUpdate,
-									          const_BalanceSTM_angleBudget,
-									          const_BalanceSTM_speedBudget,
-									          const_BalanceSTM_rotationBudget,
-									          const_BalanceSTM_motorBudget,
-									          const_AnglePID_P,
-									          const_AnglePID_D,
-									          const_RotationPID_D,
-									          const_SpeedPID_P,
-									          const_SpeedPID_I,
-									          const_SpeedPID_maxIntegral)
-							[]
-							terminate -> SKIP,Clock_CLID_StopMotors(id__,clock_type_plus(x__,1,CLID_StopMotors_clock_type(id__,
-									          const_BalanceSTM_maxAngle,
-									          const_BalanceSTM_loopTime,
-									          const_BalanceSTM_startupDelay,
-									          const_BalanceSTM_speedUpdate,
-									          const_BalanceSTM_rotationUpdate,
-									          const_BalanceSTM_angleBudget,
-									          const_BalanceSTM_speedBudget,
-									          const_BalanceSTM_rotationBudget,
-									          const_BalanceSTM_motorBudget,
-									          const_AnglePID_P,
-									          const_AnglePID_D,
-									          const_RotationPID_D,
-									          const_SpeedPID_P,
-									          const_SpeedPID_I,
-									          const_SpeedPID_maxIntegral)),
-									          const_BalanceSTM_maxAngle,
-									          const_BalanceSTM_loopTime,
-									          const_BalanceSTM_startupDelay,
-									          const_BalanceSTM_speedUpdate,
-									          const_BalanceSTM_rotationUpdate,
-									          const_BalanceSTM_angleBudget,
-									          const_BalanceSTM_speedBudget,
-									          const_BalanceSTM_rotationBudget,
-									          const_BalanceSTM_motorBudget,
-									          const_AnglePID_P,
-									          const_AnglePID_D,
-									          const_RotationPID_D,
-									          const_SpeedPID_P,
-									          const_SpeedPID_I,
-									          const_SpeedPID_maxIntegral))
-					Clock_CLID_WaitForNextIteration(id__,x__,
-							          const_BalanceSTM_maxAngle,
-							          const_BalanceSTM_loopTime,
-							          const_BalanceSTM_startupDelay,
-							          const_BalanceSTM_speedUpdate,
-							          const_BalanceSTM_rotationUpdate,
-							          const_BalanceSTM_angleBudget,
-							          const_BalanceSTM_speedBudget,
-							          const_BalanceSTM_rotationBudget,
-							          const_BalanceSTM_motorBudget,
-							          const_AnglePID_P,
-							          const_AnglePID_D,
-							          const_RotationPID_D,
-							          const_SpeedPID_P,
-							          const_SpeedPID_I,
-							          const_SpeedPID_maxIntegral) = 
-						TimeOut_1(
-							WaitForNextIteration::entered -> Clock_CLID_WaitForNextIteration(id__,0,
-									          const_BalanceSTM_maxAngle,
-									          const_BalanceSTM_loopTime,
-									          const_BalanceSTM_startupDelay,
-									          const_BalanceSTM_speedUpdate,
-									          const_BalanceSTM_rotationUpdate,
-									          const_BalanceSTM_angleBudget,
-									          const_BalanceSTM_speedBudget,
-									          const_BalanceSTM_rotationBudget,
-									          const_BalanceSTM_motorBudget,
-									          const_AnglePID_P,
-									          const_AnglePID_D,
-									          const_RotationPID_D,
-									          const_SpeedPID_P,
-									          const_SpeedPID_I,
-									          const_SpeedPID_maxIntegral)
-							[]
-							get_CLID_WaitForNextIteration!x__ -> Clock_CLID_WaitForNextIteration(id__,x__,
-									          const_BalanceSTM_maxAngle,
-									          const_BalanceSTM_loopTime,
-									          const_BalanceSTM_startupDelay,
-									          const_BalanceSTM_speedUpdate,
-									          const_BalanceSTM_rotationUpdate,
-									          const_BalanceSTM_angleBudget,
-									          const_BalanceSTM_speedBudget,
-									          const_BalanceSTM_rotationBudget,
-									          const_BalanceSTM_motorBudget,
-									          const_AnglePID_P,
-									          const_AnglePID_D,
-									          const_RotationPID_D,
-									          const_SpeedPID_P,
-									          const_SpeedPID_I,
-									          const_SpeedPID_maxIntegral)
-							[]
-							terminate -> SKIP,Clock_CLID_WaitForNextIteration(id__,clock_type_plus(x__,1,CLID_WaitForNextIteration_clock_type(id__,
-									          const_BalanceSTM_maxAngle,
-									          const_BalanceSTM_loopTime,
-									          const_BalanceSTM_startupDelay,
-									          const_BalanceSTM_speedUpdate,
-									          const_BalanceSTM_rotationUpdate,
-									          const_BalanceSTM_angleBudget,
-									          const_BalanceSTM_speedBudget,
-									          const_BalanceSTM_rotationBudget,
-									          const_BalanceSTM_motorBudget,
-									          const_AnglePID_P,
-									          const_AnglePID_D,
-									          const_RotationPID_D,
-									          const_SpeedPID_P,
-									          const_SpeedPID_I,
-									          const_SpeedPID_maxIntegral)),
-									          const_BalanceSTM_maxAngle,
-									          const_BalanceSTM_loopTime,
-									          const_BalanceSTM_startupDelay,
-									          const_BalanceSTM_speedUpdate,
-									          const_BalanceSTM_rotationUpdate,
-									          const_BalanceSTM_angleBudget,
-									          const_BalanceSTM_speedBudget,
-									          const_BalanceSTM_rotationBudget,
-									          const_BalanceSTM_motorBudget,
-									          const_AnglePID_P,
-									          const_AnglePID_D,
-									          const_RotationPID_D,
-									          const_SpeedPID_P,
-									          const_SpeedPID_I,
-									          const_SpeedPID_maxIntegral))
-					Clock_CLID_Initialisation(id__,x__,
-							          const_BalanceSTM_maxAngle,
-							          const_BalanceSTM_loopTime,
-							          const_BalanceSTM_startupDelay,
-							          const_BalanceSTM_speedUpdate,
-							          const_BalanceSTM_rotationUpdate,
-							          const_BalanceSTM_angleBudget,
-							          const_BalanceSTM_speedBudget,
-							          const_BalanceSTM_rotationBudget,
-							          const_BalanceSTM_motorBudget,
-							          const_AnglePID_P,
-							          const_AnglePID_D,
-							          const_RotationPID_D,
-							          const_SpeedPID_P,
-							          const_SpeedPID_I,
-							          const_SpeedPID_maxIntegral) = 
-						TimeOut_1(
-							Initialisation::entered -> Clock_CLID_Initialisation(id__,0,
-									          const_BalanceSTM_maxAngle,
-									          const_BalanceSTM_loopTime,
-									          const_BalanceSTM_startupDelay,
-									          const_BalanceSTM_speedUpdate,
-									          const_BalanceSTM_rotationUpdate,
-									          const_BalanceSTM_angleBudget,
-									          const_BalanceSTM_speedBudget,
-									          const_BalanceSTM_rotationBudget,
-									          const_BalanceSTM_motorBudget,
-									          const_AnglePID_P,
-									          const_AnglePID_D,
-									          const_RotationPID_D,
-									          const_SpeedPID_P,
-									          const_SpeedPID_I,
-									          const_SpeedPID_maxIntegral)
-							[]
-							get_CLID_Initialisation!x__ -> Clock_CLID_Initialisation(id__,x__,
-									          const_BalanceSTM_maxAngle,
-									          const_BalanceSTM_loopTime,
-									          const_BalanceSTM_startupDelay,
-									          const_BalanceSTM_speedUpdate,
-									          const_BalanceSTM_rotationUpdate,
-									          const_BalanceSTM_angleBudget,
-									          const_BalanceSTM_speedBudget,
-									          const_BalanceSTM_rotationBudget,
-									          const_BalanceSTM_motorBudget,
-									          const_AnglePID_P,
-									          const_AnglePID_D,
-									          const_RotationPID_D,
-									          const_SpeedPID_P,
-									          const_SpeedPID_I,
-									          const_SpeedPID_maxIntegral)
-							[]
-							terminate -> SKIP,Clock_CLID_Initialisation(id__,clock_type_plus(x__,1,CLID_Initialisation_clock_type(id__,
-									          const_BalanceSTM_maxAngle,
-									          const_BalanceSTM_loopTime,
-									          const_BalanceSTM_startupDelay,
-									          const_BalanceSTM_speedUpdate,
-									          const_BalanceSTM_rotationUpdate,
-									          const_BalanceSTM_angleBudget,
-									          const_BalanceSTM_speedBudget,
-									          const_BalanceSTM_rotationBudget,
-									          const_BalanceSTM_motorBudget,
-									          const_AnglePID_P,
-									          const_AnglePID_D,
-									          const_RotationPID_D,
-									          const_SpeedPID_P,
-									          const_SpeedPID_I,
-									          const_SpeedPID_maxIntegral)),
-									          const_BalanceSTM_maxAngle,
-									          const_BalanceSTM_loopTime,
-									          const_BalanceSTM_startupDelay,
-									          const_BalanceSTM_speedUpdate,
-									          const_BalanceSTM_rotationUpdate,
-									          const_BalanceSTM_angleBudget,
-									          const_BalanceSTM_speedBudget,
-									          const_BalanceSTM_rotationBudget,
-									          const_BalanceSTM_motorBudget,
-									          const_AnglePID_P,
-									          const_AnglePID_D,
-									          const_RotationPID_D,
-									          const_SpeedPID_P,
-									          const_SpeedPID_I,
-									          const_SpeedPID_maxIntegral))
-					Clock_CLID_SetMotors(id__,x__,
-							          const_BalanceSTM_maxAngle,
-							          const_BalanceSTM_loopTime,
-							          const_BalanceSTM_startupDelay,
-							          const_BalanceSTM_speedUpdate,
-							          const_BalanceSTM_rotationUpdate,
-							          const_BalanceSTM_angleBudget,
-							          const_BalanceSTM_speedBudget,
-							          const_BalanceSTM_rotationBudget,
-							          const_BalanceSTM_motorBudget,
-							          const_AnglePID_P,
-							          const_AnglePID_D,
-							          const_RotationPID_D,
-							          const_SpeedPID_P,
-							          const_SpeedPID_I,
-							          const_SpeedPID_maxIntegral) = 
-						TimeOut_1(
-							SetMotors::entered -> Clock_CLID_SetMotors(id__,0,
-									          const_BalanceSTM_maxAngle,
-									          const_BalanceSTM_loopTime,
-									          const_BalanceSTM_startupDelay,
-									          const_BalanceSTM_speedUpdate,
-									          const_BalanceSTM_rotationUpdate,
-									          const_BalanceSTM_angleBudget,
-									          const_BalanceSTM_speedBudget,
-									          const_BalanceSTM_rotationBudget,
-									          const_BalanceSTM_motorBudget,
-									          const_AnglePID_P,
-									          const_AnglePID_D,
-									          const_RotationPID_D,
-									          const_SpeedPID_P,
-									          const_SpeedPID_I,
-									          const_SpeedPID_maxIntegral)
-							[]
-							get_CLID_SetMotors!x__ -> Clock_CLID_SetMotors(id__,x__,
-									          const_BalanceSTM_maxAngle,
-									          const_BalanceSTM_loopTime,
-									          const_BalanceSTM_startupDelay,
-									          const_BalanceSTM_speedUpdate,
-									          const_BalanceSTM_rotationUpdate,
-									          const_BalanceSTM_angleBudget,
-									          const_BalanceSTM_speedBudget,
-									          const_BalanceSTM_rotationBudget,
-									          const_BalanceSTM_motorBudget,
-									          const_AnglePID_P,
-									          const_AnglePID_D,
-									          const_RotationPID_D,
-									          const_SpeedPID_P,
-									          const_SpeedPID_I,
-									          const_SpeedPID_maxIntegral)
-							[]
-							terminate -> SKIP,Clock_CLID_SetMotors(id__,clock_type_plus(x__,1,CLID_SetMotors_clock_type(id__,
-									          const_BalanceSTM_maxAngle,
-									          const_BalanceSTM_loopTime,
-									          const_BalanceSTM_startupDelay,
-									          const_BalanceSTM_speedUpdate,
-									          const_BalanceSTM_rotationUpdate,
-									          const_BalanceSTM_angleBudget,
-									          const_BalanceSTM_speedBudget,
-									          const_BalanceSTM_rotationBudget,
-									          const_BalanceSTM_motorBudget,
-									          const_AnglePID_P,
-									          const_AnglePID_D,
-									          const_RotationPID_D,
-									          const_SpeedPID_P,
-									          const_SpeedPID_I,
-									          const_SpeedPID_maxIntegral)),
-									          const_BalanceSTM_maxAngle,
-									          const_BalanceSTM_loopTime,
-									          const_BalanceSTM_startupDelay,
-									          const_BalanceSTM_speedUpdate,
-									          const_BalanceSTM_rotationUpdate,
-									          const_BalanceSTM_angleBudget,
-									          const_BalanceSTM_speedBudget,
-									          const_BalanceSTM_rotationBudget,
-									          const_BalanceSTM_motorBudget,
-									          const_AnglePID_P,
-									          const_AnglePID_D,
-									          const_RotationPID_D,
-									          const_SpeedPID_P,
-									          const_SpeedPID_I,
-									          const_SpeedPID_maxIntegral))
-					Clock_CLID_CalculateRotation(id__,x__,
-							          const_BalanceSTM_maxAngle,
-							          const_BalanceSTM_loopTime,
-							          const_BalanceSTM_startupDelay,
-							          const_BalanceSTM_speedUpdate,
-							          const_BalanceSTM_rotationUpdate,
-							          const_BalanceSTM_angleBudget,
-							          const_BalanceSTM_speedBudget,
-							          const_BalanceSTM_rotationBudget,
-							          const_BalanceSTM_motorBudget,
-							          const_AnglePID_P,
-							          const_AnglePID_D,
-							          const_RotationPID_D,
-							          const_SpeedPID_P,
-							          const_SpeedPID_I,
-							          const_SpeedPID_maxIntegral) = 
-						TimeOut_1(
-							CalculateRotation::entered -> Clock_CLID_CalculateRotation(id__,0,
-									          const_BalanceSTM_maxAngle,
-									          const_BalanceSTM_loopTime,
-									          const_BalanceSTM_startupDelay,
-									          const_BalanceSTM_speedUpdate,
-									          const_BalanceSTM_rotationUpdate,
-									          const_BalanceSTM_angleBudget,
-									          const_BalanceSTM_speedBudget,
-									          const_BalanceSTM_rotationBudget,
-									          const_BalanceSTM_motorBudget,
-									          const_AnglePID_P,
-									          const_AnglePID_D,
-									          const_RotationPID_D,
-									          const_SpeedPID_P,
-									          const_SpeedPID_I,
-									          const_SpeedPID_maxIntegral)
-							[]
-							get_CLID_CalculateRotation!x__ -> Clock_CLID_CalculateRotation(id__,x__,
-									          const_BalanceSTM_maxAngle,
-									          const_BalanceSTM_loopTime,
-									          const_BalanceSTM_startupDelay,
-									          const_BalanceSTM_speedUpdate,
-									          const_BalanceSTM_rotationUpdate,
-									          const_BalanceSTM_angleBudget,
-									          const_BalanceSTM_speedBudget,
-									          const_BalanceSTM_rotationBudget,
-									          const_BalanceSTM_motorBudget,
-									          const_AnglePID_P,
-									          const_AnglePID_D,
-									          const_RotationPID_D,
-									          const_SpeedPID_P,
-									          const_SpeedPID_I,
-									          const_SpeedPID_maxIntegral)
-							[]
-							terminate -> SKIP,Clock_CLID_CalculateRotation(id__,clock_type_plus(x__,1,CLID_CalculateRotation_clock_type(id__,
-									          const_BalanceSTM_maxAngle,
-									          const_BalanceSTM_loopTime,
-									          const_BalanceSTM_startupDelay,
-									          const_BalanceSTM_speedUpdate,
-									          const_BalanceSTM_rotationUpdate,
-									          const_BalanceSTM_angleBudget,
-									          const_BalanceSTM_speedBudget,
-									          const_BalanceSTM_rotationBudget,
-									          const_BalanceSTM_motorBudget,
-									          const_AnglePID_P,
-									          const_AnglePID_D,
-									          const_RotationPID_D,
-									          const_SpeedPID_P,
-									          const_SpeedPID_I,
-									          const_SpeedPID_maxIntegral)),
-									          const_BalanceSTM_maxAngle,
-									          const_BalanceSTM_loopTime,
-									          const_BalanceSTM_startupDelay,
-									          const_BalanceSTM_speedUpdate,
-									          const_BalanceSTM_rotationUpdate,
-									          const_BalanceSTM_angleBudget,
-									          const_BalanceSTM_speedBudget,
-									          const_BalanceSTM_rotationBudget,
-									          const_BalanceSTM_motorBudget,
-									          const_AnglePID_P,
-									          const_AnglePID_D,
-									          const_RotationPID_D,
-									          const_SpeedPID_P,
-									          const_SpeedPID_I,
-									          const_SpeedPID_maxIntegral))
-					Clock_CLID_CalculateSpeed(id__,x__,
-							          const_BalanceSTM_maxAngle,
-							          const_BalanceSTM_loopTime,
-							          const_BalanceSTM_startupDelay,
-							          const_BalanceSTM_speedUpdate,
-							          const_BalanceSTM_rotationUpdate,
-							          const_BalanceSTM_angleBudget,
-							          const_BalanceSTM_speedBudget,
-							          const_BalanceSTM_rotationBudget,
-							          const_BalanceSTM_motorBudget,
-							          const_AnglePID_P,
-							          const_AnglePID_D,
-							          const_RotationPID_D,
-							          const_SpeedPID_P,
-							          const_SpeedPID_I,
-							          const_SpeedPID_maxIntegral) = 
-						TimeOut_1(
-							CalculateSpeed::entered -> Clock_CLID_CalculateSpeed(id__,0,
-									          const_BalanceSTM_maxAngle,
-									          const_BalanceSTM_loopTime,
-									          const_BalanceSTM_startupDelay,
-									          const_BalanceSTM_speedUpdate,
-									          const_BalanceSTM_rotationUpdate,
-									          const_BalanceSTM_angleBudget,
-									          const_BalanceSTM_speedBudget,
-									          const_BalanceSTM_rotationBudget,
-									          const_BalanceSTM_motorBudget,
-									          const_AnglePID_P,
-									          const_AnglePID_D,
-									          const_RotationPID_D,
-									          const_SpeedPID_P,
-									          const_SpeedPID_I,
-									          const_SpeedPID_maxIntegral)
-							[]
-							get_CLID_CalculateSpeed!x__ -> Clock_CLID_CalculateSpeed(id__,x__,
-									          const_BalanceSTM_maxAngle,
-									          const_BalanceSTM_loopTime,
-									          const_BalanceSTM_startupDelay,
-									          const_BalanceSTM_speedUpdate,
-									          const_BalanceSTM_rotationUpdate,
-									          const_BalanceSTM_angleBudget,
-									          const_BalanceSTM_speedBudget,
-									          const_BalanceSTM_rotationBudget,
-									          const_BalanceSTM_motorBudget,
-									          const_AnglePID_P,
-									          const_AnglePID_D,
-									          const_RotationPID_D,
-									          const_SpeedPID_P,
-									          const_SpeedPID_I,
-									          const_SpeedPID_maxIntegral)
-							[]
-							terminate -> SKIP,Clock_CLID_CalculateSpeed(id__,clock_type_plus(x__,1,CLID_CalculateSpeed_clock_type(id__,
-									          const_BalanceSTM_maxAngle,
-									          const_BalanceSTM_loopTime,
-									          const_BalanceSTM_startupDelay,
-									          const_BalanceSTM_speedUpdate,
-									          const_BalanceSTM_rotationUpdate,
-									          const_BalanceSTM_angleBudget,
-									          const_BalanceSTM_speedBudget,
-									          const_BalanceSTM_rotationBudget,
-									          const_BalanceSTM_motorBudget,
-									          const_AnglePID_P,
-									          const_AnglePID_D,
-									          const_RotationPID_D,
-									          const_SpeedPID_P,
-									          const_SpeedPID_I,
-									          const_SpeedPID_maxIntegral)),
-									          const_BalanceSTM_maxAngle,
-									          const_BalanceSTM_loopTime,
-									          const_BalanceSTM_startupDelay,
-									          const_BalanceSTM_speedUpdate,
-									          const_BalanceSTM_rotationUpdate,
-									          const_BalanceSTM_angleBudget,
-									          const_BalanceSTM_speedBudget,
-									          const_BalanceSTM_rotationBudget,
-									          const_BalanceSTM_motorBudget,
-									          const_AnglePID_P,
-									          const_AnglePID_D,
-									          const_RotationPID_D,
-									          const_SpeedPID_P,
-									          const_SpeedPID_I,
-									          const_SpeedPID_maxIntegral))
 					Clock_CLID_CalculateAngle(id__,x__,
 							          const_BalanceSTM_maxAngle,
 							          const_BalanceSTM_loopTime,
@@ -6845,10 +6353,10 @@ module Segway
 							          const_BalanceSTM_motorBudget,
 							          const_AnglePID_P,
 							          const_AnglePID_D,
-							          const_RotationPID_D,
 							          const_SpeedPID_P,
 							          const_SpeedPID_I,
-							          const_SpeedPID_maxIntegral) = 
+							          const_SpeedPID_maxIntegral,
+							          const_RotationPID_D) = 
 						TimeOut_1(
 							CalculateAngle::entered -> Clock_CLID_CalculateAngle(id__,0,
 									          const_BalanceSTM_maxAngle,
@@ -6862,10 +6370,10 @@ module Segway
 									          const_BalanceSTM_motorBudget,
 									          const_AnglePID_P,
 									          const_AnglePID_D,
-									          const_RotationPID_D,
 									          const_SpeedPID_P,
 									          const_SpeedPID_I,
-									          const_SpeedPID_maxIntegral)
+									          const_SpeedPID_maxIntegral,
+									          const_RotationPID_D)
 							[]
 							get_CLID_CalculateAngle!x__ -> Clock_CLID_CalculateAngle(id__,x__,
 									          const_BalanceSTM_maxAngle,
@@ -6879,10 +6387,10 @@ module Segway
 									          const_BalanceSTM_motorBudget,
 									          const_AnglePID_P,
 									          const_AnglePID_D,
-									          const_RotationPID_D,
 									          const_SpeedPID_P,
 									          const_SpeedPID_I,
-									          const_SpeedPID_maxIntegral)
+									          const_SpeedPID_maxIntegral,
+									          const_RotationPID_D)
 							[]
 							terminate -> SKIP,Clock_CLID_CalculateAngle(id__,clock_type_plus(x__,1,CLID_CalculateAngle_clock_type(id__,
 									          const_BalanceSTM_maxAngle,
@@ -6896,10 +6404,10 @@ module Segway
 									          const_BalanceSTM_motorBudget,
 									          const_AnglePID_P,
 									          const_AnglePID_D,
-									          const_RotationPID_D,
 									          const_SpeedPID_P,
 									          const_SpeedPID_I,
-									          const_SpeedPID_maxIntegral)),
+									          const_SpeedPID_maxIntegral,
+									          const_RotationPID_D)),
 									          const_BalanceSTM_maxAngle,
 									          const_BalanceSTM_loopTime,
 									          const_BalanceSTM_startupDelay,
@@ -6911,10 +6419,502 @@ module Segway
 									          const_BalanceSTM_motorBudget,
 									          const_AnglePID_P,
 									          const_AnglePID_D,
-									          const_RotationPID_D,
 									          const_SpeedPID_P,
 									          const_SpeedPID_I,
-									          const_SpeedPID_maxIntegral))
+									          const_SpeedPID_maxIntegral,
+									          const_RotationPID_D))
+					Clock_CLID_CalculateSpeed(id__,x__,
+							          const_BalanceSTM_maxAngle,
+							          const_BalanceSTM_loopTime,
+							          const_BalanceSTM_startupDelay,
+							          const_BalanceSTM_speedUpdate,
+							          const_BalanceSTM_rotationUpdate,
+							          const_BalanceSTM_angleBudget,
+							          const_BalanceSTM_speedBudget,
+							          const_BalanceSTM_rotationBudget,
+							          const_BalanceSTM_motorBudget,
+							          const_AnglePID_P,
+							          const_AnglePID_D,
+							          const_SpeedPID_P,
+							          const_SpeedPID_I,
+							          const_SpeedPID_maxIntegral,
+							          const_RotationPID_D) = 
+						TimeOut_1(
+							CalculateSpeed::entered -> Clock_CLID_CalculateSpeed(id__,0,
+									          const_BalanceSTM_maxAngle,
+									          const_BalanceSTM_loopTime,
+									          const_BalanceSTM_startupDelay,
+									          const_BalanceSTM_speedUpdate,
+									          const_BalanceSTM_rotationUpdate,
+									          const_BalanceSTM_angleBudget,
+									          const_BalanceSTM_speedBudget,
+									          const_BalanceSTM_rotationBudget,
+									          const_BalanceSTM_motorBudget,
+									          const_AnglePID_P,
+									          const_AnglePID_D,
+									          const_SpeedPID_P,
+									          const_SpeedPID_I,
+									          const_SpeedPID_maxIntegral,
+									          const_RotationPID_D)
+							[]
+							get_CLID_CalculateSpeed!x__ -> Clock_CLID_CalculateSpeed(id__,x__,
+									          const_BalanceSTM_maxAngle,
+									          const_BalanceSTM_loopTime,
+									          const_BalanceSTM_startupDelay,
+									          const_BalanceSTM_speedUpdate,
+									          const_BalanceSTM_rotationUpdate,
+									          const_BalanceSTM_angleBudget,
+									          const_BalanceSTM_speedBudget,
+									          const_BalanceSTM_rotationBudget,
+									          const_BalanceSTM_motorBudget,
+									          const_AnglePID_P,
+									          const_AnglePID_D,
+									          const_SpeedPID_P,
+									          const_SpeedPID_I,
+									          const_SpeedPID_maxIntegral,
+									          const_RotationPID_D)
+							[]
+							terminate -> SKIP,Clock_CLID_CalculateSpeed(id__,clock_type_plus(x__,1,CLID_CalculateSpeed_clock_type(id__,
+									          const_BalanceSTM_maxAngle,
+									          const_BalanceSTM_loopTime,
+									          const_BalanceSTM_startupDelay,
+									          const_BalanceSTM_speedUpdate,
+									          const_BalanceSTM_rotationUpdate,
+									          const_BalanceSTM_angleBudget,
+									          const_BalanceSTM_speedBudget,
+									          const_BalanceSTM_rotationBudget,
+									          const_BalanceSTM_motorBudget,
+									          const_AnglePID_P,
+									          const_AnglePID_D,
+									          const_SpeedPID_P,
+									          const_SpeedPID_I,
+									          const_SpeedPID_maxIntegral,
+									          const_RotationPID_D)),
+									          const_BalanceSTM_maxAngle,
+									          const_BalanceSTM_loopTime,
+									          const_BalanceSTM_startupDelay,
+									          const_BalanceSTM_speedUpdate,
+									          const_BalanceSTM_rotationUpdate,
+									          const_BalanceSTM_angleBudget,
+									          const_BalanceSTM_speedBudget,
+									          const_BalanceSTM_rotationBudget,
+									          const_BalanceSTM_motorBudget,
+									          const_AnglePID_P,
+									          const_AnglePID_D,
+									          const_SpeedPID_P,
+									          const_SpeedPID_I,
+									          const_SpeedPID_maxIntegral,
+									          const_RotationPID_D))
+					Clock_CLID_SetMotors(id__,x__,
+							          const_BalanceSTM_maxAngle,
+							          const_BalanceSTM_loopTime,
+							          const_BalanceSTM_startupDelay,
+							          const_BalanceSTM_speedUpdate,
+							          const_BalanceSTM_rotationUpdate,
+							          const_BalanceSTM_angleBudget,
+							          const_BalanceSTM_speedBudget,
+							          const_BalanceSTM_rotationBudget,
+							          const_BalanceSTM_motorBudget,
+							          const_AnglePID_P,
+							          const_AnglePID_D,
+							          const_SpeedPID_P,
+							          const_SpeedPID_I,
+							          const_SpeedPID_maxIntegral,
+							          const_RotationPID_D) = 
+						TimeOut_1(
+							SetMotors::entered -> Clock_CLID_SetMotors(id__,0,
+									          const_BalanceSTM_maxAngle,
+									          const_BalanceSTM_loopTime,
+									          const_BalanceSTM_startupDelay,
+									          const_BalanceSTM_speedUpdate,
+									          const_BalanceSTM_rotationUpdate,
+									          const_BalanceSTM_angleBudget,
+									          const_BalanceSTM_speedBudget,
+									          const_BalanceSTM_rotationBudget,
+									          const_BalanceSTM_motorBudget,
+									          const_AnglePID_P,
+									          const_AnglePID_D,
+									          const_SpeedPID_P,
+									          const_SpeedPID_I,
+									          const_SpeedPID_maxIntegral,
+									          const_RotationPID_D)
+							[]
+							get_CLID_SetMotors!x__ -> Clock_CLID_SetMotors(id__,x__,
+									          const_BalanceSTM_maxAngle,
+									          const_BalanceSTM_loopTime,
+									          const_BalanceSTM_startupDelay,
+									          const_BalanceSTM_speedUpdate,
+									          const_BalanceSTM_rotationUpdate,
+									          const_BalanceSTM_angleBudget,
+									          const_BalanceSTM_speedBudget,
+									          const_BalanceSTM_rotationBudget,
+									          const_BalanceSTM_motorBudget,
+									          const_AnglePID_P,
+									          const_AnglePID_D,
+									          const_SpeedPID_P,
+									          const_SpeedPID_I,
+									          const_SpeedPID_maxIntegral,
+									          const_RotationPID_D)
+							[]
+							terminate -> SKIP,Clock_CLID_SetMotors(id__,clock_type_plus(x__,1,CLID_SetMotors_clock_type(id__,
+									          const_BalanceSTM_maxAngle,
+									          const_BalanceSTM_loopTime,
+									          const_BalanceSTM_startupDelay,
+									          const_BalanceSTM_speedUpdate,
+									          const_BalanceSTM_rotationUpdate,
+									          const_BalanceSTM_angleBudget,
+									          const_BalanceSTM_speedBudget,
+									          const_BalanceSTM_rotationBudget,
+									          const_BalanceSTM_motorBudget,
+									          const_AnglePID_P,
+									          const_AnglePID_D,
+									          const_SpeedPID_P,
+									          const_SpeedPID_I,
+									          const_SpeedPID_maxIntegral,
+									          const_RotationPID_D)),
+									          const_BalanceSTM_maxAngle,
+									          const_BalanceSTM_loopTime,
+									          const_BalanceSTM_startupDelay,
+									          const_BalanceSTM_speedUpdate,
+									          const_BalanceSTM_rotationUpdate,
+									          const_BalanceSTM_angleBudget,
+									          const_BalanceSTM_speedBudget,
+									          const_BalanceSTM_rotationBudget,
+									          const_BalanceSTM_motorBudget,
+									          const_AnglePID_P,
+									          const_AnglePID_D,
+									          const_SpeedPID_P,
+									          const_SpeedPID_I,
+									          const_SpeedPID_maxIntegral,
+									          const_RotationPID_D))
+					Clock_CLID_CalculateRotation(id__,x__,
+							          const_BalanceSTM_maxAngle,
+							          const_BalanceSTM_loopTime,
+							          const_BalanceSTM_startupDelay,
+							          const_BalanceSTM_speedUpdate,
+							          const_BalanceSTM_rotationUpdate,
+							          const_BalanceSTM_angleBudget,
+							          const_BalanceSTM_speedBudget,
+							          const_BalanceSTM_rotationBudget,
+							          const_BalanceSTM_motorBudget,
+							          const_AnglePID_P,
+							          const_AnglePID_D,
+							          const_SpeedPID_P,
+							          const_SpeedPID_I,
+							          const_SpeedPID_maxIntegral,
+							          const_RotationPID_D) = 
+						TimeOut_1(
+							CalculateRotation::entered -> Clock_CLID_CalculateRotation(id__,0,
+									          const_BalanceSTM_maxAngle,
+									          const_BalanceSTM_loopTime,
+									          const_BalanceSTM_startupDelay,
+									          const_BalanceSTM_speedUpdate,
+									          const_BalanceSTM_rotationUpdate,
+									          const_BalanceSTM_angleBudget,
+									          const_BalanceSTM_speedBudget,
+									          const_BalanceSTM_rotationBudget,
+									          const_BalanceSTM_motorBudget,
+									          const_AnglePID_P,
+									          const_AnglePID_D,
+									          const_SpeedPID_P,
+									          const_SpeedPID_I,
+									          const_SpeedPID_maxIntegral,
+									          const_RotationPID_D)
+							[]
+							get_CLID_CalculateRotation!x__ -> Clock_CLID_CalculateRotation(id__,x__,
+									          const_BalanceSTM_maxAngle,
+									          const_BalanceSTM_loopTime,
+									          const_BalanceSTM_startupDelay,
+									          const_BalanceSTM_speedUpdate,
+									          const_BalanceSTM_rotationUpdate,
+									          const_BalanceSTM_angleBudget,
+									          const_BalanceSTM_speedBudget,
+									          const_BalanceSTM_rotationBudget,
+									          const_BalanceSTM_motorBudget,
+									          const_AnglePID_P,
+									          const_AnglePID_D,
+									          const_SpeedPID_P,
+									          const_SpeedPID_I,
+									          const_SpeedPID_maxIntegral,
+									          const_RotationPID_D)
+							[]
+							terminate -> SKIP,Clock_CLID_CalculateRotation(id__,clock_type_plus(x__,1,CLID_CalculateRotation_clock_type(id__,
+									          const_BalanceSTM_maxAngle,
+									          const_BalanceSTM_loopTime,
+									          const_BalanceSTM_startupDelay,
+									          const_BalanceSTM_speedUpdate,
+									          const_BalanceSTM_rotationUpdate,
+									          const_BalanceSTM_angleBudget,
+									          const_BalanceSTM_speedBudget,
+									          const_BalanceSTM_rotationBudget,
+									          const_BalanceSTM_motorBudget,
+									          const_AnglePID_P,
+									          const_AnglePID_D,
+									          const_SpeedPID_P,
+									          const_SpeedPID_I,
+									          const_SpeedPID_maxIntegral,
+									          const_RotationPID_D)),
+									          const_BalanceSTM_maxAngle,
+									          const_BalanceSTM_loopTime,
+									          const_BalanceSTM_startupDelay,
+									          const_BalanceSTM_speedUpdate,
+									          const_BalanceSTM_rotationUpdate,
+									          const_BalanceSTM_angleBudget,
+									          const_BalanceSTM_speedBudget,
+									          const_BalanceSTM_rotationBudget,
+									          const_BalanceSTM_motorBudget,
+									          const_AnglePID_P,
+									          const_AnglePID_D,
+									          const_SpeedPID_P,
+									          const_SpeedPID_I,
+									          const_SpeedPID_maxIntegral,
+									          const_RotationPID_D))
+					Clock_CLID_WaitForNextIteration(id__,x__,
+							          const_BalanceSTM_maxAngle,
+							          const_BalanceSTM_loopTime,
+							          const_BalanceSTM_startupDelay,
+							          const_BalanceSTM_speedUpdate,
+							          const_BalanceSTM_rotationUpdate,
+							          const_BalanceSTM_angleBudget,
+							          const_BalanceSTM_speedBudget,
+							          const_BalanceSTM_rotationBudget,
+							          const_BalanceSTM_motorBudget,
+							          const_AnglePID_P,
+							          const_AnglePID_D,
+							          const_SpeedPID_P,
+							          const_SpeedPID_I,
+							          const_SpeedPID_maxIntegral,
+							          const_RotationPID_D) = 
+						TimeOut_1(
+							WaitForNextIteration::entered -> Clock_CLID_WaitForNextIteration(id__,0,
+									          const_BalanceSTM_maxAngle,
+									          const_BalanceSTM_loopTime,
+									          const_BalanceSTM_startupDelay,
+									          const_BalanceSTM_speedUpdate,
+									          const_BalanceSTM_rotationUpdate,
+									          const_BalanceSTM_angleBudget,
+									          const_BalanceSTM_speedBudget,
+									          const_BalanceSTM_rotationBudget,
+									          const_BalanceSTM_motorBudget,
+									          const_AnglePID_P,
+									          const_AnglePID_D,
+									          const_SpeedPID_P,
+									          const_SpeedPID_I,
+									          const_SpeedPID_maxIntegral,
+									          const_RotationPID_D)
+							[]
+							get_CLID_WaitForNextIteration!x__ -> Clock_CLID_WaitForNextIteration(id__,x__,
+									          const_BalanceSTM_maxAngle,
+									          const_BalanceSTM_loopTime,
+									          const_BalanceSTM_startupDelay,
+									          const_BalanceSTM_speedUpdate,
+									          const_BalanceSTM_rotationUpdate,
+									          const_BalanceSTM_angleBudget,
+									          const_BalanceSTM_speedBudget,
+									          const_BalanceSTM_rotationBudget,
+									          const_BalanceSTM_motorBudget,
+									          const_AnglePID_P,
+									          const_AnglePID_D,
+									          const_SpeedPID_P,
+									          const_SpeedPID_I,
+									          const_SpeedPID_maxIntegral,
+									          const_RotationPID_D)
+							[]
+							terminate -> SKIP,Clock_CLID_WaitForNextIteration(id__,clock_type_plus(x__,1,CLID_WaitForNextIteration_clock_type(id__,
+									          const_BalanceSTM_maxAngle,
+									          const_BalanceSTM_loopTime,
+									          const_BalanceSTM_startupDelay,
+									          const_BalanceSTM_speedUpdate,
+									          const_BalanceSTM_rotationUpdate,
+									          const_BalanceSTM_angleBudget,
+									          const_BalanceSTM_speedBudget,
+									          const_BalanceSTM_rotationBudget,
+									          const_BalanceSTM_motorBudget,
+									          const_AnglePID_P,
+									          const_AnglePID_D,
+									          const_SpeedPID_P,
+									          const_SpeedPID_I,
+									          const_SpeedPID_maxIntegral,
+									          const_RotationPID_D)),
+									          const_BalanceSTM_maxAngle,
+									          const_BalanceSTM_loopTime,
+									          const_BalanceSTM_startupDelay,
+									          const_BalanceSTM_speedUpdate,
+									          const_BalanceSTM_rotationUpdate,
+									          const_BalanceSTM_angleBudget,
+									          const_BalanceSTM_speedBudget,
+									          const_BalanceSTM_rotationBudget,
+									          const_BalanceSTM_motorBudget,
+									          const_AnglePID_P,
+									          const_AnglePID_D,
+									          const_SpeedPID_P,
+									          const_SpeedPID_I,
+									          const_SpeedPID_maxIntegral,
+									          const_RotationPID_D))
+					Clock_CLID_Initialisation(id__,x__,
+							          const_BalanceSTM_maxAngle,
+							          const_BalanceSTM_loopTime,
+							          const_BalanceSTM_startupDelay,
+							          const_BalanceSTM_speedUpdate,
+							          const_BalanceSTM_rotationUpdate,
+							          const_BalanceSTM_angleBudget,
+							          const_BalanceSTM_speedBudget,
+							          const_BalanceSTM_rotationBudget,
+							          const_BalanceSTM_motorBudget,
+							          const_AnglePID_P,
+							          const_AnglePID_D,
+							          const_SpeedPID_P,
+							          const_SpeedPID_I,
+							          const_SpeedPID_maxIntegral,
+							          const_RotationPID_D) = 
+						TimeOut_1(
+							Initialisation::entered -> Clock_CLID_Initialisation(id__,0,
+									          const_BalanceSTM_maxAngle,
+									          const_BalanceSTM_loopTime,
+									          const_BalanceSTM_startupDelay,
+									          const_BalanceSTM_speedUpdate,
+									          const_BalanceSTM_rotationUpdate,
+									          const_BalanceSTM_angleBudget,
+									          const_BalanceSTM_speedBudget,
+									          const_BalanceSTM_rotationBudget,
+									          const_BalanceSTM_motorBudget,
+									          const_AnglePID_P,
+									          const_AnglePID_D,
+									          const_SpeedPID_P,
+									          const_SpeedPID_I,
+									          const_SpeedPID_maxIntegral,
+									          const_RotationPID_D)
+							[]
+							get_CLID_Initialisation!x__ -> Clock_CLID_Initialisation(id__,x__,
+									          const_BalanceSTM_maxAngle,
+									          const_BalanceSTM_loopTime,
+									          const_BalanceSTM_startupDelay,
+									          const_BalanceSTM_speedUpdate,
+									          const_BalanceSTM_rotationUpdate,
+									          const_BalanceSTM_angleBudget,
+									          const_BalanceSTM_speedBudget,
+									          const_BalanceSTM_rotationBudget,
+									          const_BalanceSTM_motorBudget,
+									          const_AnglePID_P,
+									          const_AnglePID_D,
+									          const_SpeedPID_P,
+									          const_SpeedPID_I,
+									          const_SpeedPID_maxIntegral,
+									          const_RotationPID_D)
+							[]
+							terminate -> SKIP,Clock_CLID_Initialisation(id__,clock_type_plus(x__,1,CLID_Initialisation_clock_type(id__,
+									          const_BalanceSTM_maxAngle,
+									          const_BalanceSTM_loopTime,
+									          const_BalanceSTM_startupDelay,
+									          const_BalanceSTM_speedUpdate,
+									          const_BalanceSTM_rotationUpdate,
+									          const_BalanceSTM_angleBudget,
+									          const_BalanceSTM_speedBudget,
+									          const_BalanceSTM_rotationBudget,
+									          const_BalanceSTM_motorBudget,
+									          const_AnglePID_P,
+									          const_AnglePID_D,
+									          const_SpeedPID_P,
+									          const_SpeedPID_I,
+									          const_SpeedPID_maxIntegral,
+									          const_RotationPID_D)),
+									          const_BalanceSTM_maxAngle,
+									          const_BalanceSTM_loopTime,
+									          const_BalanceSTM_startupDelay,
+									          const_BalanceSTM_speedUpdate,
+									          const_BalanceSTM_rotationUpdate,
+									          const_BalanceSTM_angleBudget,
+									          const_BalanceSTM_speedBudget,
+									          const_BalanceSTM_rotationBudget,
+									          const_BalanceSTM_motorBudget,
+									          const_AnglePID_P,
+									          const_AnglePID_D,
+									          const_SpeedPID_P,
+									          const_SpeedPID_I,
+									          const_SpeedPID_maxIntegral,
+									          const_RotationPID_D))
+					Clock_CLID_StopMotors(id__,x__,
+							          const_BalanceSTM_maxAngle,
+							          const_BalanceSTM_loopTime,
+							          const_BalanceSTM_startupDelay,
+							          const_BalanceSTM_speedUpdate,
+							          const_BalanceSTM_rotationUpdate,
+							          const_BalanceSTM_angleBudget,
+							          const_BalanceSTM_speedBudget,
+							          const_BalanceSTM_rotationBudget,
+							          const_BalanceSTM_motorBudget,
+							          const_AnglePID_P,
+							          const_AnglePID_D,
+							          const_SpeedPID_P,
+							          const_SpeedPID_I,
+							          const_SpeedPID_maxIntegral,
+							          const_RotationPID_D) = 
+						TimeOut_1(
+							StopMotors::entered -> Clock_CLID_StopMotors(id__,0,
+									          const_BalanceSTM_maxAngle,
+									          const_BalanceSTM_loopTime,
+									          const_BalanceSTM_startupDelay,
+									          const_BalanceSTM_speedUpdate,
+									          const_BalanceSTM_rotationUpdate,
+									          const_BalanceSTM_angleBudget,
+									          const_BalanceSTM_speedBudget,
+									          const_BalanceSTM_rotationBudget,
+									          const_BalanceSTM_motorBudget,
+									          const_AnglePID_P,
+									          const_AnglePID_D,
+									          const_SpeedPID_P,
+									          const_SpeedPID_I,
+									          const_SpeedPID_maxIntegral,
+									          const_RotationPID_D)
+							[]
+							get_CLID_StopMotors!x__ -> Clock_CLID_StopMotors(id__,x__,
+									          const_BalanceSTM_maxAngle,
+									          const_BalanceSTM_loopTime,
+									          const_BalanceSTM_startupDelay,
+									          const_BalanceSTM_speedUpdate,
+									          const_BalanceSTM_rotationUpdate,
+									          const_BalanceSTM_angleBudget,
+									          const_BalanceSTM_speedBudget,
+									          const_BalanceSTM_rotationBudget,
+									          const_BalanceSTM_motorBudget,
+									          const_AnglePID_P,
+									          const_AnglePID_D,
+									          const_SpeedPID_P,
+									          const_SpeedPID_I,
+									          const_SpeedPID_maxIntegral,
+									          const_RotationPID_D)
+							[]
+							terminate -> SKIP,Clock_CLID_StopMotors(id__,clock_type_plus(x__,1,CLID_StopMotors_clock_type(id__,
+									          const_BalanceSTM_maxAngle,
+									          const_BalanceSTM_loopTime,
+									          const_BalanceSTM_startupDelay,
+									          const_BalanceSTM_speedUpdate,
+									          const_BalanceSTM_rotationUpdate,
+									          const_BalanceSTM_angleBudget,
+									          const_BalanceSTM_speedBudget,
+									          const_BalanceSTM_rotationBudget,
+									          const_BalanceSTM_motorBudget,
+									          const_AnglePID_P,
+									          const_AnglePID_D,
+									          const_SpeedPID_P,
+									          const_SpeedPID_I,
+									          const_SpeedPID_maxIntegral,
+									          const_RotationPID_D)),
+									          const_BalanceSTM_maxAngle,
+									          const_BalanceSTM_loopTime,
+									          const_BalanceSTM_startupDelay,
+									          const_BalanceSTM_speedUpdate,
+									          const_BalanceSTM_rotationUpdate,
+									          const_BalanceSTM_angleBudget,
+									          const_BalanceSTM_speedBudget,
+									          const_BalanceSTM_rotationBudget,
+									          const_BalanceSTM_motorBudget,
+									          const_AnglePID_P,
+									          const_AnglePID_D,
+									          const_SpeedPID_P,
+									          const_SpeedPID_I,
+									          const_SpeedPID_maxIntegral,
+									          const_RotationPID_D))
 					
 					StateClocks(id__,
 							          const_BalanceSTM_maxAngle,
@@ -6928,10 +6928,10 @@ module Segway
 							          const_BalanceSTM_motorBudget,
 							          const_AnglePID_P,
 							          const_AnglePID_D,
-							          const_RotationPID_D,
 							          const_SpeedPID_P,
 							          const_SpeedPID_I,
-							          const_SpeedPID_maxIntegral) = dbisim(Clock_CLID_StopMotors(id__,0,
+							          const_SpeedPID_maxIntegral,
+							          const_RotationPID_D) = dbisim(Clock_CLID_CalculateAngle(id__,0,
 							          const_BalanceSTM_maxAngle,
 							          const_BalanceSTM_loopTime,
 							          const_BalanceSTM_startupDelay,
@@ -6943,78 +6943,10 @@ module Segway
 							          const_BalanceSTM_motorBudget,
 							          const_AnglePID_P,
 							          const_AnglePID_D,
-							          const_RotationPID_D,
 							          const_SpeedPID_P,
 							          const_SpeedPID_I,
-							          const_SpeedPID_maxIntegral))
-					[| { terminate } |] (
-					dbisim(Clock_CLID_WaitForNextIteration(id__,0,
-							          const_BalanceSTM_maxAngle,
-							          const_BalanceSTM_loopTime,
-							          const_BalanceSTM_startupDelay,
-							          const_BalanceSTM_speedUpdate,
-							          const_BalanceSTM_rotationUpdate,
-							          const_BalanceSTM_angleBudget,
-							          const_BalanceSTM_speedBudget,
-							          const_BalanceSTM_rotationBudget,
-							          const_BalanceSTM_motorBudget,
-							          const_AnglePID_P,
-							          const_AnglePID_D,
-							          const_RotationPID_D,
-							          const_SpeedPID_P,
-							          const_SpeedPID_I,
-							          const_SpeedPID_maxIntegral))
-					[| { terminate } |] (
-					dbisim(Clock_CLID_Initialisation(id__,0,
-							          const_BalanceSTM_maxAngle,
-							          const_BalanceSTM_loopTime,
-							          const_BalanceSTM_startupDelay,
-							          const_BalanceSTM_speedUpdate,
-							          const_BalanceSTM_rotationUpdate,
-							          const_BalanceSTM_angleBudget,
-							          const_BalanceSTM_speedBudget,
-							          const_BalanceSTM_rotationBudget,
-							          const_BalanceSTM_motorBudget,
-							          const_AnglePID_P,
-							          const_AnglePID_D,
-							          const_RotationPID_D,
-							          const_SpeedPID_P,
-							          const_SpeedPID_I,
-							          const_SpeedPID_maxIntegral))
-					[| { terminate } |] (
-					dbisim(Clock_CLID_SetMotors(id__,0,
-							          const_BalanceSTM_maxAngle,
-							          const_BalanceSTM_loopTime,
-							          const_BalanceSTM_startupDelay,
-							          const_BalanceSTM_speedUpdate,
-							          const_BalanceSTM_rotationUpdate,
-							          const_BalanceSTM_angleBudget,
-							          const_BalanceSTM_speedBudget,
-							          const_BalanceSTM_rotationBudget,
-							          const_BalanceSTM_motorBudget,
-							          const_AnglePID_P,
-							          const_AnglePID_D,
-							          const_RotationPID_D,
-							          const_SpeedPID_P,
-							          const_SpeedPID_I,
-							          const_SpeedPID_maxIntegral))
-					[| { terminate } |] (
-					dbisim(Clock_CLID_CalculateRotation(id__,0,
-							          const_BalanceSTM_maxAngle,
-							          const_BalanceSTM_loopTime,
-							          const_BalanceSTM_startupDelay,
-							          const_BalanceSTM_speedUpdate,
-							          const_BalanceSTM_rotationUpdate,
-							          const_BalanceSTM_angleBudget,
-							          const_BalanceSTM_speedBudget,
-							          const_BalanceSTM_rotationBudget,
-							          const_BalanceSTM_motorBudget,
-							          const_AnglePID_P,
-							          const_AnglePID_D,
-							          const_RotationPID_D,
-							          const_SpeedPID_P,
-							          const_SpeedPID_I,
-							          const_SpeedPID_maxIntegral))
+							          const_SpeedPID_maxIntegral,
+							          const_RotationPID_D))
 					[| { terminate } |] (
 					dbisim(Clock_CLID_CalculateSpeed(id__,0,
 							          const_BalanceSTM_maxAngle,
@@ -7028,12 +6960,12 @@ module Segway
 							          const_BalanceSTM_motorBudget,
 							          const_AnglePID_P,
 							          const_AnglePID_D,
-							          const_RotationPID_D,
 							          const_SpeedPID_P,
 							          const_SpeedPID_I,
-							          const_SpeedPID_maxIntegral))
+							          const_SpeedPID_maxIntegral,
+							          const_RotationPID_D))
 					[| { terminate } |] (
-					dbisim(Clock_CLID_CalculateAngle(id__,0,
+					dbisim(Clock_CLID_SetMotors(id__,0,
 							          const_BalanceSTM_maxAngle,
 							          const_BalanceSTM_loopTime,
 							          const_BalanceSTM_startupDelay,
@@ -7045,10 +6977,78 @@ module Segway
 							          const_BalanceSTM_motorBudget,
 							          const_AnglePID_P,
 							          const_AnglePID_D,
-							          const_RotationPID_D,
 							          const_SpeedPID_P,
 							          const_SpeedPID_I,
-							          const_SpeedPID_maxIntegral))
+							          const_SpeedPID_maxIntegral,
+							          const_RotationPID_D))
+					[| { terminate } |] (
+					dbisim(Clock_CLID_CalculateRotation(id__,0,
+							          const_BalanceSTM_maxAngle,
+							          const_BalanceSTM_loopTime,
+							          const_BalanceSTM_startupDelay,
+							          const_BalanceSTM_speedUpdate,
+							          const_BalanceSTM_rotationUpdate,
+							          const_BalanceSTM_angleBudget,
+							          const_BalanceSTM_speedBudget,
+							          const_BalanceSTM_rotationBudget,
+							          const_BalanceSTM_motorBudget,
+							          const_AnglePID_P,
+							          const_AnglePID_D,
+							          const_SpeedPID_P,
+							          const_SpeedPID_I,
+							          const_SpeedPID_maxIntegral,
+							          const_RotationPID_D))
+					[| { terminate } |] (
+					dbisim(Clock_CLID_WaitForNextIteration(id__,0,
+							          const_BalanceSTM_maxAngle,
+							          const_BalanceSTM_loopTime,
+							          const_BalanceSTM_startupDelay,
+							          const_BalanceSTM_speedUpdate,
+							          const_BalanceSTM_rotationUpdate,
+							          const_BalanceSTM_angleBudget,
+							          const_BalanceSTM_speedBudget,
+							          const_BalanceSTM_rotationBudget,
+							          const_BalanceSTM_motorBudget,
+							          const_AnglePID_P,
+							          const_AnglePID_D,
+							          const_SpeedPID_P,
+							          const_SpeedPID_I,
+							          const_SpeedPID_maxIntegral,
+							          const_RotationPID_D))
+					[| { terminate } |] (
+					dbisim(Clock_CLID_Initialisation(id__,0,
+							          const_BalanceSTM_maxAngle,
+							          const_BalanceSTM_loopTime,
+							          const_BalanceSTM_startupDelay,
+							          const_BalanceSTM_speedUpdate,
+							          const_BalanceSTM_rotationUpdate,
+							          const_BalanceSTM_angleBudget,
+							          const_BalanceSTM_speedBudget,
+							          const_BalanceSTM_rotationBudget,
+							          const_BalanceSTM_motorBudget,
+							          const_AnglePID_P,
+							          const_AnglePID_D,
+							          const_SpeedPID_P,
+							          const_SpeedPID_I,
+							          const_SpeedPID_maxIntegral,
+							          const_RotationPID_D))
+					[| { terminate } |] (
+					dbisim(Clock_CLID_StopMotors(id__,0,
+							          const_BalanceSTM_maxAngle,
+							          const_BalanceSTM_loopTime,
+							          const_BalanceSTM_startupDelay,
+							          const_BalanceSTM_speedUpdate,
+							          const_BalanceSTM_rotationUpdate,
+							          const_BalanceSTM_angleBudget,
+							          const_BalanceSTM_speedBudget,
+							          const_BalanceSTM_rotationBudget,
+							          const_BalanceSTM_motorBudget,
+							          const_AnglePID_P,
+							          const_AnglePID_D,
+							          const_SpeedPID_P,
+							          const_SpeedPID_I,
+							          const_SpeedPID_maxIntegral,
+							          const_RotationPID_D))
 					)
 					)
 					)
@@ -7056,7 +7056,7 @@ module Segway
 					)
 					)
 					
-					stateClockSync = {|get_CLID_StopMotors,StopMotors::entered,get_CLID_WaitForNextIteration,WaitForNextIteration::entered,get_CLID_Initialisation,Initialisation::entered,get_CLID_SetMotors,SetMotors::entered,get_CLID_CalculateRotation,CalculateRotation::entered,get_CLID_CalculateSpeed,CalculateSpeed::entered,get_CLID_CalculateAngle,CalculateAngle::entered|}
+					stateClockSync = {|get_CLID_CalculateAngle,CalculateAngle::entered,get_CLID_CalculateSpeed,CalculateSpeed::entered,get_CLID_SetMotors,SetMotors::entered,get_CLID_CalculateRotation,CalculateRotation::entered,get_CLID_WaitForNextIteration,WaitForNextIteration::entered,get_CLID_Initialisation,Initialisation::entered,get_CLID_StopMotors,StopMotors::entered|}
 					
 					-- Shared memory
 					-- Shared memory variables
@@ -7074,10 +7074,10 @@ module Segway
 							    const_BalanceSTM_motorBudget,
 							    const_AnglePID_P,
 							    const_AnglePID_D,
-							    const_RotationPID_D,
 							    const_SpeedPID_P,
 							    const_SpeedPID_I,
-							    const_SpeedPID_maxIntegral) = terminate -> SKIP
+							    const_SpeedPID_maxIntegral,
+							    const_RotationPID_D) = terminate -> SKIP
 					
 					sharedVarSync = {||}
 					
@@ -7087,12 +7087,12 @@ module Segway
 			
 			Timed(OneStep) {
 					-- undefined operations
-					CALL__disableInterrupts(id__) 	= disableInterruptsCall -> SKIP
-					CALL__setRightMotorSpeed(id__,
-							    param_speed) 	= setRightMotorSpeedCall.param_speed -> SKIP
 					CALL__setLeftMotorSpeed(id__,
 							    param_speed) 	= setLeftMotorSpeedCall.param_speed -> SKIP
 					CALL__enableInterrupts(id__) 	= enableInterruptsCall -> SKIP
+					CALL__setRightMotorSpeed(id__,
+							    param_speed) 	= setRightMotorSpeedCall.param_speed -> SKIP
+					CALL__disableInterrupts(id__) 	= disableInterruptsCall -> SKIP
 					
 					-- declaring controller memory
 					Memory(id__) = SKIP
@@ -7125,10 +7125,10 @@ module Segway
 								const_BalanceSTM_motorBudget = const_Segway_SegwayController_stm_ref0_motorBudget
 								const_AnglePID_P = const_Segway_SegwayController_op_ref0_P
 								const_AnglePID_D = const_Segway_SegwayController_op_ref0_D
-								const_RotationPID_D = const_Segway_SegwayController_op_ref2_D
 								const_SpeedPID_P = const_Segway_SegwayController_op_ref1_P
 								const_SpeedPID_I = const_Segway_SegwayController_op_ref1_I
 								const_SpeedPID_maxIntegral = const_Segway_SegwayController_op_ref1_maxIntegral
+								const_RotationPID_D = const_Segway_SegwayController_op_ref2_D
 							within 
 							stm_ref0::D__(id__,
 									    const_BalanceSTM_maxAngle,
@@ -7142,10 +7142,10 @@ module Segway
 									    const_BalanceSTM_motorBudget,
 									    const_AnglePID_P,
 									    const_AnglePID_D,
-									    const_RotationPID_D,
 									    const_SpeedPID_P,
 									    const_SpeedPID_I,
-									    const_SpeedPID_maxIntegral)[[
+									    const_SpeedPID_maxIntegral,
+									    const_RotationPID_D)[[
 								stm_ref0::terminate <- terminate,
 								stm_ref0::leftMotorVelocity <- leftMotorVelocity,
 								stm_ref0::rightMotorVelocity <- rightMotorVelocity,
@@ -7153,10 +7153,10 @@ module Segway
 								stm_ref0::gyroX <- gyroX,
 								stm_ref0::gyroY <- gyroY,
 								stm_ref0::gyroZ <- gyroZ,
-								stm_ref0::disableInterruptsCall <- disableInterruptsCall,
-								stm_ref0::setRightMotorSpeedCall <- setRightMotorSpeedCall,
 								stm_ref0::setLeftMotorSpeedCall <- setLeftMotorSpeedCall,
-								stm_ref0::enableInterruptsCall <- enableInterruptsCall
+								stm_ref0::enableInterruptsCall <- enableInterruptsCall,
+								stm_ref0::setRightMotorSpeedCall <- setRightMotorSpeedCall,
+								stm_ref0::disableInterruptsCall <- disableInterruptsCall
 							]]
 						)
 							[|
@@ -7207,10 +7207,10 @@ module Segway
 								const_BalanceSTM_motorBudget = const_Segway_SegwayController_stm_ref0_motorBudget
 								const_AnglePID_P = const_Segway_SegwayController_op_ref0_P
 								const_AnglePID_D = const_Segway_SegwayController_op_ref0_D
-								const_RotationPID_D = const_Segway_SegwayController_op_ref2_D
 								const_SpeedPID_P = const_Segway_SegwayController_op_ref1_P
 								const_SpeedPID_I = const_Segway_SegwayController_op_ref1_I
 								const_SpeedPID_maxIntegral = const_Segway_SegwayController_op_ref1_maxIntegral
+								const_RotationPID_D = const_Segway_SegwayController_op_ref2_D
 							within 
 							stm_ref0::VS__(id__,
 									    const_BalanceSTM_maxAngle,
@@ -7224,10 +7224,10 @@ module Segway
 									    const_BalanceSTM_motorBudget,
 									    const_AnglePID_P,
 									    const_AnglePID_D,
-									    const_RotationPID_D,
 									    const_SpeedPID_P,
 									    const_SpeedPID_I,
-									    const_SpeedPID_maxIntegral)[[
+									    const_SpeedPID_maxIntegral,
+									    const_RotationPID_D)[[
 								stm_ref0::terminate <- terminate,
 								stm_ref0::leftMotorVelocity <- leftMotorVelocity,
 								stm_ref0::rightMotorVelocity <- rightMotorVelocity,
@@ -7235,10 +7235,10 @@ module Segway
 								stm_ref0::gyroX <- gyroX,
 								stm_ref0::gyroY <- gyroY,
 								stm_ref0::gyroZ <- gyroZ,
-								stm_ref0::disableInterruptsCall <- disableInterruptsCall,
-								stm_ref0::setRightMotorSpeedCall <- setRightMotorSpeedCall,
 								stm_ref0::setLeftMotorSpeedCall <- setLeftMotorSpeedCall,
-								stm_ref0::enableInterruptsCall <- enableInterruptsCall
+								stm_ref0::enableInterruptsCall <- enableInterruptsCall,
+								stm_ref0::setRightMotorSpeedCall <- setRightMotorSpeedCall,
+								stm_ref0::disableInterruptsCall <- disableInterruptsCall
 							]]
 						)
 							[|
@@ -7289,10 +7289,10 @@ module Segway
 								const_BalanceSTM_motorBudget = const_Segway_SegwayController_stm_ref0_motorBudget
 								const_AnglePID_P = const_Segway_SegwayController_op_ref0_P
 								const_AnglePID_D = const_Segway_SegwayController_op_ref0_D
-								const_RotationPID_D = const_Segway_SegwayController_op_ref2_D
 								const_SpeedPID_P = const_Segway_SegwayController_op_ref1_P
 								const_SpeedPID_I = const_Segway_SegwayController_op_ref1_I
 								const_SpeedPID_maxIntegral = const_Segway_SegwayController_op_ref1_maxIntegral
+								const_RotationPID_D = const_Segway_SegwayController_op_ref2_D
 							within 
 							stm_ref0::O__(id__,
 									    const_BalanceSTM_maxAngle,
@@ -7306,10 +7306,10 @@ module Segway
 									    const_BalanceSTM_motorBudget,
 									    const_AnglePID_P,
 									    const_AnglePID_D,
-									    const_RotationPID_D,
 									    const_SpeedPID_P,
 									    const_SpeedPID_I,
-									    const_SpeedPID_maxIntegral)[[
+									    const_SpeedPID_maxIntegral,
+									    const_RotationPID_D)[[
 								stm_ref0::terminate <- terminate,
 								stm_ref0::leftMotorVelocity <- leftMotorVelocity,
 								stm_ref0::rightMotorVelocity <- rightMotorVelocity,
@@ -7317,10 +7317,10 @@ module Segway
 								stm_ref0::gyroX <- gyroX,
 								stm_ref0::gyroY <- gyroY,
 								stm_ref0::gyroZ <- gyroZ,
-								stm_ref0::disableInterruptsCall <- disableInterruptsCall,
-								stm_ref0::setRightMotorSpeedCall <- setRightMotorSpeedCall,
 								stm_ref0::setLeftMotorSpeedCall <- setLeftMotorSpeedCall,
-								stm_ref0::enableInterruptsCall <- enableInterruptsCall
+								stm_ref0::enableInterruptsCall <- enableInterruptsCall,
+								stm_ref0::setRightMotorSpeedCall <- setRightMotorSpeedCall,
+								stm_ref0::disableInterruptsCall <- disableInterruptsCall
 							]]
 						)
 							[|
@@ -7371,10 +7371,10 @@ module Segway
 								const_BalanceSTM_motorBudget = const_Segway_SegwayController_stm_ref0_motorBudget
 								const_AnglePID_P = const_Segway_SegwayController_op_ref0_P
 								const_AnglePID_D = const_Segway_SegwayController_op_ref0_D
-								const_RotationPID_D = const_Segway_SegwayController_op_ref2_D
 								const_SpeedPID_P = const_Segway_SegwayController_op_ref1_P
 								const_SpeedPID_I = const_Segway_SegwayController_op_ref1_I
 								const_SpeedPID_maxIntegral = const_Segway_SegwayController_op_ref1_maxIntegral
+								const_RotationPID_D = const_Segway_SegwayController_op_ref2_D
 							within 
 							stm_ref0::VS_O__(id__,
 									    const_BalanceSTM_maxAngle,
@@ -7388,10 +7388,10 @@ module Segway
 									    const_BalanceSTM_motorBudget,
 									    const_AnglePID_P,
 									    const_AnglePID_D,
-									    const_RotationPID_D,
 									    const_SpeedPID_P,
 									    const_SpeedPID_I,
-									    const_SpeedPID_maxIntegral)[[
+									    const_SpeedPID_maxIntegral,
+									    const_RotationPID_D)[[
 								stm_ref0::terminate <- terminate,
 								stm_ref0::leftMotorVelocity <- leftMotorVelocity,
 								stm_ref0::rightMotorVelocity <- rightMotorVelocity,
@@ -7399,10 +7399,10 @@ module Segway
 								stm_ref0::gyroX <- gyroX,
 								stm_ref0::gyroY <- gyroY,
 								stm_ref0::gyroZ <- gyroZ,
-								stm_ref0::disableInterruptsCall <- disableInterruptsCall,
-								stm_ref0::setRightMotorSpeedCall <- setRightMotorSpeedCall,
 								stm_ref0::setLeftMotorSpeedCall <- setLeftMotorSpeedCall,
-								stm_ref0::enableInterruptsCall <- enableInterruptsCall
+								stm_ref0::enableInterruptsCall <- enableInterruptsCall,
+								stm_ref0::setRightMotorSpeedCall <- setRightMotorSpeedCall,
+								stm_ref0::disableInterruptsCall <- disableInterruptsCall
 							]]
 						)
 							[|
@@ -7509,10 +7509,10 @@ module Segway
 								SegwayController::gyroZ <- gyroZ,
 								SegwayController::leftMotorVelocity <- leftMotorVelocity,
 								SegwayController::rightMotorVelocity <- rightMotorVelocity,
-								SegwayController::disableInterruptsCall <- disableInterruptsCall,
-								SegwayController::setRightMotorSpeedCall <- setRightMotorSpeedCall,
 								SegwayController::setLeftMotorSpeedCall <- setLeftMotorSpeedCall,
-								SegwayController::enableInterruptsCall <- enableInterruptsCall
+								SegwayController::enableInterruptsCall <- enableInterruptsCall,
+								SegwayController::setRightMotorSpeedCall <- setRightMotorSpeedCall,
+								SegwayController::disableInterruptsCall <- disableInterruptsCall
 							]]
 						)
 							[|
@@ -7585,10 +7585,10 @@ module Segway
 								SegwayController::gyroZ <- gyroZ,
 								SegwayController::leftMotorVelocity <- leftMotorVelocity,
 								SegwayController::rightMotorVelocity <- rightMotorVelocity,
-								SegwayController::disableInterruptsCall <- disableInterruptsCall,
-								SegwayController::setRightMotorSpeedCall <- setRightMotorSpeedCall,
 								SegwayController::setLeftMotorSpeedCall <- setLeftMotorSpeedCall,
-								SegwayController::enableInterruptsCall <- enableInterruptsCall
+								SegwayController::enableInterruptsCall <- enableInterruptsCall,
+								SegwayController::setRightMotorSpeedCall <- setRightMotorSpeedCall,
+								SegwayController::disableInterruptsCall <- disableInterruptsCall
 							]]
 						)
 							[|
@@ -7661,10 +7661,10 @@ module Segway
 								SegwayController::gyroZ <- gyroZ,
 								SegwayController::leftMotorVelocity <- leftMotorVelocity,
 								SegwayController::rightMotorVelocity <- rightMotorVelocity,
-								SegwayController::disableInterruptsCall <- disableInterruptsCall,
-								SegwayController::setRightMotorSpeedCall <- setRightMotorSpeedCall,
 								SegwayController::setLeftMotorSpeedCall <- setLeftMotorSpeedCall,
-								SegwayController::enableInterruptsCall <- enableInterruptsCall
+								SegwayController::enableInterruptsCall <- enableInterruptsCall,
+								SegwayController::setRightMotorSpeedCall <- setRightMotorSpeedCall,
+								SegwayController::disableInterruptsCall <- disableInterruptsCall
 							]]
 						)
 							[|
@@ -7737,10 +7737,10 @@ module Segway
 								SegwayController::gyroZ <- gyroZ,
 								SegwayController::leftMotorVelocity <- leftMotorVelocity,
 								SegwayController::rightMotorVelocity <- rightMotorVelocity,
-								SegwayController::disableInterruptsCall <- disableInterruptsCall,
-								SegwayController::setRightMotorSpeedCall <- setRightMotorSpeedCall,
 								SegwayController::setLeftMotorSpeedCall <- setLeftMotorSpeedCall,
-								SegwayController::enableInterruptsCall <- enableInterruptsCall
+								SegwayController::enableInterruptsCall <- enableInterruptsCall,
+								SegwayController::setRightMotorSpeedCall <- setRightMotorSpeedCall,
+								SegwayController::disableInterruptsCall <- disableInterruptsCall
 							]]
 						)
 							[|
@@ -7813,10 +7813,10 @@ module Segway
 								SegwayController::gyroZ <- gyroZ,
 								SegwayController::leftMotorVelocity <- leftMotorVelocity,
 								SegwayController::rightMotorVelocity <- rightMotorVelocity,
-								SegwayController::disableInterruptsCall <- disableInterruptsCall,
-								SegwayController::setRightMotorSpeedCall <- setRightMotorSpeedCall,
 								SegwayController::setLeftMotorSpeedCall <- setLeftMotorSpeedCall,
-								SegwayController::enableInterruptsCall <- enableInterruptsCall
+								SegwayController::enableInterruptsCall <- enableInterruptsCall,
+								SegwayController::setRightMotorSpeedCall <- setRightMotorSpeedCall,
+								SegwayController::disableInterruptsCall <- disableInterruptsCall
 							]]
 						)
 							[|

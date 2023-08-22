@@ -1,7 +1,7 @@
 
 --
 -- RoboChart generator version 3.0.0.202306261132
--- Automatically generated on 21-08-2023 13:01:47
+-- Automatically generated on 22-08-2023 01:53:02
 --
 -- Iterated compression status: true
 -- Assertions compression status: false
@@ -217,7 +217,7 @@ exports
 			
 			Termination = terminate -> SKIP
 			
-			Active 		= share__choice(share__choice(get_currNewError?currNewError -> share__choice(get_speedIntegral?speedIntegral -> true & (share__choice(set_speedIntegral!Plus(speedIntegral, currNewError, core_real) -> SKIP)))));share__choice(share__choice(get_speedIntegral?speedIntegral -> true & (share__choice(set_speedIntegral!(if (speedIntegral>const_SpeedPID_S_maxIntegral) then const_SpeedPID_S_maxIntegral else (if (speedIntegral<Neg(const_SpeedPID_S_maxIntegral, core_real)) then Neg(const_SpeedPID_S_maxIntegral, core_real) else speedIntegral)) -> SKIP)))) ; 
+			Active 		= share__choice(share__choice(get_speedIntegral?speedIntegral -> share__choice(get_currNewError?currNewError -> true & (share__choice(set_speedIntegral!Plus(speedIntegral, currNewError, core_real) -> SKIP)))));share__choice(share__choice(get_speedIntegral?speedIntegral -> true & (share__choice(set_speedIntegral!(if (speedIntegral>const_SpeedPID_S_maxIntegral) then const_SpeedPID_S_maxIntegral else (if (speedIntegral<Neg(const_SpeedPID_S_maxIntegral, core_real)) then Neg(const_SpeedPID_S_maxIntegral, core_real) else speedIntegral)) -> SKIP)))) ; 
 					 	  Behaviour ; 
 					 	  share__choice(exit -> SKIP) ; SKIP ; 
 					 	  share__choice(exited -> SKIP) ; Inactive
@@ -236,7 +236,7 @@ exports
 			
 			Termination = terminate -> SKIP
 			
-			Active 		= share__choice(share__choice(get_currNewError?currNewError -> share__choice(get_speedIntegral?speedIntegral -> true & (share__choice(set_speedIntegral!Plus(speedIntegral, currNewError, core_real) -> SKIP)))));share__choice(share__choice(get_speedIntegral?speedIntegral -> true & (share__choice(set_speedIntegral!(if (speedIntegral>const_SpeedPID_S_maxIntegral) then const_SpeedPID_S_maxIntegral else (if (speedIntegral<Neg(const_SpeedPID_S_maxIntegral, core_real)) then Neg(const_SpeedPID_S_maxIntegral, core_real) else speedIntegral)) -> SKIP)))) ; 
+			Active 		= share__choice(share__choice(get_speedIntegral?speedIntegral -> share__choice(get_currNewError?currNewError -> true & (share__choice(set_speedIntegral!Plus(speedIntegral, currNewError, core_real) -> SKIP)))));share__choice(share__choice(get_speedIntegral?speedIntegral -> true & (share__choice(set_speedIntegral!(if (speedIntegral>const_SpeedPID_S_maxIntegral) then const_SpeedPID_S_maxIntegral else (if (speedIntegral<Neg(const_SpeedPID_S_maxIntegral, core_real)) then Neg(const_SpeedPID_S_maxIntegral, core_real) else speedIntegral)) -> SKIP)))) ; 
 					 	  Behaviour ; 
 					 	  share__choice(exit -> SKIP) ; SKIP ; 
 					 	  share__choice(exited -> SKIP) ; Inactive
@@ -289,7 +289,7 @@ exports
 			
 			Termination = terminate -> SKIP
 			
-			Active 		= share__choice(share__choice(get_currNewError?currNewError -> share__choice(get_speedIntegral?speedIntegral -> true & (share__choice(set_currSpeedOutput!Plus(Mult(currNewError, const_SpeedPID_S_P, core_real), Mult(speedIntegral, const_SpeedPID_S_I, core_real), core_real) -> SKIP))))) ; 
+			Active 		= share__choice(share__choice(get_speedIntegral?speedIntegral -> share__choice(get_currNewError?currNewError -> true & (share__choice(set_currSpeedOutput!Plus(Mult(currNewError, const_SpeedPID_S_P, core_real), Mult(speedIntegral, const_SpeedPID_S_I, core_real), core_real) -> SKIP))))) ; 
 					 	  Behaviour ; 
 					 	  share__choice(exit -> SKIP) ; SKIP ; 
 					 	  share__choice(exited -> SKIP) ; Inactive
@@ -308,7 +308,7 @@ exports
 			
 			Termination = terminate -> SKIP
 			
-			Active 		= share__choice(share__choice(get_currNewError?currNewError -> share__choice(get_speedIntegral?speedIntegral -> true & (share__choice(set_currSpeedOutput!Plus(Mult(currNewError, const_SpeedPID_S_P, core_real), Mult(speedIntegral, const_SpeedPID_S_I, core_real), core_real) -> SKIP))))) ; 
+			Active 		= share__choice(share__choice(get_speedIntegral?speedIntegral -> share__choice(get_currNewError?currNewError -> true & (share__choice(set_currSpeedOutput!Plus(Mult(currNewError, const_SpeedPID_S_P, core_real), Mult(speedIntegral, const_SpeedPID_S_I, core_real), core_real) -> SKIP))))) ; 
 					 	  Behaviour ; 
 					 	  share__choice(exit -> SKIP) ; SKIP ; 
 					 	  share__choice(exited -> SKIP) ; Inactive
