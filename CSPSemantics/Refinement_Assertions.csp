@@ -1,7 +1,5 @@
---This file has EXACTLY the same assertions as the old one, but we 1. choose specifically only those assertions we want to run. 
---2. We use the semantics from the final comparison version. 
-
---This file sets all to the instantiations file constants, which is all 0 by default. This is testing when all constants = 0. 
+--This file establishes refinment and basic assertions of the versions of the semantics created in Constant_Setting.csp.
+--Not involving P3 with an ANN component, involving P3 with normal AnglePID controller.  
 
 include "Constant_Setting.csp"
  
@@ -13,22 +11,10 @@ assert P_Segway_P2 :[deadlock-free]
 assert P_Segway_P3 :[deadlock-free] 
 
 
---REFINEMENT/EQUALITY ASSERTIONS --
+--REFINEMENT ASSERTIONS --
 
 assert P_Segway_P2_Renamed [T= P_Segway
 assert P_Segway [T= P_Segway_P2_Renamed
 
 assert P_Segway_P3_Renamed [T= P_Segway 
 assert P_Segway [T= P_Segway_P3_Renamed
-
---P_ANN = ANNSimp::Full
-
---Passes all checks. 
---assert P_ANN :[deadlock-free]	
---assert P_ANN;RUN({r__}) :[deadlock-free]
---assert P_ANN :[deterministic]
---assert P_ANN :[divergence-free]
-
---Don't need to rename it, we will literally replace it for the O:: version, with same name, semantics will do the renaming for us. 
-
-

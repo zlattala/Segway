@@ -1,35 +1,35 @@
 --Imports for Parallel version P1. 
-include "FINAL_compsegway_csp/defs/file_AnglePID_defs.csp"
-include "FINAL_compsegway_csp/defs/file_BalanceSTM_P1_defs.csp"
-include "FINAL_compsegway_csp/defs/file_RotationPID_S_defs.csp"
-include "FINAL_compsegway_csp/defs/file_Segway_P1.csp"
-include "FINAL_compsegway_csp/defs/file_SpeedPID_defs.csp"
-include "FINAL_compsegway_csp/defs/file_Segway_P1_defs.csp"
-include "FINAL_compsegway_csp/defs/file_SpeedPID_S_defs.csp"
-include "FINAL_compsegway_csp/defs/file_BalanceSTM_defs.csp"
-include "FINAL_compsegway_csp/defs/file_RotationPID_defs.csp"
-include "FINAL_compsegway_csp/defs/file_AnglePID_S_defs.csp"
-include "FINAL_compsegway_csp/defs/file_Segway_defs.csp"
-include "FINAL_compsegway_csp/defs/file_SegwayRP_defs.csp"
+include "segwaycomparison_cspgen/defs/file_AnglePID_defs.csp"
+include "segwaycomparison_cspgen/defs/file_BalanceSTM_P1_defs.csp"
+include "segwaycomparison_cspgen/defs/file_RotationPID_S_defs.csp"
+include "segwaycomparison_cspgen/defs/file_Segway_P1.csp"
+include "segwaycomparison_cspgen/defs/file_SpeedPID_defs.csp"
+include "segwaycomparison_cspgen/defs/file_Segway_P1_defs.csp"
+include "segwaycomparison_cspgen/defs/file_SpeedPID_S_defs.csp"
+include "segwaycomparison_cspgen/defs/file_BalanceSTM_defs.csp"
+include "segwaycomparison_cspgen/defs/file_RotationPID_defs.csp"
+include "segwaycomparison_cspgen/defs/file_AnglePID_S_defs.csp"
+include "segwaycomparison_cspgen/defs/file_Segway_defs.csp"
+include "segwaycomparison_cspgen/defs/file_SegwayRP_defs.csp"
 
 --Imports for Sequential version. 
-include "FINAL_compsegway_csp/defs/file_Segway.csp"
+include "segwaycomparison_cspgen/defs/file_Segway.csp"
 
 --Imports for P2 parallel version. 
-include "FINAL_compsegway_csp/defs/file_BalanceSTM_P2_defs.csp"
-include "FINAL_compsegway_csp/defs/file_Segway_P2_defs.csp"
-include "FINAL_compsegway_csp/defs/file_Segway_P2.csp"
+include "segwaycomparison_cspgen/defs/file_BalanceSTM_P2_defs.csp"
+include "segwaycomparison_cspgen/defs/file_Segway_P2_defs.csp"
+include "segwaycomparison_cspgen/defs/file_Segway_P2.csp"
 
 --Imports for P3 parallel version 
-include "FINAL_compsegway_csp/defs/file_Segway_P3_defs.csp"
-include "FINAL_compsegway_csp/defs/file_Segway_P3.csp"
+include "segwaycomparison_cspgen/defs/file_Segway_P3_defs.csp"
+include "segwaycomparison_cspgen/defs/file_Segway_P3.csp"
 
 --Adding ANN controller semantics
 include "ANN_semantics/ANNController_simplified.csp"
 
 --Universal Imports
-include "FINAL_compsegway_csp/defs/state_defs.csp"
-include "FINAL_compsegway_csp/defs/core_defs.csp"
-include "FINAL_compsegway_csp/defs/robochart_defs.csp"
-include "FINAL_compsegway_csp/instantiations.csp"
+include "segwaycomparison_cspgen/defs/state_defs.csp"
+include "segwaycomparison_cspgen/defs/core_defs.csp"
+include "segwaycomparison_cspgen/defs/robochart_defs.csp"
+include "segwaycomparison_cspgen/instantiations.csp"
 channel r__
