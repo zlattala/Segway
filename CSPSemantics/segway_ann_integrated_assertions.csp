@@ -39,28 +39,10 @@ include "cspgen_integrated_annsemantics/defs/robochart_defs.csp"
 include "cspgen_integrated_annsemantics/instantiations.csp"
 channel r__
 
---CONSTANTS --
-BalanceSTM_maxAngle = 0
-BalanceSTM_loopTime = 0
-BalanceSTM_startupDelay = 0
-BalanceSTM_speedUpdate = 0
-BalanceSTM_rotationUpdate = 0
-BalanceSTM_angleBudget = 0
-BalanceSTM_speedBudget = 0
-BalanceSTM_rotationBudget = 0
-BalanceSTM_motorBudget = 0
+--Include Constant file
+include "constants.csp"
 
---SpeedPID constants:
-SpeedPID_P = 1
-SpeedPID_I = 0
-SpeedPID_maxIntegral = 0
-
---RotationPID 
-RotationPID_D = 1
-
---AnglePID
-AnglePID_P = 1
-AnglePID_D = 0
+--PROCESS DEFINITIONS: 
 
 P_Segway = let
 	id__ = 0
@@ -138,10 +120,7 @@ within
 			    const_Segway_P3_AnglePID_C_stm_ref0_P,
 			    const_Segway_P3_AnglePID_C_stm_ref0_D)
 				
-				
-
 -- generate Segway_P3
-
 P_Segway_P3_Renamed = P_Segway_P3[[
   Segway_P3::leftMotorVelocity <- Segway::leftMotorVelocity,
   Segway_P3::rightMotorVelocity <- Segway::rightMotorVelocity,
@@ -160,7 +139,6 @@ P_Segway_P3_AnglePID_C_ORIGINAL = let
 	id__ = 0
 	const_Segway_P3_AnglePID_C_stm_ref0_P = AnglePID_P
 	const_Segway_P3_AnglePID_C_stm_ref0_D = AnglePID_D
-		
 within
 	Segway_P3_AnglePID_C::ORIGINAL(id__,
 			    const_Segway_P3_AnglePID_C_stm_ref0_P,
@@ -171,12 +149,26 @@ P_Segway_P3_AnglePID_C_ANN = let
 	id__ = 0
 	const_Segway_P3_AnglePID_C_stm_ref0_P = 0 --NOT USED BY ANN
 	const_Segway_P3_AnglePID_C_stm_ref0_D = 0 --NOT USED BY ANN
-		
 within
 	Segway_P3_AnglePID_C::O__(id__,
 			    const_Segway_P3_AnglePID_C_stm_ref0_P,
 			    const_Segway_P3_AnglePID_C_stm_ref0_D)
-		
+
+--Simplified AnglePID_C processes, considering in Segway_3.  --
+--what is the behaviour of the real AnglePID when we have P and D = 1? 
+constrain(x1, x2, y) = if y > 2 then x1 else if y < -2 then x1 else y
+--ANN needs to be this, not implementing the true function, needs to be this. 
+
+Simp_AnglePID = Segway_P3_AnglePID_C::anewError.in?x -> Segway_P3_AnglePID_C::adiff.in?y -> 
+			    Segway_P3_AnglePID_C::angleOutputE.out!constrain(x, y, (AnglePID_P * x) + (AnglePID_D * y)) -> Simp_AnglePID
+
+assert Simp_AnglePID [T= P_Segway_P3_AnglePID_C_ORIGINAL
+assert P_Segway_P3_AnglePID_C_ORIGINAL [T= Simp_AnglePID
+
+assert Simp_AnglePID [T= P_Segway_P3_AnglePID_C_ANN
+assert P_Segway_P3_AnglePID_C_ANN [T= Simp_AnglePID
+
+
 --Check that this is a refinement of The O__ version, the ANN. 
 assert P_Segway_P3_AnglePID_C_ORIGINAL [T= P_Segway_P3_AnglePID_C_ANN
 assert P_Segway_P3_AnglePID_C_ANN [T= P_Segway_P3_AnglePID_C_ORIGINAL

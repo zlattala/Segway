@@ -1,36 +1,41 @@
---This file allows the setting of all constants, in an easier way, a simpler way of setting constnats. 
+--This file establishes refinment and basic assertions of the versions of the semantics created in Constant_Setting.csp.
+--Not involving P3 with an ANN component, involving P3 with normal AnglePID controller.  
+--Imports for Parallel version P1. 
+include "segwaycomparison_cspgen/defs/file_AnglePID_defs.csp"
+include "segwaycomparison_cspgen/defs/file_BalanceSTM_P1_defs.csp"
+include "segwaycomparison_cspgen/defs/file_RotationPID_S_defs.csp"
+include "segwaycomparison_cspgen/defs/file_Segway_P1.csp"
+include "segwaycomparison_cspgen/defs/file_SpeedPID_defs.csp"
+include "segwaycomparison_cspgen/defs/file_Segway_P1_defs.csp"
+include "segwaycomparison_cspgen/defs/file_SpeedPID_S_defs.csp"
+include "segwaycomparison_cspgen/defs/file_BalanceSTM_defs.csp"
+include "segwaycomparison_cspgen/defs/file_RotationPID_defs.csp"
+include "segwaycomparison_cspgen/defs/file_AnglePID_S_defs.csp"
+include "segwaycomparison_cspgen/defs/file_Segway_defs.csp"
+include "segwaycomparison_cspgen/defs/file_SegwayRP_defs.csp"
 
---Also this sets the constants for all of the models at once, the sequential, and all parallel versions. 
+--Imports for Sequential version. 
+include "segwaycomparison_cspgen/defs/file_Segway.csp"
 
-include "imports.csp"
+--Imports for P2 parallel version. 
+include "segwaycomparison_cspgen/defs/file_BalanceSTM_P2_defs.csp"
+include "segwaycomparison_cspgen/defs/file_Segway_P2_defs.csp"
+include "segwaycomparison_cspgen/defs/file_Segway_P2.csp"
 
---Constant Definitions
+--Imports for P3 parallel version 
+include "segwaycomparison_cspgen/defs/file_Segway_P3_defs.csp"
+include "segwaycomparison_cspgen/defs/file_Segway_P3.csp"
 
---All models have exactly 15 constants. 
+--Universal Imports
+include "segwaycomparison_cspgen/defs/state_defs.csp"
+include "segwaycomparison_cspgen/defs/core_defs.csp"
+include "segwaycomparison_cspgen/defs/robochart_defs.csp"
+include "segwaycomparison_cspgen/instantiations.csp"
+channel r__
 
---These are: 
---BalanceSTM constants: 
-BalanceSTM_maxAngle = 0
-BalanceSTM_loopTime = 0
-BalanceSTM_startupDelay = 0
-BalanceSTM_speedUpdate = 0
-BalanceSTM_rotationUpdate = 0
-BalanceSTM_angleBudget = 0
-BalanceSTM_speedBudget = 0
-BalanceSTM_rotationBudget = 0
-BalanceSTM_motorBudget = 0
+include "constants.csp"
 
---SpeedPID constants:
-SpeedPID_P = 1
-SpeedPID_I = 0
-SpeedPID_maxIntegral = 0
-
---RotationPID 
-RotationPID_D = 1
-
---AnglePID
-AnglePID_P = 0
-AnglePID_D = 1
+--PROCESSES -- 
 
 P_Segway = let
 	id__ = 0
@@ -147,11 +152,7 @@ within
 			    const_Segway_P3_AnglePID_C_stm_ref0_D)
 
 
-
-
-
---RENAMED PROCESS DEFINITIONS
-
+-- generate Segway_P2_Renamed
 
 P_Segway_P2_Renamed = P_Segway_P2[[
   Segway_P2::leftMotorVelocity <- Segway::leftMotorVelocity,
@@ -166,8 +167,7 @@ P_Segway_P2_Renamed = P_Segway_P2[[
   Segway_P2::disableInterruptsCall <- Segway::disableInterruptsCall
   ]]
   
-
--- generate Segway_P3
+-- generate Segway_P3_Renamed
 
 P_Segway_P3_Renamed = P_Segway_P3[[
   Segway_P3::leftMotorVelocity <- Segway::leftMotorVelocity,
@@ -182,3 +182,30 @@ P_Segway_P3_Renamed = P_Segway_P3[[
   Segway_P3::disableInterruptsCall <- Segway::disableInterruptsCall
   ]]
   
+--ASSERTIONS --
+
+--BASIC ASSERTIONS --
+
+assert P_Segway :[deadlock-free]	
+assert P_Segway;RUN({r__}) :[deadlock-free]
+assert P_Segway :[deterministic]
+assert P_Segway :[divergence-free]
+
+assert P_Segway_P2_Renamed :[deadlock-free]	
+assert P_Segway_P2_Renamed;RUN({r__}) :[deadlock-free]
+assert P_Segway_P2_Renamed :[deterministic]
+assert P_Segway_P2_Renamed :[divergence-free]
+
+assert P_Segway_P3_Renamed :[deadlock-free]	
+assert P_Segway_P3_Renamed;RUN({r__}) :[deadlock-free]
+assert P_Segway_P3_Renamed :[deterministic]
+assert P_Segway_P3_Renamed :[divergence-free]
+
+
+--REFINEMENT ASSERTIONS --
+
+assert P_Segway_P2_Renamed [T= P_Segway
+assert P_Segway [T= P_Segway_P2_Renamed
+
+assert P_Segway_P3_Renamed [T= P_Segway 
+assert P_Segway [T= P_Segway_P3_Renamed
