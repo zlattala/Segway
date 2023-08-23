@@ -1,6 +1,5 @@
---Passed refinement, is the same as ANNController. 
---Passed with P = 1. 
---This is currently setup to be, with discretised types, as the Segway AnglePID state machine/controller behaviour, with constants P = 1 and I and D = 0. 
+--This is currently setup to be equivalent to, with discretised types, as the Segway AnglePID controller, with constants:
+--P = 1, I = 0 and D = 0. 
 module ANNSimp
 exports
     --CHANNELS--
@@ -14,7 +13,7 @@ exports
 	channel layerRes:{0..layerNo}.{1..maxSize}.Value
 	channel nodeOut:{1..layerNo}.{1..maxSize}.{1..maxSize}.Value
     
-	--Termination Channel --
+	--Termination Channel (not used)--
 	channel terminate
 	
 	--SEMANTIC CONSTANTS--
@@ -36,7 +35,6 @@ exports
 	extract_sequence(1, sequence) = head(sequence)
 	extract_sequence(index, sequence) = extract_sequence((index-1), tail(sequence))
 
-   --This is layerSize. 
 	layerSize(0) = insize
 	layerSize(layer) = extract_sequence(layer, layerstructure)
 	
@@ -71,7 +69,7 @@ exports
 
 	InputProcessRaw(in_, in2_) = InputProcessBinary(cr_to_binary(in_), 1); InputProcessBinary(cr_to_binary(in2_), 4); SKIP
 
-	--1 2 3 is first input, x, 4 5 6 is second input, y. 
+	--1 2 3 is first input, x, 4 5 6 is second input.
 	InputProcessBinary(<>, _) = SKIP
 	InputProcessBinary(seq, index) = layerRes.0.index.(head(seq)) -> InputProcessBinary(tail(seq), index+1)
 
@@ -84,7 +82,7 @@ exports
 
 	--ANN PROCESS DEFINITIONS --
 	
-	ANNHiddenEvts = diff(Events, {| layerRes.0, layerRes.2, terminate |})
+	ANNHiddenEvts = diff(Events, {| layerRes.0, layerRes.2, end |})
 
 	HiddenLayers = || i : {1..(layerNo-1)} @ [ {| layerRes.(i-1), layerRes.i |} ] HiddenLayer(i, layerSize(i), layerSize(i-1))  
 	
@@ -108,9 +106,9 @@ exports
 
 	OutputLayer = [| {| layerRes.(layerNo-1) |} |] i: {1..layerSize(layerNo)} @ Node(layerNo, i, layerSize(layerNo-1))
 
-    --This is complete semantic function. Recursive call cannot be on this layer, must be on the higher up layer. 
+    --This is complete semantic function. 
 	ANN = (( (HiddenLayers [| {| layerRes.1 |} |] OutputLayer) \ ANNHiddenEvts ) [|{|terminate|}|>SKIP)  
 	
-    --This is required to translate types from core_real to binary and to link to the rest of the system, and hide layerRes events. . 
+    --This is required to translate types from core_real to binary and to link to the rest of the system, and hide layerRes events. 
 	Full = ( ( (InputProcess [| {| layerRes.0 |} |] ANN) [| {| layerRes.2 |} |] OutputProcess ) \ {| layerRes |} ) ; Full
 endmodule
