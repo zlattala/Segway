@@ -847,16 +847,16 @@ transparent diamond
 	
 	--SEMANTIC CONSTANTS--
 
-	insize = 6
-	outsize = 3
-	layerstructure = <3, 3> 
+	insize = 2
+	outsize = 1
+	layerstructure = <1> 
 	layerNo = #layerstructure 
-	maxSize = 6
+	maxSize = 2
 
-	weights = < < <1,0,0,0,0,0>, <0,1,0,0,0,0>, <0,0,1,0,0,0> >, < <1,0,0>, <0,1,0>, <0,0,1> > >
-	biases = < <0,0,0>, <0,0,0>>
+	weights = < < <1,1> > >
+	biases = < <0> >
 
-	Value = {-1,1}
+	Value = {-2,-1,0,1,2}
 	
 	
     --HELPER FUNCTIONS--
@@ -875,9 +875,34 @@ transparent diamond
 	extract_biases(layer, node) = (extract_sequence(node, 
 												(extract_sequence(layer, biases))))
     
+    --BINARY TO CORE_REAL TYPE TRANSLATION FUNCTIONS--
+	binary_to_core_real(seq, 0, sum) = sum
+	binary_to_core_real(seq, n, sum) = binary_to_core_real(tail(seq), (n-1), sum + (head(seq) * binary(n)) )
+
+	binary_to_cr(seq) = binary_to_core_real(seq, 3, 0) - 3
+
+	corereal_to_binary(1) = <0,0,1>
+	corereal_to_binary(2) = <0,1,0>
+	corereal_to_binary(3) = <0,1,1>
+	corereal_to_binary(4) = <1,0,0>
+	corereal_to_binary(5) = <1,0,1>
+
+	cr_to_binary(val) = corereal_to_binary(val+3)
+
+	binary_rec(1, sum) = sum
+	binary_rec(n, sum) = binary_rec(n-1, sum * 2)
+	binary(n) = binary_rec(n, 1)
+    
 	--INPUTPROCESS AND OUTPUTPROCESS DEFINITIONS --
 	
-	InputProcess = anewError.in?currAngle -> adiff.in?currGyroX -> layerRes.0.1!currAngle -> layerRes.0.2!currGyroX -> SKIP
+	InputProcess = anewError.in?in_ -> adiff.in?in2_ -> InputProcessRaw(in_, in2_)
+
+	InputProcessRaw(in_, in2_) = InputProcessBinary(cr_to_binary(in_), 1); InputProcessBinary(cr_to_binary(in2_), 4); SKIP
+
+	--1 2 3 is first input, x, 4 5 6 is second input.
+	InputProcessBinary(<>, _) = SKIP
+	InputProcessBinary(seq, index) = layerRes.0.index.(head(seq)) -> InputProcessBinary(tail(seq), index+1)
+
 
 	OutputProcess = layerRes.2.1?in11 -> layerRes.2.2?in12 -> layerRes.2.3?in13 -> OutputProcessConverted(in11, in12, in13)
 
