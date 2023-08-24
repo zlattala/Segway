@@ -81,7 +81,7 @@ within
 			   	const_Segway_SegwayController_op_ref1_maxIntegral,
 			   	const_Segway_SegwayController_op_ref2_D)
 				
---BUILDING P3, this will have the ANN component in it: 
+--Building P3, this will have the ANN component in it: 
 
 P_Segway_P3 = let
 	id__ = 0
@@ -144,7 +144,7 @@ within
 			    const_Segway_P3_AnglePID_C_stm_ref0_P,
 			    const_Segway_P3_AnglePID_C_stm_ref0_D)
 
---Build ANN, doesn't matter what the constants are here: 
+--Build ANN --
 P_Segway_P3_AnglePID_C_ANN = let
 	id__ = 0
 	const_Segway_P3_AnglePID_C_stm_ref0_P = 0 --NOT USED BY ANN
@@ -154,10 +154,9 @@ within
 			    const_Segway_P3_AnglePID_C_stm_ref0_P,
 			    const_Segway_P3_AnglePID_C_stm_ref0_D)
 
---Simplified AnglePID_C processes, considering in Segway_3.  --
---what is the behaviour of the real AnglePID when we have P and D = 1? 
+--Simplified AnglePID_C processes --
+
 constrain(x1, x2, y) = if y > 2 then x1 else if y < -2 then x1 else y
---ANN needs to be this, not implementing the true function, needs to be this. 
 
 Simp_AnglePID = Segway_P3_AnglePID_C::anewError.in?x -> Segway_P3_AnglePID_C::adiff.in?y -> 
 			    Segway_P3_AnglePID_C::angleOutputE.out!constrain(x, y, (AnglePID_P * x) + (AnglePID_D * y)) -> Simp_AnglePID
@@ -167,7 +166,6 @@ assert P_Segway_P3_AnglePID_C_ORIGINAL [T= Simp_AnglePID
 
 assert Simp_AnglePID [T= P_Segway_P3_AnglePID_C_ANN
 assert P_Segway_P3_AnglePID_C_ANN [T= Simp_AnglePID
-
 
 --Check that this is a refinement of The O__ version, the ANN. 
 assert P_Segway_P3_AnglePID_C_ORIGINAL [T= P_Segway_P3_AnglePID_C_ANN
@@ -198,6 +196,11 @@ assert Cycle [T= P_Segway_P3_AnglePID_C_ANN
 assert Cycle [T= P_Segway_P3_AnglePID_C_ORIGINAL
 
 --Overall system checks, to check that the system with the ANN is still equivalent to the Sequential Segway. 
+assert P_Segway_P3_Renamed :[deadlock-free]	
+assert P_Segway_P3_Renamed;RUN({r__}) :[deadlock-free]
+assert P_Segway_P3_Renamed :[deterministic]
+assert P_Segway_P3_Renamed :[divergence-free]
+
 assert P_Segway_P3_Renamed [T= P_Segway
 assert P_Segway [T= P_Segway_P3_Renamed
 
