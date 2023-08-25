@@ -152,6 +152,11 @@ within
 --When they is no timing, setup so it calls all three PIDs 
 Simp_Segway = Segway::disableInterruptsCall -> Segway::enableInterruptsCall -> Segway::angle.in?currAngle -> Segway::gyroX.in?cyrrGyroX -> 
 			  Segway_P3_AnglePID_C::anewError.in.currAngle -> Segway_P3_AnglePID_C::adiff.in.currGyroX -> Segway_P3_AnglePID_C::angleOutputE.out?angleOutput -> 
+			  Segway::leftMotorVelocity.in?currLeftVel -> Segway::rightMotorVelocity.in?currRightVel -> 
+			  SpeedPID_S::snewError.in.constrain(currLeftVel, currRightVel, (currLeftVel + currRightVel)) -> 
+			  SpeedPID_S::speedOutputE.out?speedOutput -> 
+			  Segway::gyroZ.in?currGyroZ -> RotationPID_S::rdiff.in.currGyroZ -> RotationPID_S::rotationOutputE?rotationOutput -> 
+			  SKIP
 			  
 
 
