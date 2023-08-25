@@ -1,0 +1,162 @@
+--Imports for Parallel version P1. 
+include "cspgen_integrated_annsemantics/defs/file_AnglePID_defs.csp"
+include "cspgen_integrated_annsemantics/defs/file_BalanceSTM_P1_defs.csp"
+include "cspgen_integrated_annsemantics/defs/file_RotationPID_S_defs.csp"
+include "cspgen_integrated_annsemantics/defs/file_Segway_P1.csp"
+include "cspgen_integrated_annsemantics/defs/file_SpeedPID_defs.csp"
+include "cspgen_integrated_annsemantics/defs/file_Segway_P1_defs.csp"
+include "cspgen_integrated_annsemantics/defs/file_SpeedPID_S_defs.csp"
+include "cspgen_integrated_annsemantics/defs/file_BalanceSTM_defs.csp"
+include "cspgen_integrated_annsemantics/defs/file_RotationPID_defs.csp"
+include "cspgen_integrated_annsemantics/defs/file_AnglePID_S_defs.csp"
+include "cspgen_integrated_annsemantics/defs/file_Segway_defs.csp"
+include "cspgen_integrated_annsemantics/defs/file_SegwayRP_defs.csp"
+
+
+--Imports for Sequential version. 
+include "cspgen_integrated_annsemantics/defs/file_Segway.csp"
+
+--Imports for P3 parallel version 
+include "cspgen_integrated_annsemantics/defs/file_Segway_P3_defs.csp"
+include "cspgen_integrated_annsemantics/defs/file_Segway_P3.csp"
+
+--For the AnglePID_C controller
+include "cspgen_integrated_annsemantics/defs/file_Segway_P3_defs.csp"
+include "cspgen_integrated_annsemantics/defs/Segway_P3_AnglePID_C.csp"
+
+--For the SpeedPID_S state machine. 
+include "cspgen_integrated_annsemantics/defs/SpeedPID_S.csp"
+
+--For the RotationPID_S state machine. 
+include "cspgen_integrated_annsemantics/defs/RotationPID_S.csp"
+
+--For the BalanceSTM_
+--Universal Imports
+include "cspgen_integrated_annsemantics/defs/state_defs.csp"
+include "cspgen_integrated_annsemantics/defs/core_defs.csp"
+include "cspgen_integrated_annsemantics/defs/robochart_defs.csp"
+include "cspgen_integrated_annsemantics/instantiations.csp"
+channel r__
+
+--Include Constant file
+include "constants.csp"
+
+--Simplified AnglePID_C processes --
+constrain(x1, x2, y) = if y > 2 then x1 else if y < -2 then x1 else y
+
+--This has already been proved to be the AnglePID, but add it here anyway. 
+Simp_AnglePID = Segway_P3_AnglePID_C::anewError.in?x -> Segway_P3_AnglePID_C::adiff.in?y -> 
+			    Segway_P3_AnglePID_C::angleOutputE.out!constrain(x, y, (AnglePID_P * x) + (AnglePID_D * y)) -> Simp_AnglePID
+				
+
+P_AnglePID = let
+	id__ = 0
+	const_Segway_P3_AnglePID_C_stm_ref0_P = 0 --NOT USED BY ANN
+	const_Segway_P3_AnglePID_C_stm_ref0_D = 0 --NOT USED BY ANN
+within
+	Segway_P3_AnglePID_C::O__(id__,
+			    const_Segway_P3_AnglePID_C_stm_ref0_P,
+			    const_Segway_P3_AnglePID_C_stm_ref0_D)
+
+assert Simp_AnglePID [T= P_AnglePID
+assert P_AnglePID [T= Simp_AnglePID
+
+--Make simplified SpeedPID semantics. 
+--Visible events: 		terminate, snewError,		speedOutputE
+--Does it just take snewError then produce speedOutputE as a cycle?
+
+channel MEM_getspeedpid: core_real
+channel MEM_setspeedpid: core_real
+
+clip_maxIntegral(x) = if x > SpeedPID_maxIntegral then SpeedPID_maxIntegral else if x < - SpeedPID_maxIntegral then - SpeedPID_maxIntegral else x
+
+Simp_SpeedPID_memoryless = SpeedPID_S::snewError.in?currNewError -> 
+				MEM_getspeedpid?speedIntegral -> 
+				MEM_setspeedpid.clip_maxIntegral(constrain(currNewError, speedIntegral, (currNewError + speedIntegral))) -> 
+				MEM_getspeedpid?speedIntegralUpdated -> 
+				SpeedPID_S::speedOutputE.out.constrain((currNewError * SpeedPID_P),(speedIntegralUpdated * SpeedPID_I),
+													  (currNewError * SpeedPID_P) + (speedIntegralUpdated * SpeedPID_I)) -> Simp_SpeedPID_memoryless
+
+Memory_SpeedPID(speedIntegral) = (MEM_setspeedpid?newIntegral -> Memory_SpeedPID(newIntegral)) [] 
+								 (MEM_getspeedpid.speedIntegral -> Memory_SpeedPID(speedIntegral))
+								 
+mem_channels = {| MEM_getspeedpid, MEM_setspeedpid |}
+Simp_SpeedPID = ( Simp_SpeedPID_memoryless [| mem_channels |] Memory_SpeedPID(0) ) \ mem_channels
+
+P_SpeedPID = let
+	id__ = 0
+within
+	SpeedPID_S::O__(
+		id__,
+		SpeedPID_P,
+		SpeedPID_I,
+		SpeedPID_maxIntegral
+	)
+assert Simp_SpeedPID [T= P_SpeedPID
+assert P_SpeedPID [T= Simp_SpeedPID
+
+--RotationPID. 
+P_RotationPID = let
+	id__ = 0 
+within
+	RotationPID_S::O__(
+		id__,
+		RotationPID_D
+	)
+
+--rdiff, rotationOutputE: rdiff,rotationOutputE
+Simp_RotationPID = RotationPID_S::rdiff.in?currDiff -> RotationPID_S::rotationOutputE.out.(RotationPID_D * currDiff) -> Simp_RotationPID
+assert Simp_RotationPID [T= P_RotationPID
+assert P_RotationPID [T= Simp_RotationPID
+
+
+--We are making a simpler version of the segway, because we want to hide the internal events. 
+
+P_Segway = let
+	id__ = 0
+	const_Segway_SegwayController_stm_ref0_maxAngle = BalanceSTM_maxAngle
+	const_Segway_SegwayController_stm_ref0_loopTime = BalanceSTM_loopTime
+	const_Segway_SegwayController_stm_ref0_startupDelay = BalanceSTM_startupDelay
+	const_Segway_SegwayController_stm_ref0_speedUpdate = BalanceSTM_speedUpdate
+	const_Segway_SegwayController_stm_ref0_rotationUpdate = BalanceSTM_rotationUpdate
+	const_Segway_SegwayController_stm_ref0_angleBudget = BalanceSTM_angleBudget
+	const_Segway_SegwayController_stm_ref0_speedBudget = BalanceSTM_speedBudget
+	const_Segway_SegwayController_stm_ref0_rotationBudget = BalanceSTM_rotationBudget
+	const_Segway_SegwayController_stm_ref0_motorBudget = BalanceSTM_motorBudget
+		
+	const_Segway_SegwayController_op_ref1_P = SpeedPID_P
+	const_Segway_SegwayController_op_ref1_I = SpeedPID_I
+	const_Segway_SegwayController_op_ref1_maxIntegral = SpeedPID_maxIntegral
+	const_Segway_SegwayController_op_ref2_D = RotationPID_D
+	const_Segway_SegwayController_op_ref0_P = AnglePID_P
+	const_Segway_SegwayController_op_ref0_D = AnglePID_D
+	
+within
+	Segway::O__(id__,
+			    const_Segway_SegwayController_stm_ref0_maxAngle,
+			    const_Segway_SegwayController_stm_ref0_loopTime,
+			    const_Segway_SegwayController_stm_ref0_startupDelay,
+			    const_Segway_SegwayController_stm_ref0_speedUpdate,
+			    const_Segway_SegwayController_stm_ref0_rotationUpdate,
+			    const_Segway_SegwayController_stm_ref0_angleBudget,
+			    const_Segway_SegwayController_stm_ref0_speedBudget,
+			    const_Segway_SegwayController_stm_ref0_rotationBudget,
+			    const_Segway_SegwayController_stm_ref0_motorBudget,
+			   	const_Segway_SegwayController_op_ref0_P,
+			   	const_Segway_SegwayController_op_ref0_D,
+			   	const_Segway_SegwayController_op_ref1_P,
+			   	const_Segway_SegwayController_op_ref1_I,
+			   	const_Segway_SegwayController_op_ref1_maxIntegral,
+			   	const_Segway_SegwayController_op_ref2_D)
+
+--When they is no timing, setup so it calls all three PIDs 
+Simp_Segway = Segway::disableInterruptsCall -> Segway::enableInterruptsCall -> Segway::angle.in?currAngle -> Segway::gyroX.in?cyrrGyroX -> 
+			  Segway_P3_AnglePID_C::anewError.in.currAngle -> Segway_P3_AnglePID_C::adiff.in.currGyroX -> Segway_P3_AnglePID_C::angleOutputE.out?angleOutput -> 
+			  
+
+
+
+
+
+
+
